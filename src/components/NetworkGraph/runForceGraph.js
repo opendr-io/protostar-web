@@ -1,0 +1,181 @@
+import * as d3 from "d3";
+
+const COLOR_MAP = {
+  0: "#455A64",
+  1: "#FFCCBC",
+  2: "#9575CD",
+  3: "#EF5350",
+  4: "blue",
+  5: "red",
+};
+
+export function runForceGraph(
+  container,
+  linksData,
+  nodesData,
+  strength,
+  //   nodeHoverTooltip
+) {
+  const links = linksData; //linksData.map((d) => Object.assign({}, d));
+  const nodes = nodesData; //nodesData.map((d) => Object.assign({}, d));
+  const containerRect = container.getBoundingClientRect();
+  container.innerHTML = "";
+  const height = containerRect.height;
+  const width = containerRect.width;
+
+  const drag = (simulation) => {
+    const dragstarted = (event, d) => {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    };
+
+    const dragged = (event, d) => {
+      d.fx = event.x;
+      d.fy = event.y;
+    };
+
+    const dragended = (event, d) => {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    };
+
+    return d3
+      .drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended);
+  };
+
+  // Add the tooltip element to the graph
+  const tooltip = document.querySelector("#graph-tooltip");
+  if (!tooltip) {
+    const tooltipDiv = document.createElement("div");
+    tooltipDiv.style.opacity = "0";
+    tooltipDiv.id = "graph-tooltip";
+    document.body.appendChild(tooltipDiv);
+  }
+  const div = d3.select("#graph-tooltip");
+
+  const addTooltip = (hoverTooltip, d, x, y) => {
+    div.transition().duration(200).style("opacity", 0.9);
+    div
+      .html(hoverTooltip(d))
+      .style("left", `${x}px`)
+      .style("top", `${y - 28}px`);
+  };
+
+  const removeTooltip = () => {
+    div.transition().duration(200).style("opacity", 0);
+  };
+
+  const simulation = d3
+    .forceSimulation(nodes)
+    .force(
+      "link",
+      d3.forceLink(links).id((d) => `${d.index}`),
+    )
+    .force("charge", d3.forceManyBody().strength(strength))
+    // .force('center', d3.forceCenter(width / 2, height / 2))
+    .force("x", d3.forceX(width / 2))
+    .force("y", d3.forceY(height / 2));
+
+  const svg = d3
+    .select(container)
+    .append("svg")
+    .attr("viewBox", [0, 0, width, height])
+    .call(
+      d3
+        .zoom()
+        .on("zoom", function (event) {
+          svg.attr("transform", event.transform);
+        })
+        .translateExtent([
+          [0, 0],
+          [width, height],
+        ]),
+    );
+
+  const link = svg
+    .append("g")
+    .selectAll("line")
+    .data(links)
+    .enter()
+    .append("line")
+    .attr("stroke", "#999")
+    .attr("stroke-opacity", 0.6);
+  // .join("line")
+  // .attr("stroke-width", 1);
+
+  const node = svg
+    .append("g")
+    .attr("stroke", "#fff")
+    .attr("stroke-width", 2)
+    .selectAll("circle")
+    .data(nodes.filter((node) => node.group !== 0))
+    .join("circle")
+    .attr("r", (d) =>
+      d.group === 0
+        ? 5
+        : Math.sqrt(2) *
+          Math.max(1, Math.log(isNaN(d.count) ? 1 : d.count * 20)),
+    )
+    .attr("fill", (d) => COLOR_MAP[d.group]);
+  // .call(drag(simulation));
+
+  const hostNode = svg
+    .append("g")
+    .attr("stroke", "#fff")
+    .attr("stroke-width", 2)
+    .selectAll("rect")
+    .data(nodes.filter((node) => node.group === 0))
+    .join("rect")
+    .attr("width", 16)
+    .attr("height", 16)
+    .attr("fill", (d) => COLOR_MAP[d.group]);
+
+  // const label = svg.append("g")
+  //     .attr("class", "labels")
+  //     .selectAll("text")
+  //     .data(nodes)
+  //     .enter()
+  //     .append("text")
+  //     .attr('text-anchor', 'middle')
+  //     .attr('dominant-baseline', 'central')
+  //     .call(drag(simulation));
+
+  //   label.on("mouseover", (d) => {
+  //     addTooltip(nodeHoverTooltip, d, d3.event.pageX, d3.event.pageY);
+  //   })
+  //     .on("mouseout", () => {
+  //       removeTooltip();
+  //     });
+
+  simulation.on("tick", () => {
+    //update link positions
+    link
+      .attr("x1", (d) => d.source.x)
+      .attr("y1", (d) => d.source.y)
+      .attr("x2", (d) => d.target.x)
+      .attr("y2", (d) => d.target.y);
+
+    // update node positions
+    node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+
+    hostNode.attr("x", (d) => d.x - 8).attr("y", (d) => d.y - 8);
+    // update label positions
+    // label
+    //     .attr("x", d => d.x)
+    //     .attr("y", d => d.y)
+  });
+
+  return {
+    destroy: () => {
+      simulation.stop();
+    },
+    nodes: () => {
+      return svg.node();
+    },
+  };
+}
