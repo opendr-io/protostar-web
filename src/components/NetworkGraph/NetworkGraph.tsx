@@ -40,7 +40,7 @@ const ForceGraph: React.FC<Props> = ({
         links,
         nodes,
         strength,
-      );
+      ); 
       destroyFn = destroy;
     }
 
@@ -48,7 +48,7 @@ const ForceGraph: React.FC<Props> = ({
   }, [nodes, links, strength]);
 
   return <>
-    <div ref={containerRef} style={{ width, height, border: '1px solid black', borderRadius: 8, overflow: 'hidden' }}></div>
+    <div ref={containerRef} style={{ width, height, border: '1px solid lightgrey', borderRadius: 8, overflow: 'hidden' }}></div>
     <div id="graph-tooltip" style={{ position: 'absolute', zIndex: 100}}></div>
   </>
 };

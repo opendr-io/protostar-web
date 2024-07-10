@@ -1,12 +1,12 @@
 import * as d3 from "d3";
 
 const COLOR_MAP = {
-  0: "#455A64",
-  1: "#FFCCBC",
-  2: "#9575CD",
-  3: "#EF5350",
-  4: "blue",
-  5: "red",
+  0: "white",   // host nodes
+  1: "#ff584d",   // HIGH   severity ALERT
+  2: "#ff9585",   // MEDIUM severity ALERT
+  3: "#ffbaac",   // LOW    severity ALERT
+  4: "#7f7f7f",   // alert  source node
+  5: "#7f7f7f",   // alert  category node
 };
 
 export function runForceGraph(
@@ -16,8 +16,15 @@ export function runForceGraph(
   strength,
   //   nodeHoverTooltip
 ) {
-  const links = linksData; //linksData.map((d) => Object.assign({}, d));
   const nodes = nodesData; //nodesData.map((d) => Object.assign({}, d));
+  const hostNodes = nodesData.filter(node => node.group === 0);
+  const alertNodes = nodesData
+    .filter(node => node.group !== 0)
+    .sort((nodeA, nodeB) => nodeA.count > nodeB.count)
+    // .slice(0, 4);
+
+  const links = linksData //.filter(link => link.from); //linksData.map((d) => Object.assign({}, d));
+    
   const containerRect = container.getBoundingClientRect();
   container.innerHTML = "";
   const height = containerRect.height;
@@ -112,10 +119,10 @@ export function runForceGraph(
 
   const node = svg
     .append("g")
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 2)
+    // .attr("stroke", "#fff")
+    // .attr("stroke-width", 2)
     .selectAll("circle")
-    .data(nodes.filter((node) => node.group !== 0))
+    .data(alertNodes)
     .join("circle")
     .attr("r", (d) =>
       d.group === 0
@@ -131,7 +138,7 @@ export function runForceGraph(
     .attr("stroke", "#fff")
     .attr("stroke-width", 2)
     .selectAll("rect")
-    .data(nodes.filter((node) => node.group === 0))
+    .data(hostNodes)
     .join("rect")
     .attr("width", 16)
     .attr("height", 16)
@@ -143,13 +150,15 @@ export function runForceGraph(
     });
 
 
-  const hostLabel = svg.append("g")
+  const hostLabel = svg
+      .append("g")
       .attr("class", "labels")
       .selectAll("text")
       .data(nodes.filter((node) => node.group === 0)) // hostnodes
       .enter()
       .append("text")
       .text((d) => d.hostname)
+      .attr('fill', '#9f9795')
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'central')
 

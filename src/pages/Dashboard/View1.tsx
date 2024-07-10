@@ -35,14 +35,12 @@ export function View1() {
   }, [graphData]);
 
   return (
-    <div>
-      <ForceGraph
-        nodes={network.nodes ?? []}
-        links={network.links ?? []}
-        width={"95vw"}
-        height={"95vh"}
-        strength={-10}
-      />
-    </div>
+    <ForceGraph
+      nodes={network.nodes ?? []}
+      links={network.links ?? []}
+      width={"100%"}
+      height={"90vh"}
+      strength={-8}
+    />
   );
 }

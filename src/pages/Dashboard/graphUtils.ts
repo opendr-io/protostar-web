@@ -36,11 +36,11 @@ export function getGroupFromNodeInfo(nodeMeta: INodeMeta, nodeData: INodeData) {
             nodeData.name !== undefined:
             // case for alert category node in a graph
             return 5;
+        case nodeData.severity !== undefined:
+            return getGroupFromSeverity(nodeData.severity);
         case nodeMeta.type === "node" && nodeData.type !== undefined:
             // case for alert source node in a graph
             return 4;
-        case nodeData.severity !== undefined:
-            return getGroupFromSeverity(nodeData.severity);
         default:
             return 0;
     }

@@ -1,10 +1,42 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --color-black-100: "#1f1f1f";
+  --color-black-200: "#3f3f3f";
+  --color-black-300: "#4f4f4f";
+  --color-black-400: "#6f6f6f";
+  --color-black-500: "#7f7f7f";
+  --color-black-600: "#9f9f9f";
+
+  --color-primary-100: "#ff584d";
+  --color-primary-200: "#ff6e5f";
+  --color-primary-300: "#ff8272";
+  --color-primary-400: "#ff9585";
+  --color-primary-500: "#ffa898";
+  --color-primary-600: "#ffbaac";
+
+  --color-mixed-100: "#342623";
+  --color-mixed-200: "#483a38";
+  --color-mixed-300: "#5d504d";
+  --color-mixed-400: "#726764";
+  --color-mixed-500: "#887e7c";
+  --color-mixed-600: "#9f9795";
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  padding: 0;
+  background-color: #2f2f2f;
+  color: aliceblue;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: monospace;
+}
+
+a, a:visited {
+  color: aliceblue;
 }
 
 code {

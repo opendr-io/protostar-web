@@ -40,8 +40,8 @@ export function View3() {
       <ForceGraph
         nodes={network.nodes ?? []}
         links={network.links ?? []}
-        width={"100vw"}
-        height={"95vh"}
+        width={"100%"}
+        height={"90vh"}
         strength={-150}
       />
     </div>
