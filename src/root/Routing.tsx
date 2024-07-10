@@ -1,9 +1,9 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Dashboard } from "../pages/Dashboard/Dashboard";
-import { Login } from "../pages/Login/Login";
 import { View1 } from "../pages/Dashboard/View1";
 import { View2 } from "../pages/Dashboard/View2";
 import { View3 } from "../pages/Dashboard/View3";
+import { Login } from "../pages/Login/Login";
 
 const router = createBrowserRouter([
   {
@@ -19,9 +19,13 @@ const router = createBrowserRouter([
         element: <View2 />,
       },
       {
-        path: "/view3",
+        path: "/view3/:hostname?",
         element: <View3 />,
       },
+      {
+        path: "/view4",
+        element: <div>{'Detailed view'}</div>
+      }
     ],
   },
   {

@@ -56,18 +56,22 @@ export function runForceGraph(
     tooltipDiv.id = "graph-tooltip";
     document.body.appendChild(tooltipDiv);
   }
-  const div = d3.select("#graph-tooltip");
+  const tooltipContainer = d3.select("#graph-tooltip");
 
   const addTooltip = (hoverTooltip, d, x, y) => {
-    div.transition().duration(200).style("opacity", 0.9);
-    div
+    tooltipContainer.style("display", "block");
+    tooltipContainer.transition().duration(200).style("opacity", 0.9);
+    tooltipContainer
       .html(hoverTooltip(d))
       .style("left", `${x}px`)
       .style("top", `${y - 28}px`);
   };
 
   const removeTooltip = () => {
-    div.transition().duration(200).style("opacity", 0);
+    tooltipContainer.transition().duration(200).style("opacity", 0);
+    setTimeout(() => {
+      tooltipContainer.transition().duration(200).style("display", "none");
+    }, 200)
   };
 
   const simulation = d3
@@ -85,17 +89,17 @@ export function runForceGraph(
     .select(container)
     .append("svg")
     .attr("viewBox", [0, 0, width, height])
-    .call(
-      d3
-        .zoom()
-        .on("zoom", function (event) {
-          svg.attr("transform", event.transform);
-        })
-        .translateExtent([
-          [0, 0],
-          [width, height],
-        ]),
-    );
+    // .call(
+    //   d3
+    //     .zoom()
+    //     .on("zoom", function (event) {
+    //       svg.attr("transform", event.transform);
+    //     })
+    //     .translateExtent([
+    //       [0, 0],
+    //       [width, height],
+    //     ]),
+    // );
 
   const link = svg
     .append("g")
@@ -133,24 +137,41 @@ export function runForceGraph(
     .join("rect")
     .attr("width", 16)
     .attr("height", 16)
-    .attr("fill", (d) => COLOR_MAP[d.group]);
+    .attr("fill", (d) => COLOR_MAP[d.group])
+    .on("dblclick", (event, d) => {
+      event.preventDefault();
+      console.log(d.hostname);
+      window.location = (`/view3/${d.hostname}`)
+    });
 
-  // const label = svg.append("g")
+
+  const hostLabel = svg.append("g")
+      .attr("class", "labels")
+      .selectAll("text")
+      .data(nodes.filter((node) => node.group === 0)) // hostnodes
+      .enter()
+      .append("text")
+      .text((d) => d.hostname)
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'central')
+
+  // const clusterLabel = svg.append("g")
   //     .attr("class", "labels")
   //     .selectAll("text")
-  //     .data(nodes)
+  //     .data(nodes.filter((node) => node.group === 4)) // alert source
   //     .enter()
   //     .append("text")
+  //     .text((d) => d.type)
   //     .attr('text-anchor', 'middle')
   //     .attr('dominant-baseline', 'central')
-  //     .call(drag(simulation));
 
-  //   label.on("mouseover", (d) => {
-  //     addTooltip(nodeHoverTooltip, d, d3.event.pageX, d3.event.pageY);
-  //   })
-  //     .on("mouseout", () => {
-  //       removeTooltip();
-  //     });
+    node
+    .on("mouseover", (event, d) => {
+      addTooltip((t) => t.group === 4 ? t.type : `${t.name} (${t.count})`, d, event.pageX, event.pageY);
+    })
+    .on("mouseout", () => {
+      removeTooltip();
+    });
 
   simulation.on("tick", () => {
     //update link positions
@@ -164,10 +185,10 @@ export function runForceGraph(
     node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
 
     hostNode.attr("x", (d) => d.x - 8).attr("y", (d) => d.y - 8);
+
     // update label positions
-    // label
-    //     .attr("x", d => d.x)
-    //     .attr("y", d => d.y)
+    hostLabel.attr("x", d => d.x).attr("y", d => d.y - 16);
+    // clusterLabel.attr("x", d => d.x).attr("y", d => d.y - 16);
   });
 
   return {

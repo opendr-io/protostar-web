@@ -10,12 +10,6 @@ export function Dashboard() {
         <Link to={"/view2"}>
           <h3>{"Primary View"}</h3>
         </Link>
-        <Link to={"/view3"}>
-          <h3>{"Descision View"}</h3>
-        </Link>
-        <Link to={"/view4"}>
-          <h3>{"Investigative View"}</h3>
-        </Link>
       </div>
       <Outlet />
     </>

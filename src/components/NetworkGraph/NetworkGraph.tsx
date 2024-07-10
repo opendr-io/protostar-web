@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
+import React, { useEffect, useRef } from "react";
 import { runForceGraph } from "./runForceGraph";
 
 export interface Node extends d3.SimulationNodeDatum {
@@ -7,6 +7,7 @@ export interface Node extends d3.SimulationNodeDatum {
   index: number;
   group: number;
   count?: number;
+  type?: string;
 }
 
 export interface Link {
@@ -46,7 +47,10 @@ const ForceGraph: React.FC<Props> = ({
     return destroyFn;
   }, [nodes]);
 
-  return <div ref={containerRef} style={{ width, height }}></div>;
+  return <>
+    <div ref={containerRef} style={{ width, height }}></div>
+    <div id="graph-tooltip" style={{ position: 'absolute', zIndex: 100 }}></div>
+  </>
 };
 
 export default ForceGraph;
