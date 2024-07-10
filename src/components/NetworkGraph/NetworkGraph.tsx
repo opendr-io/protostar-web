@@ -45,11 +45,11 @@ const ForceGraph: React.FC<Props> = ({
     }
 
     return destroyFn;
-  }, [nodes]);
+  }, [nodes, links, strength]);
 
   return <>
     <div ref={containerRef} style={{ width, height }}></div>
-    <div id="graph-tooltip" style={{ position: 'absolute', zIndex: 100 }}></div>
+    <div id="graph-tooltip" style={{ position: 'absolute', zIndex: 100}}></div>
   </>
 };
 

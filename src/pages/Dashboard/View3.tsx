@@ -29,7 +29,7 @@ export function View3() {
         const graphData = responseJson?.results.pop().data;
         setGraphData({ results: graphData });
       });
-  }, []);
+  }, [ hostname ]);
 
   useEffect(() => {
     setNetwork(processNodesAndEdges(graphData));

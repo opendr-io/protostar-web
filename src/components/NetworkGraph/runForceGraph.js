@@ -23,30 +23,30 @@ export function runForceGraph(
   const height = containerRect.height;
   const width = containerRect.width;
 
-  const drag = (simulation) => {
-    const dragstarted = (event, d) => {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      d.fx = d.x;
-      d.fy = d.y;
-    };
+  // const drag = (simulation) => {
+  //   const dragstarted = (event, d) => {
+  //     if (!event.active) simulation.alphaTarget(0.3).restart();
+  //     d.fx = d.x;
+  //     d.fy = d.y;
+  //   };
 
-    const dragged = (event, d) => {
-      d.fx = event.x;
-      d.fy = event.y;
-    };
+  //   const dragged = (event, d) => {
+  //     d.fx = event.x;
+  //     d.fy = event.y;
+  //   };
 
-    const dragended = (event, d) => {
-      if (!event.active) simulation.alphaTarget(0);
-      d.fx = null;
-      d.fy = null;
-    };
+  //   const dragended = (event, d) => {
+  //     if (!event.active) simulation.alphaTarget(0);
+  //     d.fx = null;
+  //     d.fy = null;
+  //   };
 
-    return d3
-      .drag()
-      .on("start", dragstarted)
-      .on("drag", dragged)
-      .on("end", dragended);
-  };
+  //   return d3
+  //     .drag()
+  //     .on("start", dragstarted)
+  //     .on("drag", dragged)
+  //     .on("end", dragended);
+  // };
 
   // Add the tooltip element to the graph
   const tooltip = document.querySelector("#graph-tooltip");

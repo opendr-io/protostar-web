@@ -8,10 +8,10 @@ export function View1() {
 
   useEffect(() => {
     console.log({process: process.env});
-    fetch(`http://localhost:7474/db/neo4j/tx/commit`, {
+    fetch(`${process.env.REACT_APP_DB_URL}/tx/commit`, {
       method: "POST",
       headers: {
-        Authorization: `Basic ${btoa("neo4j:password")}`,
+        Authorization: `Basic ${btoa(`${process.env.REACT_APP_USERNAME}:${process.env.REACT_APP_PASSWORD}`)}`,
         Accept: 'application/json;charset=UTF-8',
         'Content-Type': 'application/json',
       },
