@@ -39,7 +39,7 @@ export function View1() {
       <ForceGraph
         nodes={network.nodes ?? []}
         links={network.links ?? []}
-        width={"100vw"}
+        width={"95vw"}
         height={"95vh"}
         strength={-10}
       />

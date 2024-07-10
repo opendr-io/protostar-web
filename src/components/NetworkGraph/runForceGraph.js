@@ -59,8 +59,8 @@ export function runForceGraph(
   const tooltipContainer = d3.select("#graph-tooltip");
 
   const addTooltip = (hoverTooltip, d, x, y) => {
-    tooltipContainer.style("display", "block");
     tooltipContainer.transition().duration(200).style("opacity", 0.9);
+    tooltipContainer.transition().duration(200).style("transform", 'scale(1)');
     tooltipContainer
       .html(hoverTooltip(d))
       .style("left", `${x}px`)
@@ -69,9 +69,7 @@ export function runForceGraph(
 
   const removeTooltip = () => {
     tooltipContainer.transition().duration(200).style("opacity", 0);
-    setTimeout(() => {
-      tooltipContainer.transition().duration(200).style("display", "none");
-    }, 200)
+    tooltipContainer.transition().duration(200).style("transform", 'scale(0)');
   };
 
   const simulation = d3
@@ -89,17 +87,17 @@ export function runForceGraph(
     .select(container)
     .append("svg")
     .attr("viewBox", [0, 0, width, height])
-    // .call(
-    //   d3
-    //     .zoom()
-    //     .on("zoom", function (event) {
-    //       svg.attr("transform", event.transform);
-    //     })
-    //     .translateExtent([
-    //       [0, 0],
-    //       [width, height],
-    //     ]),
-    // );
+    .call(
+      d3
+        .zoom()
+        .on("zoom", function (event) {
+          svg.attr("transform", event.transform);
+        })
+        .translateExtent([
+          [0, 0],
+          [width, height],
+        ]),
+    );
 
   const link = svg
     .append("g")
