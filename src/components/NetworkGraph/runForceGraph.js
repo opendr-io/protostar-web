@@ -157,20 +157,23 @@ export function runForceGraph(
       .data(nodes.filter((node) => node.group === 0)) // hostnodes
       .enter()
       .append("text")
-      .text((d) => d.hostname)
+      .text((d) => d.hostname.toUpperCase())
       .attr('fill', '#9f9795')
+      .attr('font-size', '20')
+      .attr('font-weight', '600')
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'central')
 
-  // const clusterLabel = svg.append("g")
-  //     .attr("class", "labels")
-  //     .selectAll("text")
-  //     .data(nodes.filter((node) => node.group === 4)) // alert source
-  //     .enter()
-  //     .append("text")
-  //     .text((d) => d.type)
-  //     .attr('text-anchor', 'middle')
-  //     .attr('dominant-baseline', 'central')
+  const clusterLabel = svg.append("g")
+      .attr("class", "labels")
+      .selectAll("text")
+      .data(nodes.filter((node) => node.group === 4)) // alert source
+      .enter()
+      .append("text")
+      .text((d) => d.type)
+      .attr('fill', '#9f9795')
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'central')
 
     node
     .on("mouseover", (event, d) => {
@@ -195,7 +198,7 @@ export function runForceGraph(
 
     // update label positions
     hostLabel.attr("x", d => d.x).attr("y", d => d.y - 16);
-    // clusterLabel.attr("x", d => d.x).attr("y", d => d.y - 16);
+    clusterLabel.attr("x", d => d.x).attr("y", d => d.y - 16);
   });
 
   return {

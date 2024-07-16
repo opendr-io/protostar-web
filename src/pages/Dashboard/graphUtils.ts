@@ -1,3 +1,4 @@
+import { hostname } from 'os';
 import { Node, Link } from '../../components/NetworkGraph/NetworkGraph';
 
 export interface INodeData {
@@ -62,6 +63,7 @@ export function getGroupFromSeverity(severity?: string) {
     }
 }
 
+
 export function processNodesAndEdges(graphData: IGraphData | undefined) {
     if (!graphData) {
         return {
@@ -89,8 +91,8 @@ export function processNodesAndEdges(graphData: IGraphData | undefined) {
                             group: getGroupFromNodeInfo(meta[i][j], row[i][j]),
                             name: row[i][j].name,
                             type: row[i][j].type,
-                            x: (index * 37) % 400,
-                            y: (index * 41) % 400,
+                            x: (index * 2) % 41,
+                            y: (index * 3) % 41,
                             // x: Math.floor(Math.random() * 870) + 20, y:  Math.floor(Math.random() * 660) + 20,
                         };
                         if (!nodes[`${index}`]) {

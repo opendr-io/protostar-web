@@ -8,12 +8,12 @@ export function View2() {
   const [network, setNetwork] = useState<any>({});
 
   useEffect(() => {
-    fetch("http://localhost:7474/db/neo4j/tx/commit", {
+    fetch(`${process.env.REACT_APP_DB_URL}/tx/commit`, {
       method: "POST",
       headers: {
-        Authorization: `Basic ${btoa("neo4j:password")}`,
-        Accept: "application/json;charset=UTF-8",
-        "Content-Type": "application/json",
+        Authorization: `Basic ${btoa(`${process.env.REACT_APP_USERNAME}:${process.env.REACT_APP_PASSWORD}`)}`,
+        Accept: 'application/json;charset=UTF-8',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         statements: [

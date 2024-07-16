@@ -40,7 +40,7 @@ export function View1() {
       links={network.links ?? []}
       width={"100%"}
       height={"90vh"}
-      strength={-8}
+      strength={-10}
     />
   );
 }
