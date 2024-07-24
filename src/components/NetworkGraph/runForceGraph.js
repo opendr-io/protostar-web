@@ -1,12 +1,14 @@
 import * as d3 from "d3";
 
 const COLOR_MAP = {
-  0: "white",   // host nodes
-  1: "#ff584d",   // HIGH   severity ALERT
-  2: "#ff9585",   // MEDIUM severity ALERT
-  3: "#ffbaac",   // LOW    severity ALERT
-  4: "#7f7f7f",   // alert  source node
-  5: "#7f7f7f",   // alert  category node
+  0: "white",     // uncategorised node
+  1: "white",     // host nodes
+  2: "white",     // severity cluster
+  3: "#7f7f7f",   // name cluster node
+  4: "#7f7f7f",   // alert node
+  5: "#ffbaac",   // LOW    severity ALERT
+  6: "#ff9585",   // MEDIUM severity ALERT
+  7: "#ff584d",   // HIGH   severity ALERT
 };
 
 export function runForceGraph(
@@ -17,9 +19,9 @@ export function runForceGraph(
   //   nodeHoverTooltip
 ) {
   const nodes = nodesData; //nodesData.map((d) => Object.assign({}, d));
-  const hostNodes = nodesData.filter(node => node.group === 0);
+  const hostNodes = nodesData.filter(node => node.group === 1);
   const alertNodes = nodesData
-    .filter(node => node.group !== 0)
+    .filter(node => node.group !== 1)
     .sort((nodeA, nodeB) => nodeA.count > nodeB.count)
     // .slice(0, 4);
 
@@ -145,8 +147,8 @@ export function runForceGraph(
     .attr("fill", (d) => COLOR_MAP[d.group])
     .on("dblclick", (event, d) => {
       event.preventDefault();
-      console.log(d.hostname);
-      window.location = (`/view3/${d.hostname}`)
+      console.log(d.entity);
+      window.location = (`/view3/?entity=${d.entity}`)
     });
 
 
@@ -154,30 +156,30 @@ export function runForceGraph(
       .append("g")
       .attr("class", "labels")
       .selectAll("text")
-      .data(nodes.filter((node) => node.group === 0)) // hostnodes
+      .data(nodes.filter((node) => node.group === 1)) // hostnodes
       .enter()
       .append("text")
-      .text((d) => d.hostname.toUpperCase())
+      .text((d) => d.entity.toUpperCase())
       .attr('fill', '#9f9795')
       .attr('font-size', '20')
       .attr('font-weight', '600')
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'central')
 
-  const clusterLabel = svg.append("g")
-      .attr("class", "labels")
-      .selectAll("text")
-      .data(nodes.filter((node) => node.group === 4)) // alert source
-      .enter()
-      .append("text")
-      .text((d) => d.type)
-      .attr('fill', '#9f9795')
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'central')
+  // const clusterLabel = svg.append("g")
+  //     .attr("class", "labels")
+  //     .selectAll("text")
+  //     .data(nodes.filter((node) => node.group === 4)) // alert source
+  //     .enter()
+  //     .append("text")
+  //     .text((d) => d.detection_type)
+  //     .attr('fill', '#9f9795')
+  //     .attr('text-anchor', 'middle')
+  //     .attr('dominant-baseline', 'central')
 
     node
     .on("mouseover", (event, d) => {
-      addTooltip((t) => t.group === 4 ? t.type : `${t.name} (${t.count})`, d, event.pageX, event.pageY);
+      addTooltip((t) => t.group === 4 ? t.detection_type : `${t.name} (${t.count})`, d, event.pageX, event.pageY);
     })
     .on("mouseout", () => {
       removeTooltip();
@@ -198,7 +200,7 @@ export function runForceGraph(
 
     // update label positions
     hostLabel.attr("x", d => d.x).attr("y", d => d.y - 16);
-    clusterLabel.attr("x", d => d.x).attr("y", d => d.y - 16);
+    // clusterLabel.attr("x", d => d.x).attr("y", d => d.y - 16);
   });
 
   return {

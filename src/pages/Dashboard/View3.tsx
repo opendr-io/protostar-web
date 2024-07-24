@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { IGraphData, processNodesAndEdges } from './graphUtils';
 import ForceGraph from "../../components/NetworkGraph/NetworkGraph";
-import { useParams } from "react-router";
+import { useSearchParams } from "react-router-dom";
 
 export function View3() {
   const [graphData, setGraphData] = useState<IGraphData>();
   const [network, setNetwork] = useState<any>({});
-  const { hostname } = useParams();
+  const [searchParams] = useSearchParams();
+
+  const entityName = searchParams.get('entity');
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_DB_URL}/tx/commit`, {
@@ -19,7 +21,7 @@ export function View3() {
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH path = (n:ENTITY)-[r*]->(m) where n.view = 1 and m.view = 1 and n.hostname = "${hostname}" return path`,
+            statement: `MATCH path = (n:ENTITY)-[r*]->(m) where n.view = 1 and m.view = 1 and n.entity = "${entityName}" return path`,
           },
         ],
       }),
@@ -29,7 +31,7 @@ export function View3() {
         const graphData = responseJson?.results.pop().data;
         setGraphData({ results: graphData });
       });
-  }, [ hostname ]);
+  }, [ entityName ]);
 
   useEffect(() => {
     setNetwork(processNodesAndEdges(graphData));

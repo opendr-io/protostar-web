@@ -1,16 +1,61 @@
-import { hostname } from 'os';
-import { Node, Link } from '../../components/NetworkGraph/NetworkGraph';
+import { Node, Link, NodeGroup } from '../../components/NetworkGraph/NetworkGraph';
 
-export interface INodeData {
-    view?: number; // 2,
-    count?: number; // 64,
-    severity?: string; // "High",
-    hostname?: string; // "172.16.200.183",
-    ip?: string; // "172.16.200.183",
-    source_ip?: string; // "172.16.200.184",
-    type?: string; // Alert Source
-    name?: string; // Alert Category .
-}
+interface EntityNodeData {
+    ip: string,
+    entity: string,
+    entity_type: string,
+    view: number,
+    source_ip: string,
+    dest_ip: string,
+    count: number,
+};
+
+interface SeverityClusterNodeData {
+    ip: string,
+    entity: string,
+    entity_type: string,
+    view: number,
+    source_ip: string,
+    count: number,
+    severity: 'Low' | 'Medium' | 'High',
+};
+
+interface NameClusterNodeData {
+    ip: string,
+    entity: string,
+    entity_type: string,
+    view: number,
+    source_ip: string,
+    count: number,
+    severity: 'Low' | 'Medium' | 'High',
+    name: string
+};
+
+interface AlertNodeData {
+    guid: string,
+    timestamp: number,
+    detection_type: string,
+    name: string,
+    category: string,
+    mitre_tactic: string,
+    entity: string,
+    entity_type: string,
+    host_ip: string,
+    source_ip: string,
+    dest_ip: string,
+    dest_port: string,
+    dst_geo: string,
+    username: string,
+    syscall_name: string,
+    executable: string,
+    process: string,
+    message: string,
+    proctitle: string,
+    severity: 'Low' | 'Medium' | 'High',
+    view: 2
+};
+
+export type INodeData = EntityNodeData & SeverityClusterNodeData & NameClusterNodeData & AlertNodeData;
 
 export interface INodeMeta {
     id: number; // 3,
@@ -31,19 +76,30 @@ export interface IGraphData {
 export type ElementID = string;
 
 export function getGroupFromNodeInfo(nodeMeta: INodeMeta, nodeData: INodeData) {
+    const isView2 = nodeData.view == 2;
     switch (true) {
-        case nodeMeta.type === "node" &&
-            nodeData.type !== undefined &&
-            nodeData.name !== undefined:
-            // case for alert category node in a graph
-            return 5;
-        case nodeData.severity !== undefined:
+        // case for Alert node
+        case isView2 && nodeMeta.type === "node" &&
+            nodeData.detection_type !== undefined:
+            return NodeGroup.ALERT;
+        
+        // case for NameCluster node
+        case isView2 && nodeData.name !== undefined && nodeData.severity !== undefined:
             return getGroupFromSeverity(nodeData.severity);
-        case nodeMeta.type === "node" && nodeData.type !== undefined:
-            // case for alert source node in a graph
-            return 4;
+        
+        // case for SeverityCluster node
+        case isView2 && nodeMeta.type === "node" && nodeData.severity !== undefined:
+            return getGroupFromSeverity(nodeData.severity);
+        
+        case !isView2 && nodeData.name !== undefined:
+            return getGroupFromSeverity(nodeData.severity);
+
+        case !isView2 && nodeData.detection_type !== undefined:
+            return getGroupFromSeverity(nodeData.severity);
+
+        // case for Entity node
         default:
-            return 0;
+            return NodeGroup.ENTITY;
     }
 }
 
@@ -53,11 +109,11 @@ export function getGroupFromSeverity(severity?: string) {
     }
     switch (severity.toUpperCase()) {
         case "HIGH":
-            return 3;
+            return NodeGroup.HIGH_SEVERITY;
         case "MEDIUM":
-            return 2;
+            return NodeGroup.MEDIUM_SEVERITY;
         case "LOW":
-            return 1;
+            return NodeGroup.LOW_SEVERITY;
         default:
             return 0;
     }
@@ -79,18 +135,13 @@ export function processNodesAndEdges(graphData: IGraphData | undefined) {
         for (let i = 0; i < row.length; i++) {
             for (let j = 0; j < row[i].length; j++) {
                 const { elementId, type, id: index } = meta[i][j];
-                const { hostname, count, ip } = row[i][j];
                 switch (type) {
                     case "node":
                         const node = {
+                            group: getGroupFromNodeInfo(meta[i][j], row[i][j]),
                             id: elementId,
                             index: meta[i][j].id,
-                            hostname,
-                            count,
-                            ip,
-                            group: getGroupFromNodeInfo(meta[i][j], row[i][j]),
-                            name: row[i][j].name,
-                            type: row[i][j].type,
+                            ...row[i][j],
                             x: (index * 2) % 41,
                             y: (index * 3) % 41,
                             // x: Math.floor(Math.random() * 870) + 20, y:  Math.floor(Math.random() * 660) + 20,

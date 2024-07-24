@@ -19,7 +19,7 @@ const router = createBrowserRouter([
         element: <View2 />,
       },
       {
-        path: "/view3/:hostname?",
+        path: "/view3",
         element: <View3 />,
       },
       {

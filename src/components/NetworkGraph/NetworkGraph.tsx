@@ -2,6 +2,18 @@ import * as d3 from "d3";
 import React, { useEffect, useRef } from "react";
 import { runForceGraph } from "./runForceGraph";
 
+
+export enum NodeGroup {
+ENTITY = 1,
+SEVERITY_CLUSTER = 2,
+NAME_CLUSTER = 3,
+ALERT = 4,
+
+LOW_SEVERITY = 5,
+MEDIUM_SEVERITY = 6,
+HIGH_SEVERITY = 7,
+}
+
 export interface Node extends d3.SimulationNodeDatum {
   id: string;
   index: number;
