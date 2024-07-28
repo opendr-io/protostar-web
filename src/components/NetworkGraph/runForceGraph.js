@@ -11,6 +11,17 @@ const COLOR_MAP = {
   7: "#ff584d",   // HIGH   severity ALERT
 };
 
+function wrap() {
+  var self = d3.select(this),
+    textLength = self.node().getComputedTextLength(),
+    text = self.text();
+  while (textLength > (150 - 2 * 8) && text.length > 0) {
+    text = text.slice(0, -1);
+    self.text(text + '...');
+    textLength = self.node().getComputedTextLength();
+  }
+}
+
 export function runForceGraph(
   container,
   linksData,
@@ -23,14 +34,14 @@ export function runForceGraph(
   const alertNodes = nodesData
     .filter(node => node.group !== 1)
     .sort((nodeA, nodeB) => nodeA.count > nodeB.count)
-    // .slice(0, 4);
+  // .slice(0, 4);
 
   const links = linksData //.filter(link => link.from); //linksData.map((d) => Object.assign({}, d));
-    
+
   const containerRect = container.getBoundingClientRect();
   container.innerHTML = "";
-  const height = containerRect.height;
-  const width = containerRect.width;
+  let width = containerRect.width;
+  let height = containerRect.height;
 
   // const drag = (simulation) => {
   //   const dragstarted = (event, d) => {
@@ -95,7 +106,10 @@ export function runForceGraph(
   const svg = d3
     .select(container)
     .append("svg")
+    .attr("height", "100%")
+    .attr("width", "100%")
     .attr("viewBox", [0, 0, width, height])
+    .attr("overflow", "visible")
     .call(
       d3
         .zoom()
@@ -103,8 +117,8 @@ export function runForceGraph(
           svg.attr("transform", event.transform);
         })
         .translateExtent([
-          [0, 0],
-          [width, height],
+          [-400, -400],
+          [width + 400, height + 400],
         ]),
     );
 
@@ -115,7 +129,7 @@ export function runForceGraph(
     .enter()
     .append("line")
     .attr("stroke", "#999")
-    .attr("stroke-opacity", 0.6);
+    .attr("stroke-opacity", 0.6)
   // .join("line")
   // .attr("stroke-width", 1);
 
@@ -127,12 +141,10 @@ export function runForceGraph(
     .data(alertNodes)
     .join("circle")
     .attr("r", (d) =>
-      d.group === 0
-        ? 5
-        : Math.sqrt(2) *
-          Math.max(1, Math.log(isNaN(d.count) ? 1 : d.count * 20)),
+      Math.sqrt(2) *
+      Math.max(1, Math.log(isNaN(d.count) ? 1 : d.count * 20)),
     )
-    .attr("fill", (d) => COLOR_MAP[d.group]);
+    .attr("fill", (d) => COLOR_MAP[d.group])
   // .call(drag(simulation));
 
   const hostNode = svg
@@ -151,20 +163,20 @@ export function runForceGraph(
       window.location = (`/view3/?entity=${d.entity}`)
     });
 
-
   const hostLabel = svg
-      .append("g")
-      .attr("class", "labels")
-      .selectAll("text")
-      .data(nodes.filter((node) => node.group === 1)) // hostnodes
-      .enter()
-      .append("text")
-      .text((d) => d.entity.toUpperCase())
-      .attr('fill', '#9f9795')
-      .attr('font-size', '20')
-      .attr('font-weight', '600')
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'central')
+    .append("g")
+    .attr("class", "labels")
+    .selectAll("text")
+    .data(nodes.filter((node) => node.group === 1)) // hostnodes
+    .enter()
+    .append("text")
+    .text((d) => d.entity.toUpperCase())
+    .each(wrap)
+    .attr('fill', '#9f9795')
+    .attr('font-size', '20')
+    .attr('font-weight', '600')
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'central')
 
   // const clusterLabel = svg.append("g")
   //     .attr("class", "labels")
@@ -177,9 +189,9 @@ export function runForceGraph(
   //     .attr('text-anchor', 'middle')
   //     .attr('dominant-baseline', 'central')
 
-    node
-    .on("mouseover", (event, d) => {
-      addTooltip((t) => t.group === 4 ? t.detection_type : `${t.name} (${t.count})`, d, event.pageX, event.pageY);
+  node
+    .on("click", (event, d) => {
+      addTooltip((t) => t.group === 4 ? t.detection_type : `${t.name ?? t.detection_type} (${t.count})`, d, event.pageX, event.pageY);
     })
     .on("mouseout", () => {
       removeTooltip();
@@ -194,7 +206,8 @@ export function runForceGraph(
       .attr("y2", (d) => d.target.y);
 
     // update node positions
-    node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+    node.attr("cx", (d) => d.x).attr("cy", (d) => d.y).transition()
+      .duration(2000);
 
     hostNode.attr("x", (d) => d.x - 8).attr("y", (d) => d.y - 8);
 

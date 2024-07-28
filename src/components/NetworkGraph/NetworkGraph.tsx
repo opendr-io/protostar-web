@@ -4,14 +4,14 @@ import { runForceGraph } from "./runForceGraph";
 
 
 export enum NodeGroup {
-ENTITY = 1,
-SEVERITY_CLUSTER = 2,
-NAME_CLUSTER = 3,
-ALERT = 4,
+  ENTITY = 1,
+  SEVERITY_CLUSTER = 2,
+  NAME_CLUSTER = 3,
+  ALERT = 4,
 
-LOW_SEVERITY = 5,
-MEDIUM_SEVERITY = 6,
-HIGH_SEVERITY = 7,
+  LOW_SEVERITY = 5,
+  MEDIUM_SEVERITY = 6,
+  HIGH_SEVERITY = 7,
 }
 
 export interface Node extends d3.SimulationNodeDatum {

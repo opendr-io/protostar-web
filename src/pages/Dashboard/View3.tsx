@@ -1,51 +1,66 @@
 import { useEffect, useState } from "react";
 import { IGraphData, processNodesAndEdges } from './graphUtils';
 import ForceGraph from "../../components/NetworkGraph/NetworkGraph";
-import { useSearchParams } from "react-router-dom";
+import DetailList from "../../components/DetailList/DetailList";
+import { Entity, NodeMeta, useGetEntityListData } from "../../hooks/useGetEntityList/useGetEntityListData"
+import { useGetEntityDetailData } from "../../hooks/useGetEntityDetail/useGetEntityDetailData"
+import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
 
 export function View3() {
   const [graphData, setGraphData] = useState<IGraphData>();
+  const [graphMode, setGraphMode] = useState(true);
   const [network, setNetwork] = useState<any>({});
   const [searchParams] = useSearchParams();
-
   const entityName = searchParams.get('entity');
+  const [entityList, setEntityList] = useState<(NodeMeta & Entity)[]>([]);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { getEntityList } = useGetEntityListData();
+  const { getEntityDetail } = useGetEntityDetailData();
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_DB_URL}/tx/commit`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${btoa(`${process.env.REACT_APP_USERNAME}:${process.env.REACT_APP_PASSWORD}`)}`,
-        Accept: 'application/json;charset=UTF-8',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        statements: [
-          {
-            statement: `MATCH path = (n:ENTITY)-[r*]->(m) where n.view = 1 and m.view = 1 and n.entity = "${entityName}" return path`,
-          },
-        ],
-      }),
-    })
-      .then((result) => result.json())
-      .then((responseJson) => {
-        const graphData = responseJson?.results.pop().data;
-        setGraphData({ results: graphData });
-      });
-  }, [ entityName ]);
+    getEntityList()
+      .then((entityList) => {
+        setEntityList(entityList);
+      })
+    if (entityName) {
+      getEntityDetail(entityName)
+        .then((result) => {
+          const graphData: any = result?.results.pop()?.data ?? [];
+          setGraphData({ results: graphData });
+        });
+    }
+  }, [entityName]);
 
   useEffect(() => {
     setNetwork(processNodesAndEdges(graphData));
   }, [graphData]);
 
   return (
-    <div>
-      <ForceGraph
-        nodes={network.nodes ?? []}
-        links={network.links ?? []}
-        width={"100%"}
-        height={"90vh"}
-        strength={-150}
-      />
-    </div>
+    <>
+      <h3 style={{ marginLeft: 16 }}>{'Select Entity'}&nbsp;&nbsp;
+        <select style={{ padding: '8px 16px' }} defaultValue={entityName ?? ''} onChange={(event) => {
+          searchParams.set('entity', event.target.value);
+          navigate({ pathname: location.pathname, search: searchParams.toString() }, { replace: true });
+        }}>
+          <option disabled value={''}> -- select an entity -- </option>
+          {entityList.map((entity, index) => (<option key={`select-${index}-${entity.entity}`} value={entity.entity}>{entity.entity_type}/{entity.entity}</option>))}
+        </select>
+      </h3>
+      <div style={{ padding: '0 16px', display: 'flex', gap: 16 }}>
+        <button onClick={() => setGraphMode(true)}>{'Graph'}</button>
+        <button onClick={() => setGraphMode(false)}>{'List'}</button>
+      </div>
+      <div style={{ backgroundColor: '#1f1f1f', height: '90vh', width: '97%', margin: '16px' }}>
+        {graphMode && <ForceGraph
+          nodes={network.nodes ?? []}
+          links={network.links ?? []}
+          width={"100%"}
+          height={"90vh"}
+          strength={-200}
+        />}
+        {!graphMode && <DetailList data={graphData} />}
+      </div>
+    </>
   );
 }

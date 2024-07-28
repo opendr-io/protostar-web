@@ -18,6 +18,7 @@ interface SeverityClusterNodeData {
     source_ip: string,
     count: number,
     severity: 'Low' | 'Medium' | 'High',
+    detection_type: string,
 };
 
 interface NameClusterNodeData {
@@ -28,7 +29,8 @@ interface NameClusterNodeData {
     source_ip: string,
     count: number,
     severity: 'Low' | 'Medium' | 'High',
-    name: string
+    name: string,
+    detection_type: string,
 };
 
 interface AlertNodeData {
@@ -76,21 +78,21 @@ export interface IGraphData {
 export type ElementID = string;
 
 export function getGroupFromNodeInfo(nodeMeta: INodeMeta, nodeData: INodeData) {
-    const isView2 = nodeData.view == 2;
+    const isView2 = nodeData.view === 2;
     switch (true) {
         // case for Alert node
         case isView2 && nodeMeta.type === "node" &&
             nodeData.detection_type !== undefined:
             return NodeGroup.ALERT;
-        
+
         // case for NameCluster node
         case isView2 && nodeData.name !== undefined && nodeData.severity !== undefined:
             return getGroupFromSeverity(nodeData.severity);
-        
+
         // case for SeverityCluster node
         case isView2 && nodeMeta.type === "node" && nodeData.severity !== undefined:
             return getGroupFromSeverity(nodeData.severity);
-        
+
         case !isView2 && nodeData.name !== undefined:
             return getGroupFromSeverity(nodeData.severity);
 
@@ -142,9 +144,8 @@ export function processNodesAndEdges(graphData: IGraphData | undefined) {
                             id: elementId,
                             index: meta[i][j].id,
                             ...row[i][j],
-                            x: (index * 2) % 41,
-                            y: (index * 3) % 41,
-                            // x: Math.floor(Math.random() * 870) + 20, y:  Math.floor(Math.random() * 660) + 20,
+                            x: 0,
+                            y: 0,
                         };
                         if (!nodes[`${index}`]) {
                             nodes[`${index}`] = { ...node };

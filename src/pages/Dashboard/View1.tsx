@@ -7,7 +7,6 @@ export function View1() {
   const [network, setNetwork] = useState<any>({});
 
   useEffect(() => {
-    console.log({process: process.env});
     fetch(`${process.env.REACT_APP_DB_URL}/tx/commit`, {
       method: "POST",
       headers: {
@@ -35,12 +34,14 @@ export function View1() {
   }, [graphData]);
 
   return (
-    <ForceGraph
-      nodes={network.nodes ?? []}
-      links={network.links ?? []}
-      width={"100%"}
-      height={"90vh"}
-      strength={-10}
-    />
+    <div style={{ backgroundColor: '#1f1f1f', height: '90vh', width: '97%', margin: '16px' }}>
+      <ForceGraph
+        nodes={network.nodes ?? []}
+        links={network.links ?? []}
+        width={"100%"}
+        height={"90vh"}
+        strength={-10}
+      />
+    </div>
   );
 }

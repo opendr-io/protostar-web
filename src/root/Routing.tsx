@@ -8,19 +8,19 @@ import { Login } from "../pages/Login/Login";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Dashboard />,
+    Component: Dashboard,
     children: [
       {
         path: "/view1",
-        element: <View1 />,
+        Component: View1
       },
       {
         path: "/view2",
-        element: <View2 />,
+        Component: View2,
       },
       {
         path: "/view3",
-        element: <View3 />,
+        Component: View3,
       },
       {
         path: "/view4",

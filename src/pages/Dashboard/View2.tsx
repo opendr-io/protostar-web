@@ -35,13 +35,13 @@ export function View2() {
   }, [graphData]);
 
   return (
-    <div>
+    <div style={{ backgroundColor: '#1f1f1f', height: '90vh', width: '97%', margin: '16px' }}>
       <ForceGraph
         nodes={network.nodes ?? []}
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-150}
+        strength={-200}
       />
     </div>
   );
