@@ -149,8 +149,8 @@ export function runForceGraph(
 
   const hostNode = svg
     .append("g")
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 2)
+    .attr("stroke", "#ff9585")
+    .attr("stroke-width", 4)
     .selectAll("rect")
     .data(hostNodes)
     .join("rect")
@@ -172,9 +172,11 @@ export function runForceGraph(
     .append("text")
     .text((d) => d.entity.toUpperCase())
     .each(wrap)
-    .attr('fill', '#9f9795')
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .attr('fill', '#ff9585')
     .attr('font-size', '20')
-    .attr('font-weight', '600')
+    .attr('font-weight', '900')
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')
 
