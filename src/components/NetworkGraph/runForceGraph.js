@@ -30,9 +30,9 @@ export function runForceGraph(
   //   nodeHoverTooltip
 ) {
   const nodes = nodesData; //nodesData.map((d) => Object.assign({}, d));
-  const hostNodes = nodesData.filter(node => node.group === 1);
+  const hostNodes = nodesData.filter(node => node.type === 'ENTITY');
   const alertNodes = nodesData
-    .filter(node => node.group !== 1)
+    .filter(node => node.type !== 'ENTITY')
     .sort((nodeA, nodeB) => nodeA.count > nodeB.count)
   // .slice(0, 4);
 
@@ -180,20 +180,20 @@ export function runForceGraph(
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')
 
-  // const clusterLabel = svg.append("g")
-  //     .attr("class", "labels")
-  //     .selectAll("text")
-  //     .data(nodes.filter((node) => node.group === 4)) // alert source
-  //     .enter()
-  //     .append("text")
-  //     .text((d) => d.detection_type)
-  //     .attr('fill', '#9f9795')
-  //     .attr('text-anchor', 'middle')
-  //     .attr('dominant-baseline', 'central')
+  const clusterLabel = svg.append("g")
+    .attr("class", "labels")
+    .selectAll("text")
+    .data(nodes.filter((node) => node.type === 'SEVERITY_CLUSTER' || node.type === 'NAME_CLUSTER')) // alert source
+    .enter()
+    .append("text")
+    .text((d) => d.detection_type)
+    .attr('fill', '#9f9795')
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'central')
 
   node
     .on("click", (event, d) => {
-      addTooltip((t) => t.group === 4 ? t.detection_type : `${t.name ?? t.detection_type} (${t.count})`, d, event.pageX, event.pageY);
+      addTooltip((t) => t.type === 'ALERT' ? t.detection_type : `${t.name ?? t.detection_type} (${t.count})`, d, event.pageX, event.pageY);
     })
     .on("mouseout", () => {
       removeTooltip();
@@ -215,7 +215,7 @@ export function runForceGraph(
 
     // update label positions
     hostLabel.attr("x", d => d.x).attr("y", d => d.y - 16);
-    // clusterLabel.attr("x", d => d.x).attr("y", d => d.y - 16);
+    clusterLabel.attr("x", d => d.x).attr("y", d => d.y - 10);
   });
 
   return {

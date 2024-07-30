@@ -1,4 +1,4 @@
-import { Node, Link, NodeGroup } from '../../components/NetworkGraph/NetworkGraph';
+import { Node, Link, NodeGroup, NodeType } from '../../components/NetworkGraph/NetworkGraph';
 
 interface EntityNodeData {
     ip: string,
@@ -77,6 +77,34 @@ export interface IGraphData {
 
 export type ElementID = string;
 
+export function getTypeFromNodeInfo(nodeMeta: INodeMeta, nodeData: INodeData) {
+    const isView2 = nodeData.view === 2;
+    switch (true) {
+        // case for Alert node
+        case isView2 && nodeMeta.type === "node" &&
+            nodeData.detection_type !== undefined:
+            return NodeType.ALERT;
+
+        // case for NameCluster node
+        case isView2 && nodeData.name !== undefined && nodeData.severity !== undefined:
+            return NodeType.NAME_CLUSTER;
+
+        // case for SeverityCluster node
+        case isView2 && nodeMeta.type === "node" && nodeData.severity !== undefined:
+            return NodeType.SEVERITY_CLUSTER;
+
+        case !isView2 && nodeData.name !== undefined:
+            return NodeType.ALERT;
+
+        case !isView2 && nodeData.detection_type !== undefined:
+            return NodeType.NAME_CLUSTER;
+
+        // case for Entity node
+        default:
+            return NodeType.ENTITY;
+    }
+}
+
 export function getGroupFromNodeInfo(nodeMeta: INodeMeta, nodeData: INodeData) {
     const isView2 = nodeData.view === 2;
     switch (true) {
@@ -141,6 +169,7 @@ export function processNodesAndEdges(graphData: IGraphData | undefined) {
                     case "node":
                         const node = {
                             group: getGroupFromNodeInfo(meta[i][j], row[i][j]),
+                            type: getTypeFromNodeInfo(meta[i][j], row[i][j]),
                             id: elementId,
                             index: meta[i][j].id,
                             ...row[i][j],

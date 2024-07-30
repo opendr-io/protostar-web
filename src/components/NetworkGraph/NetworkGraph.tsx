@@ -14,6 +14,13 @@ export enum NodeGroup {
   HIGH_SEVERITY = 7,
 }
 
+export enum NodeType {
+  ENTITY = 'ENTITY',
+  SEVERITY_CLUSTER = 'SEVERITY_CLUSTER',
+  NAME_CLUSTER = 'NAME_CLUSTER',
+  ALERT = 'ALERT',
+}
+
 export interface Node extends d3.SimulationNodeDatum {
   id: string;
   index: number;
@@ -52,7 +59,7 @@ const ForceGraph: React.FC<Props> = ({
         links,
         nodes,
         strength,
-      ); 
+      );
       destroyFn = destroy;
     }
 
@@ -61,7 +68,7 @@ const ForceGraph: React.FC<Props> = ({
 
   return <>
     <div ref={containerRef} style={{ width, height, border: '1px solid lightgrey', borderRadius: 8, overflow: 'hidden' }}></div>
-    <div id="graph-tooltip" style={{ position: 'absolute', zIndex: 100}}></div>
+    <div id="graph-tooltip" style={{ position: 'absolute', zIndex: 100 }}></div>
   </>
 };
 

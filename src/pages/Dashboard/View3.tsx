@@ -57,7 +57,7 @@ export function View3() {
           links={network.links ?? []}
           width={"100%"}
           height={"90vh"}
-          strength={-200}
+          strength={-450}
         />}
         {!graphMode && <DetailList data={graphData} />}
       </div>
