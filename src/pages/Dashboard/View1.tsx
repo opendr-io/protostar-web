@@ -17,7 +17,8 @@ export function View1() {
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH path = (n:ENTITY)-[r*]->(m) WHERE n.view = 2 RETURN path`,
+            // statement: `MATCH path = (n:ENTITY)-[r*]->(m) WHERE n.view = 2 RETURN path`,
+            statement: `MATCH path=(n:ENTITY {view: 2})-[*]->(m:NAME_CLUSTER) RETURN DISTINCT path`
           },
         ],
       }),
@@ -40,7 +41,7 @@ export function View1() {
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-10}
+        strength={-102}
       />
     </div>
   );
