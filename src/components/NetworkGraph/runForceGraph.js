@@ -24,7 +24,7 @@ function wrap() {
 
 function getDynamicLabel(node) {
   if (node.view === 2 && node.type === 'SEVERITY_CLUSTER') {
-    return `${node.entity_type} ${node.entity} (${node.severity})`
+    return `[${node.entity_type}] ${node.entity} (${node.severity})`
   }
   return `${node.name ?? node.detection_type ?? node.severity}${node.count ? `(${node.count})` : ''}`;
 }
@@ -180,7 +180,7 @@ export function runForceGraph(
     .data(hostNodes.filter(d => labelNodeTypes.includes(d.type))) // hostnodes
     .enter()
     .append('text')
-    .text((d) => d.entity_type + ' ' + d.entity.toUpperCase())
+    .text((d) => `[${d.entity_type}]` + ' ' + d.entity.toUpperCase())
     // .each(wrap) // this truncates the host label
     .attr('stroke', '#000')
     .attr('stroke-width', 1)
