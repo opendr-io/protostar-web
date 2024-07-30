@@ -1,21 +1,9 @@
 import axios from 'axios';
-import { Entity, NodeMeta } from '../useGetEntityList/useGetEntityListData';
-
-interface DataResponse<T> {
-  errors: Error[];
-  lastBookmarks: string[];
-  results: {
-    columns: string[];
-    data: {
-      meta: NodeMeta[][],
-      row: T[][],
-    }[];
-  }[]
-}
+import { NodeData, DataGraphResponse } from '../../common/types/backend-models.d';
 
 export function useGetEntityDetailData() {
   const getEntityDetail = async (entityName: string) => {
-    const entityDetailResponse = await axios.post<DataResponse<Entity>>(`${process.env.REACT_APP_DB_URL}/tx/commit`, JSON.stringify({
+    const entityDetailResponse = await axios.post<DataGraphResponse<NodeData>>(`${process.env.REACT_APP_DB_URL}/tx/commit`, JSON.stringify({
       statements: [
         {
           statement: `MATCH path = (n:ENTITY)-[r*]->(m) where n.view = 1 and m.view = 1 and n.entity = "${entityName}" return path`,

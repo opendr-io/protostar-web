@@ -1,24 +1,12 @@
 import axios from 'axios';
-import { Entity, NodeMeta } from '../useGetEntityList/useGetEntityListData';
-
-interface DataResponse<T> {
-  errors: Error[];
-  lastBookmarks: string[];
-  results: {
-    columns: string[];
-    data: {
-      meta: NodeMeta[][],
-      row: T[][],
-    }[];
-  }[]
-}
+import { AlertNodeData, DataListResponse } from '../../common/types/backend-models';
 
 export function useGetEntityDetailTextData() {
-  const getEntityDetail = async (entityName: string) => {
-    const entityDetailResponse = await axios.post<DataResponse<Entity>>(`${process.env.REACT_APP_DB_URL}/tx/commit`, JSON.stringify({
+  const getEntityDetailText = async (entityName: string) => {
+    const entityDetailResponse = await axios.post<DataListResponse<AlertNodeData>>(`${process.env.REACT_APP_DB_URL}/tx/commit`, JSON.stringify({
       statements: [
         {
-          statement: `match (m:ALERT) where m.entity = '${entityName}' return m.entity, m.severity, m.name LIMIT 100`,
+          statement: `match (m:ALERT) where m.entity = '${entityName}' return m LIMIT 100`,
         },
       ],
     }), {
@@ -29,10 +17,17 @@ export function useGetEntityDetailTextData() {
       }
     });
 
-    return entityDetailResponse.data;
+    const alertList: AlertNodeData[] = [];
+    entityDetailResponse.data.results.forEach(alertSet => {
+      alertSet.data.forEach(alertRows => {
+        alertList.push(...alertRows.row)
+      })
+    });
+
+    return alertList;
   }
 
   return {
-    getEntityDetail
+    getEntityDetailText
   }
 }

@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import { IGraphData, processNodesAndEdges } from '../graphUtils';
 import ForceGraph from "../../../components/NetworkGraph/NetworkGraph";
-import DetailList from "../../../components/DetailList/DetailList";
-import { Entity, NodeMeta, useGetEntityListData } from "../../../hooks/useGetEntityList/useGetEntityListData"
-import { useGetEntityDetailData } from "../../../hooks/useGetEntityDetail/useGetEntityDetailData"
-import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
 
 export function View5() {
   const [graphData, setGraphData] = useState<IGraphData>();
