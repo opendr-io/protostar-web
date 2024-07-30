@@ -19,7 +19,8 @@ function AlertRow({ alertData, index }: { alertData: AlertNodeData, index: numbe
     "process",
     "proctitle",
     "severity",
-  ]
+  ];
+
   return (
     <div className='alertrow' data-index={`#${index}`}>
       <div className='alertHeader'><h3>{new Date(alertData.timestamp).toUTCString()}</h3><h3>{alertData?.entity_type}</h3><h3>{alertData?.host_ip}</h3><h3>{alertData?.entity}</h3></div>

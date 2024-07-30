@@ -17,7 +17,7 @@ export function View1() {
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (h:SEVERITY_CLUSTER)-[r*]->() WITH h MATCH p=(h)-[r]->() RETURN p`
+            statement: `MATCH p=(h:SEVERITY_CLUSTER)-[r]->() RETURN p`
           },
         ],
       }),
@@ -41,6 +41,7 @@ export function View1() {
         width={"100%"}
         height={"90vh"}
         strength={-300}
+        labelNodeTypes={['SEVERITY_CLUSTER']}
       />
     </div>
   );

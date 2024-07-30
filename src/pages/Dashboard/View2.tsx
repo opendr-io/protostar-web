@@ -42,6 +42,7 @@ export function View2() {
         width={"100%"}
         height={"90vh"}
         strength={-200}
+        labelNodeTypes={['ENTITY', 'NAME_CLUSTER']}
       />
     </div>
   );

@@ -40,6 +40,7 @@ type Props = {
   width: number | string;
   height: number | string;
   strength: number;
+  labelNodeTypes?: NodeType[keyof NodeType][]
 };
 
 const ForceGraph: React.FC<Props> = ({
@@ -48,6 +49,7 @@ const ForceGraph: React.FC<Props> = ({
   width,
   height,
   strength,
+  labelNodeTypes = ['ENTITY', 'SEVERITY_CLUSTER', 'NAME_CLUSTER'], // default nodes to be labelled, override this prop to label other node types
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -59,6 +61,7 @@ const ForceGraph: React.FC<Props> = ({
         links,
         nodes,
         strength,
+        labelNodeTypes,
       );
       destroyFn = destroy;
     }

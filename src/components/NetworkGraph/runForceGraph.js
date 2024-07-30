@@ -27,7 +27,7 @@ export function runForceGraph(
   linksData,
   nodesData,
   strength,
-  //   nodeHoverTooltip
+  labelNodeTypes, // list of nodetypes to attach a label to
 ) {
   const nodes = nodesData; //nodesData.map((d) => Object.assign({}, d));
   const hostNodes = nodesData.filter(node => node.type === 'ENTITY');
@@ -167,7 +167,7 @@ export function runForceGraph(
     .append("g")
     .attr("class", "labels")
     .selectAll("text")
-    .data(nodes.filter((node) => node.type === 'ENTITY')) // hostnodes
+    .data(hostNodes.filter(d => labelNodeTypes.includes(d.type))) // hostnodes
     .enter()
     .append("text")
     .text((d) => d.entity_type + ' ' + d.entity.toUpperCase())
@@ -183,10 +183,10 @@ export function runForceGraph(
   const clusterLabel = svg.append("g")
     .attr("class", "labels")
     .selectAll("text")
-    .data(nodes.filter((node) => node.type === 'SEVERITY_CLUSTER' || node.type === 'NAME_CLUSTER' || node.type === 'ALERT')) // alert source
+    .data(alertNodes.filter(d => labelNodeTypes.includes(d.type))) // alert source
     .enter()
     .append("text")
-    .text((d) => d.name ?? d.detection_type)
+    .text((d) => d.name ?? d.detection_type ?? d.severity)
     .attr('fill', '#9f9795')
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')

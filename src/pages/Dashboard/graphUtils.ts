@@ -11,12 +11,11 @@ export function getTypeFromNodeInfo(nodeMeta: NodeMeta, nodeData: NodeData) {
     const isView2 = nodeData.view === 2;
     switch (true) {
         // case for Alert node
-        case isView2 && nodeMeta.type === "node" &&
-            nodeData.detection_type !== undefined:
+        case isView2 && nodeMeta.type === "node" && nodeData.detection_type !== undefined:
             return NodeType.ALERT;
 
         // case for NameCluster node
-        case isView2 && nodeData.name !== undefined && nodeData.severity !== undefined:
+        case isView2 && nodeMeta.type === "node" && nodeData.name !== undefined && nodeData.severity !== undefined:
             return NodeType.NAME_CLUSTER;
 
         // case for SeverityCluster node

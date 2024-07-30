@@ -3,6 +3,10 @@
   text-decoration: none;
 }
 
+svg {
+  user-select: none;
+}
+
 :root {
   /** CSS DARK THEME PRIMARY COLORS */
   --color-primary-100: #ff584d;

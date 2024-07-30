@@ -66,6 +66,7 @@ export function View3() {
           width={"100%"}
           height={"90vh"}
           strength={-1000}
+          labelNodeTypes={['ENTITY', 'NAME_CLUSTER', 'ALERT']}
         />}
         {!graphMode && <DetailList data={alertList} />}
       </div>
