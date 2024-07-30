@@ -12,14 +12,14 @@ const COLOR_MAP = {
 };
 
 function wrap() {
-  var self = d3.select(this),
-    textLength = self.node().getComputedTextLength(),
-    text = self.text();
-  while (textLength > (150 - 2 * 8) && text.length > 0) {
-    text = text.slice(0, -1);
-    self.text(text + '...');
-    textLength = self.node().getComputedTextLength();
-  }
+  // let self = d3.select(this),
+  //   textLength = self.node().getComputedTextLength(),
+  //   text = self.text();
+  // while (textLength > (150 - 2 * 8) && text.length > 0) {
+  //   text = text.slice(0, -1);
+  //   self.text(text + '...');
+  //   textLength = self.node().getComputedTextLength();
+  // }
 }
 
 export function runForceGraph(
@@ -167,10 +167,10 @@ export function runForceGraph(
     .append("g")
     .attr("class", "labels")
     .selectAll("text")
-    .data(nodes.filter((node) => node.group === 1)) // hostnodes
+    .data(nodes.filter((node) => node.type === 'ENTITY')) // hostnodes
     .enter()
     .append("text")
-    .text((d) => d.entity.toUpperCase())
+    .text((d) => d.entity_type + ' ' + d.entity.toUpperCase())
     .each(wrap)
     .attr("stroke", "#000")
     .attr("stroke-width", 1)
@@ -183,10 +183,10 @@ export function runForceGraph(
   const clusterLabel = svg.append("g")
     .attr("class", "labels")
     .selectAll("text")
-    .data(nodes.filter((node) => node.type === 'SEVERITY_CLUSTER' || node.type === 'NAME_CLUSTER')) // alert source
+    .data(nodes.filter((node) => node.type === 'SEVERITY_CLUSTER' || node.type === 'NAME_CLUSTER' || node.type === 'ALERT')) // alert source
     .enter()
     .append("text")
-    .text((d) => d.detection_type)
+    .text((d) => d.name ?? d.detection_type)
     .attr('fill', '#9f9795')
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')

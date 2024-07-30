@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { IGraphData, processNodesAndEdges } from './graphUtils';
-import ForceGraph from "../../components/NetworkGraph/NetworkGraph";
+import { IGraphData, processNodesAndEdges } from '../graphUtils';
+import ForceGraph from "../../../components/NetworkGraph/NetworkGraph";
 
-export function View1() {
+export function View4() {
   const [graphData, setGraphData] = useState<IGraphData>();
   const [network, setNetwork] = useState<any>({});
 
@@ -17,7 +17,11 @@ export function View1() {
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (h:SEVERITY_CLUSTER)-[r*]->() WITH h MATCH p=(h)-[r]->() RETURN p`
+            statement: `MATCH (n:ENTITY {view: 1})-[r]->(m {view: 1})
+                        WITH n, count(r) AS count_of_first_layer_nodes
+                        WHERE count_of_first_layer_nodes > 4
+                        MATCH p=(n)-[r*]->(m)
+                        RETURN p`,
           },
         ],
       }),
@@ -40,7 +44,7 @@ export function View1() {
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-300}
+        strength={-200}
       />
     </div>
   );
