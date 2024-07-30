@@ -18,7 +18,8 @@ export function View2() {
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH path = (n:ENTITY)-[r*]->(m) where n.view = 1 and m.view = 1 return path`,
+            // statement: `MATCH path = (n:ENTITY)-[r*]->(m) where n.view = 1 and m.view = 1 return path`,
+            statement: `MATCH (h:ENTITY)-[r]->() WHERE NOT type(r) IN ['AS_SOURCE', 'AS_DEST'] WITH h, collect(DISTINCT type(r)) AS relationshipTypes WHERE size(relationshipTypes) >= 2 MATCH p=(h)-[r*]->() RETURN p`,
           },
         ],
       }),

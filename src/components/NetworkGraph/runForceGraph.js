@@ -193,7 +193,7 @@ export function runForceGraph(
 
   node
     .on("click", (event, d) => {
-      addTooltip((t) => t.type === 'ALERT' ? t.detection_type : `${t.name ?? t.detection_type} (${t.count})`, d, event.pageX, event.pageY);
+      addTooltip((t) => t.type.includes('CLUSTER') ? t.detection_type : `${t.name ?? t.detection_type} (${t.count})`, d, event.pageX, event.pageY);
     })
     .on("mouseout", () => {
       removeTooltip();
