@@ -23,7 +23,10 @@ function wrap() {
 }
 
 function getDynamicLabel(node) {
-  return node.name ?? node.detection_type ?? node.severity;
+  if (node.view === 2 && node.type === 'SEVERITY_CLUSTER') {
+    return `${node.entity_type} ${node.entity} (${node.severity})`
+  }
+  return `${node.name ?? node.detection_type ?? node.severity}${node.count ? `(${node.count})` : ''}`;
 }
 
 export function runForceGraph(
@@ -33,14 +36,13 @@ export function runForceGraph(
   strength,
   labelNodeTypes, // list of nodetypes to attach a label to
 ) {
-  const nodes = nodesData; //nodesData.map((d) => Object.assign({}, d));
+  const nodes = nodesData;
   const hostNodes = nodesData.filter(node => node.type === 'ENTITY');
   const alertNodes = nodesData
     .filter(node => node.type !== 'ENTITY')
-    .sort((nodeA, nodeB) => nodeA.count > nodeB.count)
-  // .slice(0, 4);
+    .sort((nodeA, nodeB) => nodeA.count > nodeB.count);
 
-  const links = linksData //.filter(link => link.from); //linksData.map((d) => Object.assign({}, d));
+  const links = linksData;
 
   const containerRect = container.getBoundingClientRect();
   container.innerHTML = '';
@@ -135,13 +137,9 @@ export function runForceGraph(
     .append('line')
     .attr('stroke', '#999')
     .attr('stroke-opacity', 0.6)
-  // .join('line')
-  // .attr('stroke-width', 1);
 
   const node = svg
     .append('g')
-    // .attr('stroke', '#fff')
-    // .attr('stroke-width', 2)
     .selectAll('circle')
     .data(alertNodes)
     .join('circle')
