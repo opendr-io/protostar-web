@@ -5,7 +5,6 @@ function AlertRow({ alertData, index }: { alertData: AlertNodeData, index: numbe
   // comment the fields names that need to be hidden in the Alert details
   // any new field name can be added here if needed 
   const detailKeysToShow: (keyof AlertNodeData)[] = [
-    // "guid",
     "name",
     "detection_type",
     "category",
@@ -19,12 +18,18 @@ function AlertRow({ alertData, index }: { alertData: AlertNodeData, index: numbe
     "process",
     "proctitle",
     "severity",
+    "guid",
   ];
 
   return (
     <div className='alertrow' data-index={`#${index}`}>
-      <div className='alertHeader'><h3>{new Date(alertData.timestamp).toUTCString()}</h3><h3>{alertData?.entity_type}</h3><h3>{alertData?.host_ip}</h3><h3>{alertData?.entity}</h3></div>
-      <div className='alertDetails'>{detailKeysToShow.map((key, index) => {
+      <div className='alertHeader'>
+        <h3>{new Date(alertData.timestamp).toUTCString()}</h3>
+        <h3>{alertData?.entity_type}</h3>
+        <h3>{alertData?.host_ip}</h3>
+        <h3>{alertData?.entity}</h3>
+      </div>
+      <div className='alertDetails'>{detailKeysToShow.map((key) => {
         if (alertData[key] && alertData[key] !== '-') {
           return <div>{key}: "{alertData[key]}",</div>
         }
