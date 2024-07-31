@@ -1,83 +1,40 @@
-import { Node, Link, NodeGroup } from '../../components/NetworkGraph/NetworkGraph';
-
-interface EntityNodeData {
-    ip: string,
-    entity: string,
-    entity_type: string,
-    view: number,
-    source_ip: string,
-    dest_ip: string,
-    count: number,
-};
-
-interface SeverityClusterNodeData {
-    ip: string,
-    entity: string,
-    entity_type: string,
-    view: number,
-    source_ip: string,
-    count: number,
-    severity: 'Low' | 'Medium' | 'High',
-    detection_type: string,
-};
-
-interface NameClusterNodeData {
-    ip: string,
-    entity: string,
-    entity_type: string,
-    view: number,
-    source_ip: string,
-    count: number,
-    severity: 'Low' | 'Medium' | 'High',
-    name: string,
-    detection_type: string,
-};
-
-interface AlertNodeData {
-    guid: string,
-    timestamp: number,
-    detection_type: string,
-    name: string,
-    category: string,
-    mitre_tactic: string,
-    entity: string,
-    entity_type: string,
-    host_ip: string,
-    source_ip: string,
-    dest_ip: string,
-    dest_port: string,
-    dst_geo: string,
-    username: string,
-    syscall_name: string,
-    executable: string,
-    process: string,
-    message: string,
-    proctitle: string,
-    severity: 'Low' | 'Medium' | 'High',
-    view: 2
-};
-
-export type INodeData = EntityNodeData & SeverityClusterNodeData & NameClusterNodeData & AlertNodeData;
-
-export interface INodeMeta {
-    id: number; // 3,
-    elementId: string; // "4:ab0cc2df-9265-4a07-862b-74f8164bd766:3",
-    type: "node" | "relationship"; // "node",
-    deleted: boolean; // false
-}
-
-export interface IPathData {
-    row: INodeData[][];
-    meta: INodeMeta[][];
-}
+import { Node, Link, NodeGroup, NodeType } from '../../components/NetworkGraph/NetworkGraph';
+import { NodeMeta, NodeData, PathData } from '../../common/types/backend-models.d';
 
 export interface IGraphData {
-    results: IPathData[];
+    results: PathData[];
 }
 
 export type ElementID = string;
 
-export function getGroupFromNodeInfo(nodeMeta: INodeMeta, nodeData: INodeData) {
+export function getTypeFromNodeInfo(nodeMeta: NodeMeta, nodeData: NodeData) {
+    const isView2 = nodeData.view === 2;
+    switch (true) {
+        // case for Alert node
+        case isView2 && nodeMeta.type === "node" && nodeData.detection_type !== undefined:
+            return NodeType.ALERT;
+
+        // case for NameCluster node
+        case isView2 && nodeMeta.type === "node" && nodeData.name !== undefined && nodeData.severity !== undefined:
+            return NodeType.NAME_CLUSTER;
+
+        // case for SeverityCluster node
+        case isView2 && nodeMeta.type === "node" && nodeData.severity !== undefined:
+            return NodeType.SEVERITY_CLUSTER;
+
+        case !isView2 && nodeData.name !== undefined:
+            return NodeType.ALERT;
+
+        case !isView2 && nodeData.detection_type !== undefined:
+            return NodeType.NAME_CLUSTER;
+
+        // case for Entity node
+        default:
+            return NodeType.ENTITY;
+    }
+}
+
+export function getGroupFromNodeInfo(nodeMeta: NodeMeta, nodeData: NodeData) {
     const isView2 = nodeData.view === 2;
     switch (true) {
         // case for Alert node
@@ -141,6 +98,7 @@ export function processNodesAndEdges(graphData: IGraphData | undefined) {
                     case "node":
                         const node = {
                             group: getGroupFromNodeInfo(meta[i][j], row[i][j]),
+                            type: getTypeFromNodeInfo(meta[i][j], row[i][j]),
                             id: elementId,
                             index: meta[i][j].id,
                             ...row[i][j],

@@ -17,7 +17,7 @@ export function View1() {
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH path = (n:ENTITY)-[r*]->(m) WHERE n.view = 2 RETURN path`,
+            statement: `MATCH p=(h:SEVERITY_CLUSTER)-[r]->() RETURN p`
           },
         ],
       }),
@@ -40,7 +40,8 @@ export function View1() {
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-10}
+        strength={-300}
+        labelNodeTypes={['SEVERITY_CLUSTER']}
       />
     </div>
   );

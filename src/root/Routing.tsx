@@ -3,6 +3,8 @@ import { Dashboard } from "../pages/Dashboard/Dashboard";
 import { View1 } from "../pages/Dashboard/View1";
 import { View2 } from "../pages/Dashboard/View2";
 import { View3 } from "../pages/Dashboard/View3";
+import { View4 } from "../pages/Dashboard/Experimental/View4";
+import { View5 } from "../pages/Dashboard/Experimental/View5";
 import { Login } from "../pages/Login/Login";
 
 const router = createBrowserRouter([
@@ -22,11 +24,21 @@ const router = createBrowserRouter([
         path: "/view3",
         Component: View3,
       },
-      {
-        path: "/view4",
-        element: <div>{'Detailed view'}</div>
-      }
     ],
+  },
+  {
+    path: "/experiment",
+    Component: Dashboard,
+    children: [
+      {
+        path: "view4",
+        Component: View4
+      },
+      {
+        path: "view5",
+        Component: View5
+      }
+    ]
   },
   {
     path: "/login",

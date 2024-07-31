@@ -14,6 +14,13 @@ export enum NodeGroup {
   HIGH_SEVERITY = 7,
 }
 
+export enum NodeType {
+  ENTITY = 'ENTITY',
+  SEVERITY_CLUSTER = 'SEVERITY_CLUSTER',
+  NAME_CLUSTER = 'NAME_CLUSTER',
+  ALERT = 'ALERT',
+}
+
 export interface Node extends d3.SimulationNodeDatum {
   id: string;
   index: number;
@@ -33,6 +40,7 @@ type Props = {
   width: number | string;
   height: number | string;
   strength: number;
+  labelNodeTypes?: NodeType[keyof NodeType][]
 };
 
 const ForceGraph: React.FC<Props> = ({
@@ -41,6 +49,7 @@ const ForceGraph: React.FC<Props> = ({
   width,
   height,
   strength,
+  labelNodeTypes = ['ENTITY', 'SEVERITY_CLUSTER', 'NAME_CLUSTER'], // default nodes to be labelled, override this prop to label other node types
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -52,7 +61,8 @@ const ForceGraph: React.FC<Props> = ({
         links,
         nodes,
         strength,
-      ); 
+        labelNodeTypes,
+      );
       destroyFn = destroy;
     }
 
@@ -61,7 +71,7 @@ const ForceGraph: React.FC<Props> = ({
 
   return <>
     <div ref={containerRef} style={{ width, height, border: '1px solid lightgrey', borderRadius: 8, overflow: 'hidden' }}></div>
-    <div id="graph-tooltip" style={{ position: 'absolute', zIndex: 100}}></div>
+    <div id="graph-tooltip" style={{ position: 'absolute', zIndex: 100 }}></div>
   </>
 };
 

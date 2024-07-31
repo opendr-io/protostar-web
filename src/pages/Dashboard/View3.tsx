@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { IGraphData, processNodesAndEdges } from './graphUtils';
 import ForceGraph from "../../components/NetworkGraph/NetworkGraph";
 import DetailList from "../../components/DetailList/DetailList";
-import { Entity, NodeMeta, useGetEntityListData } from "../../hooks/useGetEntityList/useGetEntityListData"
+import { useGetEntityListData } from "../../hooks/useGetEntityList/useGetEntityListData"
 import { useGetEntityDetailData } from "../../hooks/useGetEntityDetail/useGetEntityDetailData"
+import { useGetEntityDetailTextData } from "../../hooks/useGetEntityDetailText/useGetEntityDetailTextData"
 import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
+import { AlertNodeData, EntityNodeData, NodeMeta } from "../../common/types/backend-models";
 
 export function View3() {
   const [graphData, setGraphData] = useState<IGraphData>();
@@ -12,11 +14,13 @@ export function View3() {
   const [network, setNetwork] = useState<any>({});
   const [searchParams] = useSearchParams();
   const entityName = searchParams.get('entity');
-  const [entityList, setEntityList] = useState<(NodeMeta & Entity)[]>([]);
+  const [entityList, setEntityList] = useState<(NodeMeta & EntityNodeData)[]>([]);
+  const [alertList, setAlertList] = useState<AlertNodeData[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
   const { getEntityList } = useGetEntityListData();
   const { getEntityDetail } = useGetEntityDetailData();
+  const { getEntityDetailText } = useGetEntityDetailTextData();
 
   useEffect(() => {
     getEntityList()
@@ -29,6 +33,10 @@ export function View3() {
           const graphData: any = result?.results.pop()?.data ?? [];
           setGraphData({ results: graphData });
         });
+      getEntityDetailText(entityName)
+        .then((alertList) => {
+          setAlertList(alertList)
+        })
     }
   }, [entityName]);
 
@@ -57,9 +65,10 @@ export function View3() {
           links={network.links ?? []}
           width={"100%"}
           height={"90vh"}
-          strength={-200}
+          strength={-1000}
+          labelNodeTypes={['ENTITY', 'NAME_CLUSTER', 'ALERT']}
         />}
-        {!graphMode && <DetailList data={graphData} />}
+        {!graphMode && <DetailList data={alertList} />}
       </div>
     </>
   );
