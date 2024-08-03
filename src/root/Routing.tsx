@@ -5,6 +5,8 @@ import { View2 } from "../pages/Dashboard/View2";
 import { View3 } from "../pages/Dashboard/View3";
 import { View4 } from "../pages/Dashboard/Experimental/View4";
 import { View5 } from "../pages/Dashboard/Experimental/View5";
+import { View6 } from "../pages/Dashboard/Experimental/View6";
+import { View7 } from "../pages/Dashboard/Experimental/View7";
 import { Login } from "../pages/Login/Login";
 
 const router = createBrowserRouter([
@@ -37,6 +39,14 @@ const router = createBrowserRouter([
       {
         path: "view5",
         Component: View5
+      },
+      {
+        path: "view6",
+        Component: View6
+      },
+      {
+        path: "view7",
+        Component: View7
       }
     ]
   },

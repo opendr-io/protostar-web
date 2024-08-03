@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { IGraphData, processNodesAndEdges } from './graphUtils';
-import ForceGraph from "../../components/NetworkGraph/NetworkGraph";
+import { IGraphData, processNodesAndEdges } from '../graphUtils';
+import ForceGraph from "../../../components/NetworkGraph/NetworkGraph";
 
-export function View1() {
+export function View6() {
   const [graphData, setGraphData] = useState<IGraphData>();
   const [network, setNetwork] = useState<any>({});
 
@@ -17,7 +17,7 @@ export function View1() {
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[*]->(:ALERT) where not n.entity = "172.16.200.110" RETURN path`
+            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[*]->(a:ALERT) where not n.entity = "172.16.200.110" and (a.detection_type = "CLOUD_ANOMALY" or a.detection_type = "CLOUD_ALERT") RETURN path`
           },
         ],
       }),
