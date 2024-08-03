@@ -30,10 +30,10 @@ export function Sidebar() {
         <SidebarRow>{'View5'}</SidebarRow>
       </Link>
       <Link to={'/experiment/view6'}>
-        <SidebarRow>{'View6 - Only Cloud'}</SidebarRow>
+        <SidebarRow>{'View6 - Cloud Detections'}</SidebarRow>
       </Link>
       <Link to={'/experiment/view7'}>
-        <SidebarRow>{'View7 - No Cloud'}</SidebarRow>
+        <SidebarRow>{'View7 - Terrestrial Detections'}</SidebarRow>
       </Link>
     </aside>
   )
