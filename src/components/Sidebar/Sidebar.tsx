@@ -29,6 +29,12 @@ export function Sidebar() {
       <Link to={'/experiment/view5'}>
         <SidebarRow>{'View5'}</SidebarRow>
       </Link>
+      <Link to={'/experiment/view6'}>
+        <SidebarRow>{'View6 - Cloud Detections'}</SidebarRow>
+      </Link>
+      <Link to={'/experiment/view7'}>
+        <SidebarRow>{'View7 - Terrestrial Detections'}</SidebarRow>
+      </Link>
     </aside>
   )
 }

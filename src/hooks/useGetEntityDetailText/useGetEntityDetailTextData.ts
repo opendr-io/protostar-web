@@ -6,7 +6,7 @@ export function useGetEntityDetailTextData() {
     const entityDetailResponse = await axios.post<DataListResponse<AlertNodeData>>(`${process.env.REACT_APP_DB_URL}/tx/commit`, JSON.stringify({
       statements: [
         {
-          statement: `match (m:ALERT) where m.entity = '${entityName}' return m LIMIT 100`,
+          statement: `match (m:ALERT) where m.entity = '${entityName}' return m LIMIT 2500`,
         },
       ],
     }), {
