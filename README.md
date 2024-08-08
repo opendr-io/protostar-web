@@ -1,9 +1,10 @@
-# Getting Started with Create React App
+# Getting Started with the Skynet Project Web UI
+
+If you have not yet set up the data layer, see this doc which covers setup of the entire project: (link)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## How to run the project
-
+## How to run the project (if you have an existing data layer)
 In the project directory, you can run:
 ### Create `.env` file
 In the root directroy of the project create `.env` file with the following env variables
