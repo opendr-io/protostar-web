@@ -1,4 +1,4 @@
-![Alt text](img/skynet.gif)
+![Alt text](img/skynet.jpg)
 
 # Getting Started with the Skynet Project Web UI
 
