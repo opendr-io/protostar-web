@@ -5,7 +5,7 @@ export function Dashboard() {
   return (
     <div id={'page-wrapper'} style={{ display: 'flex', height: '100vh', flexDirection: 'row', alignItems: 'center' }}>
       <Sidebar />
-      <div style={{ width: '100%' }}>
+      <div style={{ width: '100%', paddingTop: '80px' }}>
         <Outlet />
       </div>
     </div>

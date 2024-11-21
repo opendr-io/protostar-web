@@ -4,8 +4,8 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## How to run the project
 
-In the project directory, you can run:
-### Create `.env` file
+In the project directory:
+#### 1. Create `.env` file
 In the root directroy of the project create `.env` file with the following env variables
 ```
 REACT_APP_USERNAME="<neo4jusername>"
@@ -16,7 +16,7 @@ Replace username and password with the relevant values
 The DB URL should be set to the public IP where DB is hosted
 The Frontend should be running on the same IP as the DB (on different ports)
 
-### `npm i`
-### `npm start`
+#### 2. run `npm i`
+#### 3. run `npm start`
 This runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.

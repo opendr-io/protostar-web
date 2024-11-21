@@ -44,6 +44,10 @@ export function runForceGraph(
 
   const links = linksData;
 
+  // The following list of links will be used to calculate
+  // distance between nodes with labels to avaoid overlap
+  let nodeMapByCateogry = {}
+
   const containerRect = container.getBoundingClientRect();
   container.innerHTML = '';
   let width = containerRect.width;
@@ -89,7 +93,7 @@ export function runForceGraph(
     tooltipContainer.transition().duration(200).style('transform', 'scale(1)');
     tooltipContainer
       .html(hoverTooltip(d))
-      .style('background-color', 'black')
+      .style('background-color', 'rgb(31, 31, 31)')
       .style('left', `${x}px`)
       .style('top', `${y - 28}px`);
   };
@@ -99,22 +103,12 @@ export function runForceGraph(
     tooltipContainer.transition().duration(200).style('transform', 'scale(0)');
   };
 
-  const simulation = d3
-    .forceSimulation(nodes)
-    .force(
-      'link',
-      d3.forceLink(links).id((d) => `${d.index}`),
-    )
-    .force('charge', d3.forceManyBody().strength(strength))
-    // .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('x', d3.forceX(width / 2))
-    .force('y', d3.forceY(height / 2));
-
   const svg = d3
     .select(container)
     .append('svg')
     .attr('height', '100%')
     .attr('width', '100%')
+    .style('background-color', 'rgb(31, 31, 31)')
     .attr('viewBox', [0, 0, width, height])
     .attr('overflow', 'visible')
     .call(
@@ -124,25 +118,29 @@ export function runForceGraph(
           svg.attr('transform', event.transform);
         })
         .translateExtent([
-          [-400, -400],
-          [width + 400, height + 400],
+          [-width / 2, -height / 2],
+          [width * 1.5, height * 1.5],
         ]),
     );
 
   const link = svg
     .append('g')
+    .attr('class', 'linkLines')
     .selectAll('line')
     .data(links)
     .enter()
     .append('line')
-    .attr('stroke', '#999')
-    .attr('stroke-opacity', 0.6)
 
   const node = svg
     .append('g')
-    .selectAll('circle')
+    .selectAll('g')
     .data(alertNodes)
-    .join('circle')
+    .enter()
+    .append('g')
+
+  // add circle to group
+  node
+    .append('circle')
     .attr('r', (d) =>
       Math.sqrt(2) *
       Math.max(1, Math.log(isNaN(d.count) ? 1 : d.count * 20)),
@@ -155,17 +153,48 @@ export function runForceGraph(
     .on('mouseout', () => {
       removeTooltip();
     })
-  // .call(drag(simulation));
+    .each(d => {
+      if (nodeMapByCateogry['hosts']) {
+        nodeMapByCateogry['hosts'].push(d)
+      } else {
+        nodeMapByCateogry['hosts'] = [d];
+      }
+    })
+
+  // add label to group
+  node
+    .append('text')
+    .text((d) => {
+      if (labelNodeTypes.includes(d.type)) {
+        if (nodeMapByCateogry[d.detection_type ?? d.severity]) {
+          nodeMapByCateogry[d.detection_type ?? d.severity].push(d.id);
+        } else {
+          nodeMapByCateogry[d.detection_type ?? d.severity] = [d.id];
+        }
+        return getDynamicLabel(d)
+      }
+      if (d.type === 'SEVERITY_CLUSTER' || d.type === 'NAME_CLUSTER') {
+        if (nodeMapByCateogry['clusters']) {
+          nodeMapByCateogry['clusters'].push(d.id);
+        } else {
+          nodeMapByCateogry['clusters'] = [d.id];
+        }
+
+      }
+      return null
+    })
+    .attr('class', 'nodeLabel')
 
   const hostNode = svg
     .append('g')
-    .attr('stroke', '#ff9585')
-    .attr('stroke-width', 4)
     .selectAll('rect')
     .data(hostNodes)
-    .join('rect')
-    .attr('width', 16)
-    .attr('height', 16)
+    .enter()
+    .append('g')
+
+  hostNode
+    .append('rect')
+    .attr('class', 'hostNode')
     .attr('fill', (d) => COLOR_MAP[d.group])
     .on('dblclick', (event, d) => {
       event.preventDefault();
@@ -173,36 +202,41 @@ export function runForceGraph(
       window.location = (`/view3/?entity=${d.entity}`)
     });
 
-  const hostLabel = svg
-    .append('g')
-    .attr('class', 'labels')
-    .selectAll('text')
-    .data(hostNodes.filter(d => labelNodeTypes.includes(d.type))) // hostnodes
-    .enter()
+  hostNode.append('g')
+    .attr('class', 'hostLabel')
     .append('text')
     .text((d) => `[${d.entity_type}]` + ' ' + d.entity.toUpperCase())
-    // .each(wrap) // this truncates the host label
-    .attr('stroke', '#000')
-    .attr('stroke-width', 1)
-    .attr('fill', '#ff9585')
-    .attr('font-size', '20')
-    .attr('font-weight', '900')
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'central')
+  // .each(wrap) // this truncates the host label
 
-  const clusterLabel = svg.append('g')
-    .attr('class', 'labels')
-    .selectAll('text')
-    .data(alertNodes.filter(d => labelNodeTypes.includes(d.type))) // alert source
-    .enter()
-    .append('text')
-    .text((d) => getDynamicLabel(d))
-    .attr('stroke', '#616161')
-    .attr('stroke-width', 2)
-    .attr('fill', '#fff')
-    .attr('paint-order', 'stroke')
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'central')
+  const additionalForceLinks = [];
+  Object.entries(nodeMapByCateogry).forEach(([clustername, nodecluster]) => {
+    for (let i = 0; i < nodecluster.length; i++) {
+      for (let j = 1; j < nodecluster.length; j++) {
+        const newLink = {
+          source: nodecluster[i],
+          target: nodecluster[j],
+        }
+        additionalForceLinks[`${clustername}-${i}-${j}`] = newLink;
+      }
+    }
+  });
+
+  const simulation = d3
+    .forceSimulation(nodes)
+    .force(
+      'link',
+      d3.forceLink(links).id((d) => `${d.index}`),
+    )
+    .force('charge', d3.forceManyBody().strength(strength))
+    // .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('x', d3.forceX(width / 2))
+    .force('y', d3.forceY(height / 2));
+
+  simulation
+    .force(
+      'link',
+      d3.forceLink(additionalForceLinks).id((d) => `${d.index}`),
+    )
 
   simulation.on('tick', () => {
     //update link positions
@@ -213,14 +247,14 @@ export function runForceGraph(
       .attr('y2', (d) => d.target.y);
 
     // update node positions
-    node.attr('cx', (d) => d.x).attr('cy', (d) => d.y).transition()
-      .duration(2000);
+    node.attr("transform", function (d) {
+      return "translate(" + d.x + "," + d.y + ")";
+    });
 
-    hostNode.attr('x', (d) => d.x - 8).attr('y', (d) => d.y - 8);
 
-    // update label positions
-    hostLabel.attr('x', d => d.x).attr('y', d => d.y - 16);
-    clusterLabel.attr('x', d => d.x).attr('y', d => d.y - 10);
+    hostNode.attr('transform', function (d) {
+      return 'translate(' + d.x + ',' + d.y + ')';
+    });
   });
 
   return {

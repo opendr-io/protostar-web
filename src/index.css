@@ -3,8 +3,44 @@
   text-decoration: none;
 }
 
+/** SVG styles*/
 svg {
   user-select: none;
+}
+
+.hostNode {
+  stroke: #ff9585;
+  stroke-width: 4;
+  width: 16px;
+  height: 16px;
+  transform: translate(-8px, -8px);
+}
+
+.hostLabel,
+.nodeLabel {
+  stroke-width: 2px;
+  font-weight: 900;
+  text-anchor: middle;
+  paint-order: stroke;
+  /* z-index: 1000; */
+}
+
+.hostLabel {
+  stroke: #000;
+  fill: #ff9585;
+  font-size: 20px;
+  transform: translateY(-16px);
+}
+
+.nodeLabel {
+  stroke: #616161;
+  fill: #fff;
+  transform: translateY(-10px);
+}
+
+.linkLines {
+  stroke: #999;
+  stroke-opacity: 0.6;
 }
 
 :root {

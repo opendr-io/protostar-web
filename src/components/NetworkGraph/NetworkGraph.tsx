@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import React, { useEffect, useRef } from "react";
 import { runForceGraph } from "./runForceGraph";
+import { ChatModule } from '../ChatModule/ChatModule';
 
 
 export enum NodeGroup {
@@ -52,6 +53,7 @@ const ForceGraph: React.FC<Props> = ({
   labelNodeTypes = ['ENTITY', 'SEVERITY_CLUSTER', 'NAME_CLUSTER'], // default nodes to be labelled, override this prop to label other node types
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     let destroyFn;
 
@@ -69,10 +71,13 @@ const ForceGraph: React.FC<Props> = ({
     return destroyFn;
   }, [nodes, links, strength]);
 
-  return <>
-    <div ref={containerRef} style={{ width, height, border: '1px solid lightgrey', borderRadius: 8, overflow: 'hidden' }}></div>
-    <div id="graph-tooltip" style={{ position: 'absolute', zIndex: 100 }}></div>
-  </>
+  return (
+    <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+      <div ref={containerRef} style={{ width, height, border: '1px solid lightgrey', borderRadius: 8, overflow: 'hidden' }}></div>
+      <ChatModule graphContainerRef={containerRef} />
+      <div id="graph-tooltip" style={{ position: 'absolute', zIndex: 100 }}></div>
+    </div>
+  );
 };
 
 export default ForceGraph;
