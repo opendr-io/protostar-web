@@ -1,6 +1,8 @@
+![Alt text](img/skynet.jpg)
+
 # Getting Started with the Skynet Project Web UI
 
-If you have not yet set up the data layer, see this doc which covers setup of the entire project: (link)
+If you have not yet set up the data layer, see this doc which covers setup of the entire project: (https://github.com/cyberdyne-ventures/skynet-data/blob/main/SETUP.md)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
