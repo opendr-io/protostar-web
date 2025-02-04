@@ -19,15 +19,15 @@ export function Sidebar() {
         <SidebarRow>{'Primary View'}</SidebarRow>
       </Link>
       <Link to={'/view3'}>
-        <SidebarRow>{'Entity'}</SidebarRow>
+        <SidebarRow>{'Detail View'}</SidebarRow>
       </Link>
 
       <h2 style={{ marginTop: 48, marginLeft: 12 }}>{'Experimental'}</h2>
       <Link to={'/experiment/view4'}>
-        <SidebarRow>{'View4'}</SidebarRow>
+        <SidebarRow>{'Hot Isotopes'}</SidebarRow>
       </Link>
       <Link to={'/experiment/view5'}>
-        <SidebarRow>{'View5'}</SidebarRow>
+        <SidebarRow>{'Chain Reactions'}</SidebarRow>
       </Link>
       <Link to={'/experiment/view6'}>
         <SidebarRow>{'View6 - Cloud Detections'}</SidebarRow>
