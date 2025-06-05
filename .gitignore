@@ -21,3 +21,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Ignore virtual environment
+*/skynet-ai-dev-flask-api/.venv
