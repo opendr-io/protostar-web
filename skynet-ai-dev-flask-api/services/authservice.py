@@ -13,7 +13,6 @@ class AuthService:
     return jsonify(access_token=new_access_token), 200
 
   def login(self, data):
-    print('login')
     with psycopg.connect() as connection:
       with connection.cursor() as cursor:
         username = data.get('username')
