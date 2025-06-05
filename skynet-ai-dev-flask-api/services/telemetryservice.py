@@ -7,66 +7,7 @@ from py2neo import Graph, Node, Relationship
 
 class TelemetryService:
   def __init__(self):
-    self.rawDF = pd.read_csv('resources/raw.csv')
-    self.primaryDF = pd.read_csv('resources/primary.csv')
-    self.detailDF = pd.read_csv('resources/detail.csv')
-    self.summaryDF = pd.read_csv('resources/summary.csv')
     self.neo4j_driver = Graph("bolt://localhost:7687", auth=("neo4j", "password"))
-    print('testing neo4j connection')
-
-  def get_entity_details(self, entity):
-    entityDetails = self.primaryDF[self.primaryDF['entity'] == entity].drop(['entity', 'entity_type', 'host_ip'], axis=1).reset_index(drop=True)
-    return entityDetails.to_json()
-
-  def get_entity_details_v2(self, entity):
-    # .drop(['entity', 'entity_type', 'host_ip'], axis=1)
-    entityDetails = self.detailDF[self.detailDF['entity'] == entity].reset_index(drop=True)
-    print("csv output:")
-    print(entityDetails)
-    return entityDetails.to_json()
-
-  def get_raw_entity_details(self, entity):
-    raw_entityDetails = self.rawDF[self.rawDF['entity'] == entity].drop_duplicates(subset=['name', 'detection_type']).reset_index(drop=True)
-    return raw_entityDetails.to_json()
-
-  # def get_raw_entity_details(self, entity):
-  #   raw_entityDetails = self.rawDF[self.rawDF['entity'] == entity].reset_index(drop=True)
-  #   return raw_entityDetails.to_json()
-
-  def get_columns(self, d):
-    cols = []
-    match(d):
-      case 'summary':
-        cols = list(self.summaryDF)
-      case 'raw':
-        cols = list(self.rawDF)
-      case 'primary':
-        cols = list(self.primaryDF)
-    return json.dumps(cols)
-  
-  def get_raw_columns(self):
-    cols = list(self.rawDF)
-    return json.dumps(cols)
-  
-  def get_raw_alerts(self):
-    raw = self.rawDF
-    return raw.to_json()
-  
-  def get_primary(self):
-    primary = self.primaryDF
-    return primary.to_json()
-  
-  def get_entities(self):
-    raw = self.primaryDF['entity'].drop_duplicates()
-    return raw.to_json()
-  
-  def get_entitiesv2(self):
-    raw = self.primaryDF['entity'].drop_duplicates()
-    return raw.to_json()
-  
-  def get_summary(self):
-    summary = self.summaryDF
-    return summary.to_json()
   
   def form_graph_relationships(self, data):
     try:
