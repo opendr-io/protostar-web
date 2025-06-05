@@ -1,0 +1,9 @@
+psycopg[binary]
+flask
+flask_cors
+flask_jwt_extended
+smolagents[toolkit]
+neo4j
+pandas
+py2neo
+bcrypt
