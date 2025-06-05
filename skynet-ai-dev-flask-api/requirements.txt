@@ -1,0 +1,8 @@
+pip install "psycopg[binary]"
+pip install flask
+pip install flask_cors
+pip install flask_jwt_extended
+pip install "smolagents[toolkit]"
+pip install neo4j
+pip install pandas
+pip install py2neo
