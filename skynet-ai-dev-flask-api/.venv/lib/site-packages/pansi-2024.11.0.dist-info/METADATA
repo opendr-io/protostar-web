@@ -1,0 +1,76 @@
+Metadata-Version: 2.1
+Name: pansi
+Version: 2024.11.0
+Summary: Text mode rendering library
+Home-page: https://github.com/technige/pansi
+Author: Nigel Small
+Author-email: technige@nige.tech
+License: Apache-2.0
+Project-URL: Bug Tracker, https://github.com/technige/pansi/issues
+Project-URL: Source Code, https://github.com/technige/pansi
+Keywords: ANSI,terminal,text,graphics,unicode
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Environment :: Console :: Curses
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Information Technology
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Programming Language :: Python :: 3.14
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Topic :: Software Development
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: System :: Console Fonts
+Classifier: Topic :: System :: Shells
+Classifier: Topic :: Terminals
+Classifier: Topic :: Terminals :: Terminal Emulators/X Terminals
+Classifier: Topic :: Text Processing
+Classifier: Topic :: Text Processing :: Markup
+Classifier: Topic :: Utilities
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: pillow
+
+# Pansi
+
+Pansi is a text mode rendering library. It provides a clean and simple
+interface for working with text and graphics in the terminal, using ANSI escape
+sequences for rendering. The library provides the following modules:
+
+- `pansi.text` -- text colouring and styling
+- `pansi.image` -- terminal-based image rendering
+- `pansi.screen` -- full screen layout handling
+
+Most modern terminals support ANSI rendering, but the exact feature sets
+available do vary. Bear in mind that not every listed function might work in
+every terminal, and check the documentation for your terminal software to make
+sure.
+
+
+## `pansi.text`
+
+The `pansi.text` module provides a suite of functions for colouring and styling
+terminal text, using ANSI escape sequences. Functions are designed to align as
+closely as possible to CSS rules and properties, for ease of use.
+
+### Colours
+
+Let's start with something simple. The following example will render the word
+"world" in green:
+
+<pre style="color:silver;background-color:black"><code>&gt;&gt;&gt; from pansi.text import green
+&gt;&gt;&gt; print(f"Hello, {green}world{~green}!")
+Hello, <span style="color:green">world</span>!
+</code></pre>

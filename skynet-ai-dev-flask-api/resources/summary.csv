@@ -1,0 +1,8 @@
+entity,categories,alert_names,atomic_weight,atomic_mass
+10.142.0.3,3,3,9,8
+172.16.4.4,2,10,4,1217
+connorj,6,101,36,2393
+kyle,2,6,4,395
+sarah,3,87,9,451
+arn:aws:iam::123456789012:root,2,6,4,41
+arn:aws:sts::123456789012:assumed-role/flowlogger,2,1,4,8

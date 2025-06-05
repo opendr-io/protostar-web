@@ -1,0 +1,2 @@
+[console_scripts]
+pansi-image = pansi.image:main
