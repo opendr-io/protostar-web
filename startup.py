@@ -9,8 +9,8 @@ def execute_scripts(command, directory):
     return command, directory, "", str(e), -1
 
 def run():
-  commands = ['npm start', 'flask --app skynet-ai-dev-flask-api run --host 0.0.0.0 --port 5002', 'npm run dev']
-  directories = ['skynet-neo', 'skynet-ai-dev-flask-api', 'skynet-react']
+  commands = ['npm install', 'npm start', 'flask --app skynet-ai-dev-flask-api run --host 0.0.0.0 --port 5002', 'npm install', 'npm run dev']
+  directories = ['skynet-neo', 'skynet-neo', 'skynet-ai-dev-flask-api', 'skynet-react', 'skynet-react']
   
   with concurrent.futures.ThreadPoolExecutor(max_workers=len(commands)) as executor:
     futures = [executor.submit(execute_scripts, cmd, dir) for cmd, dir in zip(commands, directories)]
