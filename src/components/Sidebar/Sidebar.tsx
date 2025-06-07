@@ -24,16 +24,16 @@ export function Sidebar() {
 
       <h2 style={{ marginTop: 48, marginLeft: 12 }}>{'Experimental'}</h2>
       <Link to={'/experiment/view4'}>
-        <SidebarRow>{'Large Graphs'}</SidebarRow>
+        <SidebarRow>{'Isotopes'}</SidebarRow>
       </Link>
       <Link to={'/experiment/view5'}>
         <SidebarRow>{'Small Graphs'}</SidebarRow>
       </Link>
       <Link to={'/experiment/view6'}>
-        <SidebarRow>{'Chain Reactions'}</SidebarRow>
+        <SidebarRow>{'Large Graphs'}</SidebarRow>
       </Link>
       <Link to={'/experiment/view7'}>
-        <SidebarRow>{'Hot Isotopes'}</SidebarRow>
+        <SidebarRow>{'View7'}</SidebarRow>
       </Link>
     </aside>
   )
