@@ -16,24 +16,24 @@ export function Sidebar() {
         <SidebarRow>{'Everything'}</SidebarRow>
       </Link>
       <Link to={'/view2'}>
-        <SidebarRow>{'Primary View'}</SidebarRow>
+        <SidebarRow>{'All Graphs'}</SidebarRow>
       </Link>
       <Link to={'/view3'}>
-        <SidebarRow>{'Entity'}</SidebarRow>
+        <SidebarRow>{'Detail View'}</SidebarRow>
       </Link>
 
       <h2 style={{ marginTop: 48, marginLeft: 12 }}>{'Experimental'}</h2>
       <Link to={'/experiment/view4'}>
-        <SidebarRow>{'View4'}</SidebarRow>
+        <SidebarRow>{'Isotopes'}</SidebarRow>
       </Link>
       <Link to={'/experiment/view5'}>
-        <SidebarRow>{'View5'}</SidebarRow>
+        <SidebarRow>{'Small Graphs'}</SidebarRow>
       </Link>
       <Link to={'/experiment/view6'}>
-        <SidebarRow>{'View6 - Cloud Detections'}</SidebarRow>
+        <SidebarRow>{'Large Graphs'}</SidebarRow>
       </Link>
       <Link to={'/experiment/view7'}>
-        <SidebarRow>{'View7 - Terrestrial Detections'}</SidebarRow>
+        <SidebarRow>{'View7'}</SidebarRow>
       </Link>
     </aside>
   )

@@ -17,11 +17,7 @@ export function View4() {
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (n:ENTITY {view: 1})-[r]->(m {view: 1})
-                        WITH n, count(r) AS count_of_first_layer_nodes
-                        WHERE count_of_first_layer_nodes > 4
-                        MATCH p=(n)-[r*]->(m)
-                        RETURN p`,
+            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[*]->(a:ALERT) where (a.detection_type = "HOT_ISOTOPE" or a.detection_type = "STABLE_ISOTOPE") RETURN path`,
           },
         ],
       }),
@@ -44,7 +40,7 @@ export function View4() {
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-200}
+        strength={-1000}
       />
     </div>
   );
