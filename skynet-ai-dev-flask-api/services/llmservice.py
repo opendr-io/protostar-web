@@ -29,7 +29,7 @@ class LLMService:
       return ''
 
   def ask_sonar(self, question):
-    llm = ChatAnthropic(model=config.get("Perplexity", "ModelName"), api_key=self.sonarkey)
+    llm = ChatPerplexity(model=config.get("Perplexity", "ModelName"), api_key=self.sonarkey)
     result = llm.invoke([HumanMessage(content=question)]).content
     return result
   
