@@ -29,9 +29,13 @@ class LLMService:
       return ''
 
   def ask_sonar(self, question):
-    llm = ChatPerplexity(model=config.get("Perplexity", "ModelName"), api_key=self.sonarkey)
-    result = llm.invoke([HumanMessage(content=question)]).content
-    return result
+    try:
+      llm = ChatPerplexity(model=config.get("Perplexity", "ModelName"), api_key=self.sonarkey)
+      result = llm.invoke([HumanMessage(content=question)]).content
+      return result
+    except Exception as e:
+      print(e)
+      return ''
   
   def ask_chat_gpt(self, question):
     pass
@@ -39,6 +43,10 @@ class LLMService:
   def ask_local_llm(self, question):
     # model = LiteLLMModel(model_id="ollama_chat/hermes3:3b", api_base="http://localhost:11434/api/chat", api_key='not-needed', max_tokens=8000)
     # model = OpenAIServerModel(model_id="gemma-3-4b-it-qat", api_base="http://127.0.0.1:1234/v1", api_key="not-needed")
-    llm = ChatOpenAI(base_url="http://127.0.0.1:1234/v1", api_key="lm-studio", temperature=0.5)
-    result = llm.invoke([HumanMessage(content=question)]).content
-    return result
+    try:
+      llm = ChatOpenAI(base_url="http://127.0.0.1:1234/v1", api_key="lm-studio", temperature=0.5)
+      result = llm.invoke([HumanMessage(content=question)]).content
+      return result
+    except Exception as e:
+      print(e)
+      return ''
