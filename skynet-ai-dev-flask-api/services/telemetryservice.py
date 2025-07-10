@@ -7,7 +7,7 @@ from py2neo import Graph, Node, Relationship
 
 class TelemetryService:
   def __init__(self):
-    self.neo4j_driver = Graph("bolt+ssc://localhost:7687", auth=("neo4j", "password"))
+    self.neo4j_driver = Graph("bolt://localhost:7687", auth=("neo4j", "password"))
   
   def form_graph_relationships(self, data):
     try:
