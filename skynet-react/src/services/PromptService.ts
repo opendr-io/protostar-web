@@ -30,7 +30,7 @@ export default class PromptService
     let finalPrompt = `Can you explain the security risks and steps for mitigation using a summary explanation of the data and what the scores mean. Give a 
     summary report on the data and explain what the nature of the activity is. Be verbose and identify fields you recognize. Explain each 
     field that you recognize and what kind of data it contains. Suggest possible investigative directions. ${details}. At the end of the response place 
-    the following message: "If you would like a more detailed response that will need to get the pro version of the application." Do not forget to
+    the following message: "If you would like a more detailed response you will need to get the pro version of the application." Do not forget to
     place this message at the end. It's important for the message to be there. As mentioned be detailed with the response but also concise and 
     to the point.`;
     return finalPrompt;
