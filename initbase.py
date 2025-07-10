@@ -87,6 +87,3 @@ def run():
     for process in processes:
       process.terminate()
     print("All servers stopped")
-
-if __name__ == "__main__":
-  main()
