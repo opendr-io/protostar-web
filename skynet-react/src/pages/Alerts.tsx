@@ -113,7 +113,7 @@ export function Alerts()
               <div className="px-10 py-6 w-fit">
                 <div className="font-bold text-xl mb-2">Entity: {entityDetails[0][index]}</div>
                 <div className="font-medium text-xl mb-2">DT: {entityDetails[1][index]}</div>
-                <div className="font-medium text-xl mb-2">Name: {entityDetails[3][index]}</div>
+                <div className="font-medium text-xl mb-2">Name: <span className={`${(expandedCardIndex === index) ? 'text-xl' : 'text-sm'}`}>{entityDetails[3][index]}</span></div>
                 <div className="font-medium text-xl mb-2">Mitre Tactic: {entityDetails[2][index]}</div>
                 <div>
                   <div className="text-white text-base">
