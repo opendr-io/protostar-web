@@ -1,0 +1,58 @@
+* {
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+svg {
+  user-select: none;
+}
+
+:root {
+  /** CSS DARK THEME PRIMARY COLORS */
+  --color-primary-100: #ff584d;
+  --color-primary-200: #ff6e5f;
+  --color-primary-300: #ff8272;
+  --color-primary-400: #ff9585;
+  --color-primary-500: #ffa898;
+  --color-primary-600: #ffbaac;
+
+  /** CSS DARK THEME SURFACE COLORS */
+  --color-surface-100: #1f1f1f;
+  --color-surface-200: #343434;
+  --color-surface-300: #4a4a4a;
+  --color-surface-400: #616161;
+  --color-surface-500: #797979;
+  --color-surface-600: #939393;
+
+  /** CSS DARK THEME MIXED SURFACE COLORS */
+  --color-surface-mixed-100: #342623;
+  --color-surface-mixed-200: #483a38;
+  --color-surface-mixed-300: #5d504d;
+  --color-surface-mixed-400: #726764;
+  --color-surface-mixed-500: #887e7c;
+  --color-surface-mixed-600: #9f9795;
+  /** EXAMPLES
+color: var(--color-primary-600);
+background-color: var(--color-surface-300);
+*/
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #2f2f2f;
+  color: aliceblue;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: monospace;
+}
+
+a,
+a:visited {
+  color: aliceblue;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
