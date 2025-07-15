@@ -12,10 +12,10 @@
 	- Linux: Installed by Default
 - Pull Protostar GitHub repository: git pull https://github.com/opendr-io/protostar-web.git
 - Neo4j Installation and Sample Data upload:
-	- https://neo4j.com/download/
-	- https://github.com/cyberdyne-ventures/skynet-data
-	- APOC Plugin installation --> https://neo4j.com/docs/apoc/current/installation/
-	- Copy the Neo4j configuration from the following into the directory Neo4j has been installed in:
+	1. https://neo4j.com/download/
+	2. https://github.com/cyberdyne-ventures/skynet-data
+	3. APOC Plugin installation --> https://neo4j.com/docs/apoc/current/installation/
+	4. (Make sure the three steps above this have been completed first). Copy the Neo4j configuration from the following into the directory Neo4j has been installed in:
  		- Without TLS: baseconfig/neo4j.conf
    		- With TLS: tlsconfig/neo4j.conf
 
