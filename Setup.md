@@ -30,7 +30,10 @@
 
 	- Take the IP and replace the [your_server_ip] part of the URL in the following files:
 		- skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[your_server_ip]
-		- skynet-neo/.env: In this file change the following line VITE_NEO_APP_DB_URL="http://[neo_server_ip]:[port]/db/neo4j"
+		- skynet-neo/.env: In this file change the following lines:
+  			- VITE_NEO_APP_USERNAME="[neo_username]"
+			- VITE_NEO_APP_PASSWORD="[neo_password]"
+  			- VITE_NEO_APP_DB_URL="http://[neo_server_ip]:[port]/db/neo4j"
 
 3.	Before you continue to the next step go to the following files:
 	- dbconfig.ini under the skynet-ai-dev-flask-api directory and enter the information for the variables listed in the file.
