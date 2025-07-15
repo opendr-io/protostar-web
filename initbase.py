@@ -42,7 +42,7 @@ def run():
   flask_cmd = 'python -m venv .venv'
   npm_install = ['npm install']
   if(os.name == 'nt'):
-    flask_cmd += ' && .venv\\Scripts\\activate.bat && pip install -r requirements.txt && python dbcreation.py && copy postgres.conf ' + postgresconfigpath + ' && copy pg_hba.conf ' + postgresconfigpath + ' && net stop postgresql-x64-' + postgresversion + ' && net start postgresql-x64-' + postgresversion
+    flask_cmd += ' && .venv\\Scripts\\activate.bat && pip install -r requirements.txt && python dbcreation.py && copy baseconfig\\postgres.conf ' + postgresconfigpath + ' && copy baseconfig\\pg_hba.conf ' + postgresconfigpath + ' && net stop postgresql-x64-' + postgresversion + ' && net start postgresql-x64-' + postgresversion
     npm_install = ['npm', 'install']
   elif(os.uname().sysname == 'Darwin'):
     # neo4jrestart = neo4jkeypath + '&& cp skynet-key.pem ' + neo4jkeypath
