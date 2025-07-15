@@ -15,7 +15,7 @@
 	1. https://neo4j.com/download/
 	2. https://github.com/cyberdyne-ventures/skynet-data
 	3. APOC Plugin installation --> https://neo4j.com/docs/apoc/current/installation/
-	4. (Make sure the three steps above this have been completed first). Copy the Neo4j configuration from the following into the directory Neo4j has been installed in:
+	4. (Make sure the three steps above this have been completed before doing this step). Copy the Neo4j configuration from the following into the directory Neo4j has been installed in:
  		- Without TLS: baseconfig/neo4j.conf
    		- With TLS: tlsconfig/neo4j.conf
 
