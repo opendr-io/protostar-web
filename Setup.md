@@ -15,7 +15,7 @@
 	1. https://neo4j.com/download/
 	2. https://github.com/cyberdyne-ventures/skynet-data
 	3. APOC Plugin installation --> https://neo4j.com/docs/apoc/current/installation/
-	4. (Make sure the three steps above this have been completed before doing this step). Copy the Neo4j configuration that came with the repository. Both of these are under the skynet-ai-dev-flask-api folder and move the configuration based on whether you need TLS running on not into the directory Neo4j has been installed in. The path to the configurations in the repository are listed below:
+	4. (Make sure the three steps above this have been completed before doing this step). Copy the Neo4j configuration that came with the repository. Both of these are under the skynet-ai-dev-flask-api folder and move the configuration based on whether you need TLS running or not into the data directory the Neo4j instance has been installed in. The path to the configurations in the repository are listed below:
  		- Without TLS: skynet-ai-dev-flask-api/baseconfig/neo4j.conf
    		- With TLS: skynet-ai-dev-flask-api/tlsconfig/neo4j.conf
 
