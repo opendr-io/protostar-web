@@ -6,23 +6,20 @@
 - Postgres installation: https://www.postgresql.org/download/
 - Homebrew installation: https://brew.sh/
 - Chocolatey installation: https://chocolatey.org/install
-- Neo4j Installation and Sample Data upload:
-	- https://neo4j.com/download/
-	- https://github.com/cyberdyne-ventures/skynet-data
-	- APOC Plugin installation --> https://neo4j.com/docs/apoc/current/installation/
-	- In Windows you will need to do the following:
-		- Add the location of where the bin folder for your Neo4j instance is stored to your PATH environment variable
-		- Run the following in the Command Line: neo4j windows-service install or bin\neo4j windows-service install
-	- To have Neo4j listen on all addresses set server.default_listen_address=0.0.0.0 in the neo4j.conf file in the directory of the instance installation.
 - OpenSSL installation
 	- macOS: brew install openssl
 	- Windows: choco install openssl or https://slproweb.com/products/Win32OpenSSL.html
 	- Linux: Installed by Default
+- Pull Protostar GitHub repository: git pull https://github.com/opendr-io/protostar-web.git
+- Neo4j Installation and Sample Data upload:
+	- https://neo4j.com/download/
+	- https://github.com/cyberdyne-ventures/skynet-data
+	- APOC Plugin installation --> https://neo4j.com/docs/apoc/current/installation/
+	- Copy the Neo4j configuration from the following into the directory Neo4j has been installed in:
+ 		- Without TLS: baseconfig/neo4j.conf
+   		- With TLS: tlsconfig/neo4j.conf
 
-1.	Pull the following from GitHub to a directory of your choice. Once pulled navigate to the directory the repository was pulled to. Use the following command to pull the repository:
-	- git pull https://github.com/cyberdyne-ventures/genisys
-
-2.	This step is optional if you are going to run as localhost. If you would like to run the application and access it throughout your network, you will need to make changes in the following files in the skynet-react directory.
+1.	This step is optional if you are going to run as localhost. If you would like to run the application and access it throughout your network, you will need to make changes in the following files in the skynet-react directory.
 	- Find what your computer’s IP is on the network by using the following:
 		- For Windows: wmic nicconfig where "IPEnabled='TRUE'" get IPAddress or ipconfig
 		- For macOS: ipconfig getifaddr en0
@@ -35,7 +32,7 @@
 			- VITE_NEO_APP_PASSWORD="[neo_password]"
   			- VITE_NEO_APP_DB_URL="http://[neo_server_ip]:[port]/db/neo4j"
 
-3.	Before you continue to the next step go to the following files:
+2.	Before you continue to the next step go to the following files:
 	- dbconfig.ini under the skynet-ai-dev-flask-api directory and enter the information for the variables listed in the file.
  		- [Database]
 			- HostName=[host_name_of_database]
@@ -63,7 +60,7 @@
 			- ModelName=
 			- PerplexityKey=
 
-4. If you would like setup TLS set the following flag to true in the secureconfig.ini file.
+3. If you would like setup TLS set the following flag to true in the secureconfig.ini file.
 	- [General]
 		- TLS=True
 
@@ -77,7 +74,7 @@
 			- PostgresCertificatePath=""
 			- PostgresConfigPath="" 
 
-5.	Once you have completed steps above, run the following command in the root directory:
+4.	Once you have completed steps above, run the following command in the root directory:
 	- sudo python startup.py: macOS or Linux
 	- python startup.py: make sure PowerShell is in Administrator mode
 	- You may need to enter your password to apply certificates to Neo4j. On Windows instead of a password a popup will ask if you would like to have the certificates applied.
