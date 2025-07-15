@@ -76,6 +76,6 @@
 
 4.	Once you have completed steps above, run the following command in the root directory:
 	- sudo python startup.py: macOS or Linux
-	- python startup.py: make sure PowerShell is in Administrator mode
-	- You may need to enter your password to apply certificates to Neo4j. On Windows instead of a password a popup will ask if you would like to have the certificates applied.
-	- Once the certificates are applied restart Neo4j from Neo4j Desktop or terminal so that it will use the generated certificates.
+	- python startup.py: make sure PowerShell is in Administrator mode.
+	- (Only if TLS is enabled) You may need to enter your password to apply certificates to Neo4j. On Windows instead of a password a popup will ask if you would like to have the certificates applied.
+	- Restart Neo4j from Neo4j Desktop or terminal so that it will use the configurations placed in the conf folder and the TLS certificates (if you enabled TLS).
