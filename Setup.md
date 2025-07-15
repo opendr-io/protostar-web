@@ -29,7 +29,7 @@
 		- For Linux: ip addr show eth0
 
 	- Take the IP and replace the [your_server_ip] part of the URL in the following files:
-		- skynet-react/src/config/config.tsx: In this file change the url variable in the constructor to the ip address that you found in the step above.
+		- skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[your_server_ip]
 		- skynet-neo/.env: Place the IP of your Neo4j instance is running from.
 
 3.	Before you continue to the next step go to the following files:
