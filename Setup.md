@@ -64,7 +64,7 @@
 	- [General]
 		- TLS=True
 
-	- In the secureconfig.ini file set the directories where Neo4j and Postgres config files are stores. This is typically under their installation directories. If you set TLS to true in the step above go to the secureconfig.ini in the top directory and enter the path for where Neo4j stores its TLS certificates. There should be an https directory under certificates and if not create a new folder called https under certificates wherever Neo4j configurations are stored.
+	- In the secureconfig.ini file set the directories where Neo4j and Postgres config files are stores. This is typically under their installation directories. If you set TLS to true in the step above go to the secureconfig.ini in the top directory and enter the path for where Neo4j stores its TLS certificates. There should be an https directory under certificates and if not create a new folder called https under certificates wherever Neo4j configurations are stored. In Postgres, the certificates are stored in the data directory where the configurations are stored.
 
 		- [Neo4j]
 			- Neo4jCertificatePath=""
