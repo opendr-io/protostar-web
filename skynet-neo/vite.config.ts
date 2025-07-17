@@ -10,5 +10,5 @@ export default defineConfig({
     https: false,
     port: 3000
   },
-  allowedHosts: ['your_hostname'],  // <== this must be an array
+  allowedHosts: ['your_hostname'],  // <== Must be an array
 })
