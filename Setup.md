@@ -24,8 +24,10 @@
 
 1. If you would like to run the application and have it be accessible across your network, you will need to make changes in the following files in the skynet-react directory.
 	- Find what your computer’s hostname is by entering the following into the Terminal, PowerShell, or Command Line: hostname
+	- When entering the result of this command, make sure it's entered in all lowercase otherwise you may have issues.
+	- If you are having issues run the following command and restart the application: npm cache clean --force
 
-	- Take the IP and replace the [your_server_hostname] part of the URL in the following files:
+	- Take the IP and replace the [server_hostname] part of the URL in the following files:
 		- skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
 		- skynet-neo/.env: In this file change the following lines:
   			- VITE_NEO_APP_USERNAME="[neo_username]"
