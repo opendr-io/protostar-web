@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss(),mkcert()],
   server: {
     host: true,
-    https: false
+    https: false,
+    allowedHosts: ['your_hostname'],  // <== this must be an array
   },
 })
