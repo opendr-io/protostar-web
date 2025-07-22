@@ -41,7 +41,7 @@
 
 5. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic.)
 	- [Anthropic]
-		- ModelName=
+		- ModelName=claude-opus-4-20250514
 		- AnthropicKey=
 			
 	- [OpenAI]
