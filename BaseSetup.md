@@ -19,7 +19,7 @@
    - skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
    - skynet-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="http://[server_hostname]:[port]/db/neo4j"
 
-3. Make the appropriate edits in pg_hba.conf and postgres.conf for Postgres needed to run the application. This is located in baseconfig under the skynet-ai-dev-flask-api directory. It can work as is or further edits can be made based on particular needs. Copy and paste these files to the data directory in Postgres. The location of Postgres configuration files defaults to C:\Program Files\Postgres\[postgres_version]\data in Windows.
+3. Make the appropriate edits in pg_hba.conf and postgres.conf needed for Postgres to run the application. This is located in baseconfig under the skynet-ai-dev-flask-api directory. It can work as is or further edits can be made based on particular needs. Copy and paste these files to the data directory in Postgres. The location of Postgres configuration files defaults to C:\Program Files\Postgres\[postgres_version]\data in Windows.
 
 4. Repeat the following for Neo4j. The neo4j.conf is located in baseconfig under the skynet-ai-dev-flask-api directory. Make further edits if needed and copy and paste this file to conf directory to where neo4j is installed. This is typically under the user directory. For example: C:\Users\[username]\.Neo4jDesktop2\Data\dbmss\[instance_id]\conf in Windows.
 
