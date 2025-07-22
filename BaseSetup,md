@@ -10,10 +10,9 @@
 - Find hostname of your machine by entering the following command in PowerShell, Command Prompt, or Terminal: hostname
 
 - Neo4j Installation and Sample Data upload:
-	1. https://neo4j.com/download/
-	2. https://github.com/cyberdyne-ventures/skynet-data
-	3. Follow these instructions to get the data uploaded: https://github.com/opendr-io/protostar-data/blob/main/SETUP.md
-	4. APOC Plugin installation --> https://neo4j.com/docs/apoc/current/installation/
+	1. Pull the following repository with the following command: git pull https://github.com/opendr-io/protostar-data
+	2. Instructions on how to get the data uploaded: https://github.com/opendr-io/protostar-data/blob/main/SETUP.md
+	3. Instructions for APOC Plugin installation --> https://neo4j.com/docs/apoc/current/installation/
 
 1. To run the application across the network, make changes to the following files in the following directories:
 		- skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
