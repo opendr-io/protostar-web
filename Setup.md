@@ -22,6 +22,7 @@
  		- Without TLS: skynet-ai-dev-flask-api/baseconfig/neo4j.conf
    		- With TLS: skynet-ai-dev-flask-api/tlsconfig/neo4j.conf
 
+## Setup:
 1. If you would like to run the application and have it be accessible across your network, you will need to make changes in the following files in the skynet-react directory.
 	- Find what your computer’s hostname is by entering the following into the Terminal, PowerShell, or Command Line: hostname
 	- When entering the result of this command, make sure it's entered in all lowercase otherwise you may have issues.
