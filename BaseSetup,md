@@ -34,7 +34,6 @@
 			- ApplicationUser=[The_first_user_of_application]
 			- ApplicationUserPassword=[Password_of_the_first_user_of_application]
 
-
 5. To run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory:
 	- [Anthropic]
 		- ModelName=
