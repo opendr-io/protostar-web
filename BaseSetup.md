@@ -19,11 +19,14 @@
    - skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
    - skynet-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="http://[server_hostname]:[port]/db/neo4j"
 
-3. Make the appropriate edits in pg_hba.conf and postgres.conf needed for Postgres to run the application. This is located in baseconfig under the skynet-ai-dev-flask-api directory. It can work as is or further edits can be made based on particular needs. Copy and paste these files to the data directory in Postgres. The location of Postgres configuration files defaults to C:\Program Files\Postgres\\[postgres_version]\data in Windows.
+2. Navigate to the baseconfig directory under the skynet-ai-dev-flask-api directory and make the appropriate edits to the following files: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
+	 - pg_hba.conf
+	 - postgres.conf
+	 - Copy and paste these files to the data directory in Postgres. The location of Postgres configuration files defaults to C:\Program Files\Postgres\\[postgres_version]\data in Windows.
 
-4. Repeat the following for Neo4j. The neo4j.conf is located in baseconfig under the skynet-ai-dev-flask-api directory. Make further edits if needed and copy and paste this file to conf directory to where neo4j is installed. This is typically under the user directory. For example: C:\Users\\[username]\\.Neo4jDesktop2\Data\dbmss\\[instance_id]\conf in Windows.
+3. Repeat the following for Neo4j. The neo4j.conf is located in baseconfig under the skynet-ai-dev-flask-api directory. Make further edits if needed and copy and paste this file to conf directory to where neo4j is installed. This is typically under the user directory. For example: C:\Users\\[username]\\.Neo4jDesktop2\Data\dbmss\\[instance_id]\conf in Windows.
 
-5. Enter database information in the dbconfig.ini file which is located under skynet-ai-dev-flask-api directory 
+4. Enter database information in the dbconfig.ini file which is located under skynet-ai-dev-flask-api directory 
 	- Enter the information for the variables listed in the file.
  		- [Database]
 			- HostName=[ip_of_postgres_db]
@@ -34,7 +37,7 @@
 			- ApplicationUser=[The_first_user_of_application]
 			- ApplicationUserPassword=[Password_of_the_first_user_of_application]
 
-6. To run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory:
+5. To run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory:
 	- [Anthropic]
 		- ModelName=
 		- AnthropicKey=
@@ -51,4 +54,4 @@
 		- ModelName=
 		- PerplexityKey=
 
-7. Once thse steps have been completed run the following command: python startup.py
+6. Once thse steps have been completed run the following command: python startup.py
