@@ -48,7 +48,7 @@
 
 	- Go to the agentconfig.ini under skynet-ai-dev-flask-api directory and enter your API key for one of the LLM providers. Here are the options:
 		- [Anthropic]
-			- ModelName=
+			- ModelName=claude-opus-4-20250514
 			- AnthropicKey=
 			
 		- [OpenAI]
