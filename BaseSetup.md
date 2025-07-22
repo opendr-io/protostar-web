@@ -22,7 +22,7 @@
 2. Navigate to the baseconfig directory under the skynet-ai-dev-flask-api directory and make the appropriate edits to the following files: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
 	 - pg_hba.conf
 	 - postgres.conf
-	 - Copy and paste these files to the data directory in Postgres. The location of Postgres configuration files defaults to C:\Program Files\Postgres\\[postgres_version]\data in Windows.
+	 - Copy and paste these files to the data directory in Postgres which is typically located at C:\Program Files\Postgres\\[postgres_version]\data in Windows.
 
 3. Repeat the following for Neo4j. The neo4j.conf is located in baseconfig under the skynet-ai-dev-flask-api directory. Make further edits if needed and copy and paste this file to conf directory to where neo4j is installed. This is typically under the user directory. For example: C:\Users\\[username]\\.Neo4jDesktop2\Data\dbmss\\[instance_id]\conf in Windows.
 
