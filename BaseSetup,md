@@ -23,7 +23,19 @@
 
 3. Repeat the following for Neo4j. The neo4j.conf is located in baseconfig under the skynet-ai-dev-flask-api directory. Make further edits if needed and copy and paste this file to conf directory to where neo4j is installed. This is typically under the user directory. For example: C:\Users\[username]\.Neo4jDesktop2\Data\dbmss\[instance_id]\conf in Windows.
 
-4. To run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory:
+4. Enter database information in the dbconfig.ini file which is located under skynet-ai-dev-flask-api directory 
+	- Enter the information for the variables listed in the file.
+ 		- [Database]
+			- HostName=[ip_of_postgres_db]
+			- PortNumber=[port_where_postgres_is_running_from]
+			- DatabaseName=protostar
+			- RootDatabaseUserName=[postgres_root_user]
+			- RootDatabasePassword=[postgres_root_password]
+			- ApplicationUser=[The_first_user_of_application]
+			- ApplicationUserPassword=[Password_of_the_first_user_of_application]
+
+
+5. To run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory:
 	- [Anthropic]
 		- ModelName=
 		- AnthropicKey=
@@ -40,4 +52,4 @@
 		- ModelName=
 		- PerplexityKey=
 
-5. Once thse steps have been completed run the following command: python startup.py
+6. Once thse steps have been completed run the following command: python startup.py
