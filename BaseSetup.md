@@ -39,7 +39,7 @@
 			- ApplicationUser=[The_first_user_of_application]
 			- ApplicationUserPassword=[Password_of_the_first_user_of_application]
 
-5. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application.)
+5. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic.)
 	- [Anthropic]
 		- ModelName=
 		- AnthropicKey=
