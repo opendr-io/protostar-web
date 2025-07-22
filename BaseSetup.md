@@ -1,5 +1,5 @@
 # Skynet Setup Guide
-## Prereqs:
+## Prereqs
 - Visual Studio Code (optional, helps make the installation process easier): https://code.visualstudio.com/
 - Node.js installation: https://nodejs.org/en/download
 - Python installation: https://www.python.org/downloads/
@@ -14,7 +14,7 @@
 	2. Instructions on how to get the data uploaded: https://github.com/opendr-io/protostar-data/blob/main/SETUP.md
 	3. Instructions for APOC Plugin installation --> https://neo4j.com/docs/apoc/current/installation/
 
-## Setup:
+## Setup
 1. To run the application across the network, make changes to the following files in the following directories:
 		- skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
 		- skynet-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="http://[server_hostname]:[port]/db/neo4j"
