@@ -28,8 +28,8 @@
    - neo4j.conf
    - Copy and paste this file to conf directory to where neo4j is installed which is typically located at C:\Users\\[username]\\.Neo4jDesktop2\Data\dbmss\\[instance_id]\conf in Windows.
 
-4. Enter database information in the dbconfig.ini file which is located under skynet-ai-dev-flask-api directory 
-	- Enter the information for the variables listed in the file.
+4. Enter database information in the dbconfig.ini file which is located under skynet-ai-dev-flask-api directory. This is needed to setup the database tables and users for Protostar.
+	- Enter the information for the variables listed in the file:
  		- [Database]
 			- HostName=[ip_of_postgres_db]
 			- PortNumber=[port_where_postgres_is_running_from]
@@ -39,7 +39,7 @@
 			- ApplicationUser=[The_first_user_of_application]
 			- ApplicationUserPassword=[Password_of_the_first_user_of_application]
 
-5. To run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory:
+5. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application.)
 	- [Anthropic]
 		- ModelName=
 		- AnthropicKey=
