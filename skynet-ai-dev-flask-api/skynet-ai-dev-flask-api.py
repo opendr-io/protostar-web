@@ -47,6 +47,7 @@ def logout():
   return authservice.logout(data)
 
 @app.route('/register', methods=['POST'])
+@jwt_required()
 @cross_origin()
 def register():
   data = request.get_json()
@@ -135,6 +136,7 @@ def retrieve_entity_details():
   return details
 
 @app.route('/entitydetailsv2', methods=['POST'])
+@jwt_required()
 @cross_origin()
 def retrieve_entity_details_v2():
   data = request.get_json()
