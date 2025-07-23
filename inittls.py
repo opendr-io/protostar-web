@@ -35,9 +35,7 @@ def run():
   print("Setting up environments...")
   # Neo4j configuration
   neo4jkeypath = config.get('Neo4j', 'Neo4jCertificatePath') # Needs to be filled in by user
-  neo4jconfigpath = config.get('Neo4j', 'Neo4jConfigPath') # Needs to be filled in by user
   postgreskeypath = config.get('Postgres', 'PostgresCertificatePath')
-  postgresconfigpath = config.get('Postgres', 'PostgresConfigPath')
   postgresversion = config.get('Postgres', 'PostgresVersion')
   
   # Flask setup
