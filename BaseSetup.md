@@ -21,11 +21,18 @@
 
 2. Navigate to the baseconfig directory under the skynet-ai-dev-flask-api directory and make the appropriate edits to the following files: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
 	 - pg_hba.conf
+	 	-	Parts of the file that are edited:
+	 		-	host all all 0.0.0.0/0 md5 <-- Needed to allow all hosts on the network to access the databae. This should be on line 18 should the user decide to modify this.
 	 - postgres.conf
+	 	- Parts of the file that are edited:
+			- listen_addresses = '*' <-- Needed to allow application to know which IP to connect to. Located on line 60. Modify this if needed.
+			- port = 4000 <-- Needed to tell which port the application will need to connect to. Located on line 64. Modify this if needed.
 	 - Copy and paste these files to the data directory in Postgres which is typically located at C:\Program Files\Postgres\\[postgres_version]\data in Windows.
 
 3. Navigate to the baseconfig under the skynet-ai-dev-flask-api directory again and make the appropriate edits to the following file for Neo4j: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
    - neo4j.conf
+	 	- Parts of the file that are edited:
+			- server.default_listen_address=0.0.0.0 <-- Needed to allow the database to allow connections from across the network. This setting should be on line 100 of the file should the user decide to modify the setting.
    - Copy and paste this file to conf directory to where neo4j is installed which is typically located at C:\Users\\[username]\\.Neo4jDesktop2\Data\dbmss\\[instance_id]\conf in Windows.
 
 4. Enter database information in the dbconfig.ini file which is located under skynet-ai-dev-flask-api directory. This is needed to setup the database tables and users for Protostar.
