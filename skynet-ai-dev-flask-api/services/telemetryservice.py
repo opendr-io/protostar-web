@@ -80,22 +80,28 @@ class TelemetryService:
 
   def get_detections_neo(self, detection_type):
     data = []
-    neo4j = self.neo4j_driver
-    query = f"""
-    MATCH (n:ENTITY)
-      WHERE n.view = 2
-      MATCH (n)-[*]->(m:ALERT)
-      where m.detection_type contains '{detection_type}'
-    RETURN
-      m.detection_type AS detection_type,
-      m.severity AS severity,
-      m.mitre_tactic AS mitre_tactic,
-      m.category AS category,
-      m.username AS username,
-      m.executable AS executable,
-      COUNT(*) AS count
-      ORDER BY detection_type ASC, count ASC
-    """
+    try:
+      neo4j = self.neo4j_driver
+      query = f"""
+      MATCH (n:ENTITY)
+        WHERE n.view = 2
+        MATCH (n)-[*]->(m:ALERT)
+        where m.detection_type contains '{detection_type}'
+      RETURN
+        m.detection_type AS detection_type,
+        m.severity AS severity,
+        m.mitre_tactic AS mitre_tactic,
+        m.category AS category,
+        m.username AS username,
+        m.executable AS executable,
+        COUNT(*) AS count
+        ORDER BY detection_type ASC, count ASC
+      """
+      result_df = neo4j.query(query).to_data_frame()
+      data = result_df.to_json()
+    except Exception as e:
+      print(e)
+    return data
   
   def get_raw_entity_details_neo(self, entity):
     data = []

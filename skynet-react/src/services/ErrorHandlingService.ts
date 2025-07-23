@@ -1,7 +1,6 @@
 export const errorUtils = {
   getError: (error: any) => {
     let e = error;
-    console.log(error)
     if (error.response) {
       e = error.response.data; // data, status, headers
       if (error.response.data && error.response.data.error) {

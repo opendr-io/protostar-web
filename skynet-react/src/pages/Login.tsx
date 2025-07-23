@@ -16,7 +16,6 @@ export function Login()
     event.preventDefault();
     await sms.Login(username, password);
     let t = localStorage.getItem('token');
-    console.log(t);
     if(t)
     {
       navigate('/summary');

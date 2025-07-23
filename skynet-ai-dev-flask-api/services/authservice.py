@@ -10,7 +10,6 @@ class AuthService:
   def __init__(self):
     self.BLOCKLIST = set()
     self.config = configparser.ConfigParser()
-    
     self.config.read(pathlib.Path(__file__).parent.absolute() / "../dbconfig.ini")
 
   def renew_token(self, current_user):
@@ -18,7 +17,7 @@ class AuthService:
     return jsonify(access_token=new_access_token), 200
 
   def login(self, data):
-    with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='skynet'),
+    with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),
     user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
       with connection.cursor() as cursor:
         username = data.get('username')
@@ -36,7 +35,7 @@ class AuthService:
 
   def register(self, data):
     salt = bcrypt.gensalt()
-    with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='skynet'),
+    with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),
     user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
       with connection.cursor() as cursor:
         username = data.get('username')
@@ -58,7 +57,7 @@ class AuthService:
   def logout(self, tokens):
     access = tokens.get('token')
     refresh = tokens.get('refresh')
-    with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='skynet'),
+    with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),
     user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
       with connection.cursor() as cursor:
         fillers = ("%s," * 1)[:-1]
