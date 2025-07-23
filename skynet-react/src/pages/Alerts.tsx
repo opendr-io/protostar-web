@@ -16,22 +16,6 @@ function MergeData(entityDetails: any, index: any)
   return mergedData;
 }
 
-async function AskLLM(llmService: any, entityDetails: any, index: any, question: any)
-{
-  let lm = '';
-  try
-  {
-    let mergedData = MergeData(entityDetails, index);
-    let data = JSON.stringify(mergedData);
-    lm = await llmService.AskClaude(question, data);
-  }
-  catch(error)
-  {
-    console.log(error);
-  }
-  return lm;
-}
-
 export function Alerts()
 {
   const [llmQuestion, setLLMQuestion] = useState('');
@@ -140,7 +124,7 @@ export function Alerts()
                       {
                         let entitySpecificData = MergeData(entityDetails, index);
                         let finalPrompt = ps.AlertSummaryPrompt(entityDetails, entitySpecificData);
-                        let lm = await llm.AskClaude(finalPrompt);
+                        let lm = await llm.AskLLM(finalPrompt);
                         setLLMOutput(lm);
                       }
                     } className={`${(expandedCardIndex === index) ? 'block' : 'hidden'} bg-[#080808] text-white border border-gray-300 mt-4 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer`}>Explain Alert Details</button>
@@ -169,7 +153,7 @@ export function Alerts()
                       {
                         let entitySpecificData = MergeData(entityDetails, index);
                         let finalPrompt = ps.AlertPrompt(llmQuestion, entityDetails, entitySpecificData);
-                        let output = await llm.AskClaude(finalPrompt);
+                        let output = await llm.AskLLM(finalPrompt);
                         setLLMOutput(output);
                       }
                     } className="bg-black text-white border border-gray-300 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Ask AI</button>

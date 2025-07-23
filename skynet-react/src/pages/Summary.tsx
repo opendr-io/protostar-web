@@ -103,9 +103,9 @@ export function Summary()
       else
       {
         let finalPrompt = ps.ThreatStatusSummaryPrompt(highLevelData);
-        let answer:string = await llm.AskClaude(finalPrompt);
+        let answer:string = await llm.AskLLM(finalPrompt);
         localStorage.setItem('threatstatussummary', answer);
-        let answerSummary = await llm.AskClaude(ps.SummaryOfThreatStatusSummaryPrompt(answer));
+        let answerSummary = await llm.AskLLM(ps.SummaryOfThreatStatusSummaryPrompt(answer));
         localStorage.setItem('summary', answerSummary);
         setLLMOutput(answer);
       }
@@ -195,7 +195,7 @@ const getVisibleColumnCount = () => {
               {async () =>
                 {
                   let finalPrompt = ps.ThreatStatusSummaryPrompt(highLevelData);
-                  let answer = await llm.AskClaude(finalPrompt);
+                  let answer = await llm.AskLLM(finalPrompt);
                   setLLMOutput(answer);
                 }
               } className="bg-black text-white border border-gray-300 mt-4 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">AI Summary</button>
@@ -357,7 +357,7 @@ const getVisibleColumnCount = () => {
                 {async() => 
                   {
                     let finalPrompt = ps.ThreatStatusPrompt(llmQuestion, highLevelData);
-                    let answer = await llm.AskClaude(finalPrompt);
+                    let answer = await llm.AskLLM(finalPrompt);
                     setLLMOutput(answer);
                   }
                 } className="bg-black text-white border border-gray-300 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Ask AI</button>

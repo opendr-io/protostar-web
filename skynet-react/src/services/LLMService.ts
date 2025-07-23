@@ -5,7 +5,21 @@ import { errorUtils } from './ErrorHandlingService';
 import SessionManagementService from './SessionManagementService';
 
 export default class LLMService
-{  
+{
+  async AskLLM(question: any)
+  {
+    let sms = new SessionManagementService();
+    try
+    {
+      return await this.AskLocalLLM(question);
+    }
+    catch(error: any)
+    {
+      sms.Logout();
+      window.location.href = '/login';
+    }
+  }
+
   async AskClaude(question: any)
   {
     let config = new Config();

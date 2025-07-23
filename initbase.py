@@ -33,9 +33,7 @@ def setup_and_start_server(command, directory, server_name):
 def run():
   # Setup environments first
   print("Setting up environments...")
-  # Neo4j configuration
-  neo4jconfigpath = config.get('Neo4j', 'Neo4jConfigPath') # Needs to be filled in by user
-  postgresconfigpath = config.get('Postgres', 'PostgresConfigPath')
+  # Postgres configuration
   postgresversion = config.get('Postgres', 'PostgresVersion')
   
   # Flask setup

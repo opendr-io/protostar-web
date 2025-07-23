@@ -8,7 +8,7 @@ export default defineConfig({
     host: true,
     // @ts-ignore
     https: false,
-    port: 3000
+    port: 3000,
+    allowedHosts: ['your_hostname'], // <== Must be an array
   },
-  allowedHosts: ['your_hostname'],  // <== Must be an array
 })
