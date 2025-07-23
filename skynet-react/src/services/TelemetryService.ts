@@ -67,9 +67,16 @@ export default class TelemetryService
     let sms = new SessionManagementService();
     try
     {
+      let token = localStorage.getItem('token');
       const response = await axios.post(config.EntityDetailsNeoURL(), 
       {
         'entity': entity
+      }, 
+      {
+        headers: 
+        {
+          'Authorization': `Bearer ${token}`
+        }
       });
       return response.data;
     }
@@ -87,9 +94,16 @@ export default class TelemetryService
     let sms = new SessionManagementService();
     try
     {
+      let token = localStorage.getItem('token');
       const response = await axios.post(config.RawEntityDetailsURL(), 
       {
         'entity': entity
+      }, 
+      {
+        headers: 
+        {
+          'Authorization': `Bearer ${token}`
+        }
       });
       return response.data;
     }

@@ -1,5 +1,5 @@
 export const errorUtils = {
-  getError: (error) => {
+  getError: (error: any) => {
     let e = error;
     console.log(error)
     if (error.response) {

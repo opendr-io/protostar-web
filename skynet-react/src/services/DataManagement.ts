@@ -1,11 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
-
 const DataManagement = createSlice(
 {
   name: 'data',
   initialState: { value: '' },
   reducers: {
-    setData: (state, action) => 
+    setData: (state: any, action: any) => 
     {
       state.value = action.payload;
     }

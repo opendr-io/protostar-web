@@ -1,6 +1,5 @@
 import axios from 'axios';
 import Config from '../config/config';
-import { jwtDecode } from 'jwt-decode';
 
 export default class SessionManagementService
 {
@@ -14,28 +13,12 @@ export default class SessionManagementService
     {
       'username': username,
       'password': password
-    }).then(r => 
+    }).then((r: any) => 
     {
       localStorage.setItem('token', r.data.access_token);
       localStorage.setItem('refresh_token', r.data.refresh_token);
     });
   }
-
-  // public IsValidToken()
-  // {
-  //   let token = localStorage.getItem('token');
-  //   try
-  //   {
-  //     const decodedToken = jwtDecode(token);
-  //     const currentTime = Date.now() / 1000;
-  //     return currentTime < decodedToken.exp;
-  //   } 
-  //   catch(error)
-  //   {
-  //     console.error('Error decoding token:', error);
-  //     return false;
-  //   }
-  // }
 
   public async RenewSession()
   {
@@ -49,7 +32,7 @@ export default class SessionManagementService
       {
         'Authorization': `Bearer ${refresh}`
       }
-    }).then(r => 
+    }).then((r: any) => 
     {
       console.log('refreshing token');
       console.log(r);
