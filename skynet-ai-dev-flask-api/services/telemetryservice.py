@@ -158,11 +158,12 @@ class TelemetryService:
     data = []
     try:
       neo4j = self.neo4j_driver
-      result = neo4j.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
+      result_df = neo4j.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
       MATCH path = (n)-[*]->(a:ALERT) where 
       not n.entity = "172.16.200.110" 
       and (a.detection_type = "CLOUD_ANOMALY" 
       or a.detection_type = "CLOUD_ALERT") RETURN path""").to_data_frame()
+      data = result_df.to_json()
     except Exception as e:
       print(e)
     return jsonify(data)
@@ -171,11 +172,12 @@ class TelemetryService:
     data = []
     try:
       neo4j = self.neo4j_driver
-      result = neo4j.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
+      result_df = neo4j.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
       MATCH path = (n)-[*]->(a:ALERT) 
       where not n.entity = "172.16.200.110" 
       and not (a.detection_type = "CLOUD_ANOMALY" 
       or a.detection_type = "CLOUD_ALERT") RETURN path""").to_data_frame()
+      data = result_df.to_json()
     except Exception as e:
       print(e)
     return data
