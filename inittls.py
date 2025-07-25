@@ -48,7 +48,7 @@ def run():
   elif(os.uname().sysname == 'Darwin'):
     flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py && mkdir keys && cp cert.conf keys/cert.conf && cd keys && openssl req -x509 -newkey rsa:4096 -keyout skynet-key.pem -out skynet-cert.pem -days 365 -nodes -config cert.conf -extensions v3_req && sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain skynet-cert.pem && cp skynet-cert.pem ' + neo4jkeypath + '&& cp skynet-key.pem ' + neo4jkeypath + ' && rm cert.conf && cd ..'
   elif(os.uname().sysname == 'Linux'):
-    flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py && mkdir keys && cp cert.conf keys/cert.conf && cd keys && openssl req -x509 -newkey rsa:4096 -keyout skynet-key.pem -out skynet-cert.pem -days 365 -nodes -config cert.conf -extensions v3_req && sudo cp skynet-cert.pem /usr/local/share/ca-certificates/skynet-cert.crt && sudo update-ca-certificates'
+    flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py && mkdir keys && cp cert.conf keys/cert.conf && cd keys && openssl req -x509 -newkey rsa:4096 -keyout skynet-key.pem -out skynet-cert.pem -days 365 -nodes -config cert.conf -extensions v3_req && sudo cp skynet-cert.pem /usr/local/share/ca-certificates/skynet-cert.crt && sudo update-ca-certificates && cp skynet-cert.pem ' + neo4jkeypath + '&& cp skynet-key.pem ' + neo4jkeypath + ' && copy skynet-cert.pem ' + postgreskeypath + ' && copy skynet-cert.pem ' + postgreskeypath + ' && rm cert.conf && cd .. && sudo service postgresql restart'
   subprocess.run(flask_cmd, executable=shell, shell=True, cwd='skynet-ai-dev-flask-api')
 
   # Node.js setup
