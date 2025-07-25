@@ -84,7 +84,7 @@
 		- PostgresCertificatePath=""
 	
 	- [OSConfig]
-		-	shell= <-- This field can be kept empty on Windows. It will use the default shell for the operating system.
+		-	shell= <-- Keep blank if using Windows.
 
 6. To run the application across the network, make changes to the following files in the following directories:
    - skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
