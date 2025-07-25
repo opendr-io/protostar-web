@@ -35,6 +35,7 @@ def run():
   print("Setting up environments...")
   # Postgres configuration
   postgresversion = config.get('Postgres', 'PostgresVersion')
+  shell = config.get('OSConfig', 'Shell')
   
   # Flask setup
   flask_cmd = 'python -m venv .venv'
@@ -46,7 +47,7 @@ def run():
     flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py'
   elif(os.uname().sysname == 'Linux'):
     flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py'
-  subprocess.run(flask_cmd, shell=True, cwd='skynet-ai-dev-flask-api')
+  subprocess.run(flask_cmd, executable=shell, shell=True, cwd='skynet-ai-dev-flask-api')
 
   # Node.js setup
   print('installations')
