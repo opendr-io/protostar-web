@@ -15,7 +15,7 @@
 	3. Instructions for APOC Plugin installation --> https://neo4j.com/docs/apoc/current/installation/
 
 ## Setup
-1. Navigate to the baseconfig directory under the skynet-ai-dev-flask-api directory and make the appropriate edits to the following files: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
+1. Navigate to the tlsconfig directory under the skynet-ai-dev-flask-api directory and make the appropriate edits to the following files: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
 	 - pg_hba.conf
 	 	-	Parts of the file that are edited:
 	 		-	host all all 0.0.0.0/0 md5 <-- Needed to allow all hosts on the network to access the databae. This should be on line 18 should the user decide to modify this.
@@ -32,7 +32,7 @@
       - ssl_prefer_server_ciphers = on <--- This is located on or around 114 in the config file.
 	 - Copy and paste these files to the data directory in Postgres which is typically located at C:\Program Files\Postgres\\[postgres_version]\data in Windows.
 
-2. Navigate to the baseconfig under the skynet-ai-dev-flask-api directory again and make the appropriate edits to the following file for Neo4j: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
+2. Navigate to the tlsconfig under the skynet-ai-dev-flask-api directory again and make the appropriate edits to the following file for Neo4j: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
    - neo4j.conf
 	 	- Parts of the file that are edited:
 			- server.default_listen_address=0.0.0.0 <-- Needed to allow the database to allow connections from across the network. This setting should be on line 100 of the file should the user decide to modify the setting.
