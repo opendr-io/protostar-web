@@ -72,11 +72,25 @@
 			- ApplicationUser=[The_first_user_of_application]
 			- ApplicationUserPassword=[Password_of_the_first_user_of_application]
 
-5. To run the application across the network, make changes to the following files in the following directories:
+5. Fill out the information in secureconfig.ini located in the base directory. The other fields can be left blank. Needed to run the startup.py script.
+	- [General]
+		- TLS=True
+
+	- [Neo4j]
+		- Neo4jCertificatePath=""
+
+	- [Postgres]
+		- PostgresVersion=
+		- PostgresCertificatePath=""
+	
+	- [OSConfig]
+		-	shell= <-- This field can be kept empty on Windows. It will use the default shell for the operating system.
+
+6. To run the application across the network, make changes to the following files in the following directories:
    - skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
    - skynet-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="http://[server_hostname]:[port]/db/neo4j"
 
-6. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-opus-4-20250514 which is shown below. This can be changed based on user preference.)
+7. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-opus-4-20250514 which is shown below. This can be changed based on user preference.)
 	- [Anthropic]
 		- ModelName=claude-opus-4-20250514
 		- AnthropicKey=
@@ -93,4 +107,4 @@
 		- ModelName=
 		- PerplexityKey=
 
-7. Once thse steps have been completed run the following command: python startup.py
+8. Once thse steps have been completed run the following command: python startup.py
