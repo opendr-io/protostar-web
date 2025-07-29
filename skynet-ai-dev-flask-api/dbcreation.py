@@ -9,7 +9,7 @@ config.read(Path(__file__).parent.absolute() / "dbconfig.ini")
 def setup_postgres_tables():
   print('Initiating Database Connection')
   try:
-    with psycopg.connect(host=config.get('Database', 'HostName'), port=config.get('Database', 'PortNumber', fallback='4000'),
+    with psycopg.connect(host=config.get('Database', 'HostName'), port=config.get('Database', 'PortNumber', fallback='5432'),
     user=config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=config.get('Database', 'RootDatabasePassword'), autocommit=True) as connection:
       print('Connection Made!')
       with connection.cursor() as cursor:
@@ -20,7 +20,7 @@ def setup_postgres_tables():
   except Exception:
     print('Database has already been created')
 
-  with psycopg.connect(host=config.get('Database', 'HostName'), port=config.get('Database', 'PortNumber', fallback='4000'), dbname=config.get('Database', 'DatabaseName', fallback='protostar'),
+  with psycopg.connect(host=config.get('Database', 'HostName'), port=config.get('Database', 'PortNumber', fallback='5432'), dbname=config.get('Database', 'DatabaseName', fallback='protostar'),
   user=config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=config.get('Database', 'RootDatabasePassword')) as connection:
     with connection.cursor() as cursor:
       print('Creating PostgreSQL Tables and Users')

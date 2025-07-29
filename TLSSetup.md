@@ -30,7 +30,9 @@
       - ssl_key_file = '' <--- This is located on or around 112 in the config file.
       - ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL' <--- This is located on or around 113 in the config file.
       - ssl_prefer_server_ciphers = on <--- This is located on or around 114 in the config file.
-	 - Copy and paste these files to the data directory in Postgres which is typically located at C:\Program Files\Postgres\\[postgres_version]\data in Windows.
+	 - Copy and paste these files to the data directory in Postgres which is typically located: 
+	 	- Windows: C:\Program Files\Postgres\\[postgres_version]\data in Windows.
+		- Linux: /etc/postgresql/[postgres_version]/main
 
 2. Navigate to the tlsconfig under the skynet-ai-dev-flask-api directory again and make the appropriate edits to the following file for Neo4j: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
    - neo4j.conf
@@ -56,7 +58,9 @@
       - dbms.ssl.policy.https.private_key=[your_private_key]  <-- To tell Neo4j where the private key is for TLS to work on HTTP. Located on or around line 197.
       - dbms.ssl.policy.https.public_certificate=[your_certificate] <-- To tell Neo4j where the public certificate is for TLS to work on HTTP. Located on or around line 198.
 
-   - Copy and paste this file to conf directory to where neo4j is installed which is typically located at C:\Users\\[username]\\.Neo4jDesktop2\Data\dbmss\\[instance_id]\conf in Windows.
+   - Copy and paste this file to conf directory to where neo4j is installed which is typically located at:
+	 	- Windows: C:\Users\\[username]\\.Neo4jDesktop2\Data\dbmss\\[instance_id]\conf in Windows.
+		- Linux: /home/[username]/.config/neo4j-desktop/Application/Data/dbmss/[instance_id]/conf
 
 3. Go to cert.conf in skynet-ai-dev-flask-api and enter the following on line 18:
   - IP.2 = [your_server_ip_or_hostname]
@@ -90,9 +94,9 @@
    - skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
    - skynet-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="http://[server_hostname]:[port]/db/neo4j"
 
-7. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-opus-4-20250514 which is shown below. This can be changed based on user preference.)
+7. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-3-7-sonnet-20250219 which is shown below. This can be changed based on user preference.)
 	- [Anthropic]
-		- ModelName=claude-opus-4-20250514
+		- ModelName=claude-3-7-sonnet-20250219
 		- AnthropicKey=
 			
 	- [OpenAI]
