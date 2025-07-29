@@ -61,7 +61,13 @@
    - skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
    - skynet-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="http://[server_hostname]:[port]/db/neo4j"
 
-6. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-opus-4-20250514 which is shown below. This can be changed based on user preference.)
+6. To be able to run using hostname modify allowedHosts settings in the following paths:
+	- skynet-react\vite.config.ts
+		- allowedHosts: ['your_hostname'] 
+	- skynet-neo\vite.config.ts
+		- allowedHosts: ['your_hostname']
+
+7. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-opus-4-20250514 which is shown below. This can be changed based on user preference.)
 	- [Anthropic]
 		- ModelName=claude-opus-4-20250514
 		- AnthropicKey=
@@ -78,5 +84,5 @@
 		- ModelName=
 		- PerplexityKey=
 
-7. Once thse steps have been completed run the following command (Make sure you run in sudo if on MacOS or Linux and the command prompt or PowerShell in Administrator mode in Windows when running this command):
-	- python startup.py
+8. Once thse steps have been completed run the following command (Make sure you are running the command prompt or PowerShell in Administrator mode in Windows when running this command):
+	- sudo python startup.py
