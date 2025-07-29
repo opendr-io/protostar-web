@@ -111,4 +111,5 @@
 		- ModelName=
 		- PerplexityKey=
 
-8. Once thse steps have been completed run the following command: python startup.py
+8. Once thse steps have been completed run the following command (Make sure you run in sudo if on MacOS or Linux and the command prompt or PowerShell in Administrator mode in Windows when running this command):
+	- python startup.py
