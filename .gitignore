@@ -1,23 +1,16 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# production
-/build
-
-# misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+skynet-ai-dev-flask-api/.DS_Store
+skynet-ai-dev-flask-api/.venv
+skynet-ai-dev-flask-api/keys
+skynet-ai-dev-flask-api/cert.conf
+skynet-ai-dev-flask-api/dbconfig.ini
+skynet-ai-dev-flask-api/agentconfig.ini
+secureconfig.ini
+skynet-ai-dev-flask-api/neo4j.conf
+skynet-ai-dev-flask-api/postgres.conf
+skynet-ai-dev-flask-api/neo4j-tls.conf
+skynet-ai-dev-flask-api/postgres-tls.conf
+skynet-ai-dev-flask-api/__pycache__
+skynet-ai-dev-flask-api/services/__pycache__
+skynet-neo/node_modules
+skynet-react/node_modules
+TLSSetup.md

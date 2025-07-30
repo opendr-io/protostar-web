@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+.calculated-textarea-height
+{
+  height: calc(((var(--base-size)) * (0.1 + 1.5)));
+}
