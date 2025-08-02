@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:ignore-errors": "cross-env CI=false DISABLE_ESLINT_PLUGIN=true vite build"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.0",
@@ -30,6 +31,7 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
+    "cross-env": "^10.0.0",
     "eslint": "^9.17.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",

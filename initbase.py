@@ -58,7 +58,7 @@ def run():
   servers = [
     ('python -m flask --app skynet-ai-dev-flask-api run --host 0.0.0.0 --port 5002', 'skynet-ai-dev-flask-api', 'Flask'),
     ('npm run dev', 'skynet-neo', 'Neo'),
-    ('npm run dev', 'skynet-react', 'React')
+    ('serve -s dist -p 5173', 'skynet-react', 'React')
   ]
 
   processes = []
