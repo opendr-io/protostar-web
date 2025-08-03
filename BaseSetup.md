@@ -2,6 +2,9 @@
 ## Prereqs
 - Visual Studio Code (optional, helps make the installation process easier): https://code.visualstudio.com/
 - Node.js installation: https://nodejs.org/en/download
+	- Once installed run the following commands:
+		- npm i -g serve
+		- npm i -g cross-env
 - Python installation: https://www.python.org/downloads/
 - Postgres installation: https://www.postgresql.org/download/
 - Homebrew installation (if using macOS): https://brew.sh/
