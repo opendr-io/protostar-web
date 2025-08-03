@@ -95,9 +95,9 @@ export function Home()
   }, []);
   return (
     <div className='bg-black text-white ml-10 min-h-screen mt-20'>
-      <h1 className="text-3xl font-bold mt-4">Star Dash</h1>
+      <h1 className="text-3xl font-bold mt-4">Daily Briefing</h1>
       <div className='mt-4'>
-        <h1>Briefing on Tactical Page</h1>
+        <h1>Daily Briefing</h1>
         <textarea readOnly={true} placeholder={tacticalSummary} style={{
             '--base-size': `${tacticalSummary.length/40}rem`
           } as React.CSSProperties} className="bg-[#1B1B1B] calculated-textarea-height w-[60rem] h-[30rem] text-gray-200 border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" />

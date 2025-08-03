@@ -39,14 +39,16 @@ def run():
   
   # Flask setup
   flask_cmd = 'python -m venv .venv'
-  npm_install = ['npm install']
+  npm_install = 'npm install'
+  npm_build = 'npm run build:ignore-errors'
+
   if(os.name == 'nt'):
     flask_cmd += ' && .venv\\Scripts\\activate.bat && pip install -r requirements.txt && python dbcreation.py && net stop postgresql-x64-' + postgresversion + ' && net start postgresql-x64-' + postgresversion
     npm_install = ['npm', 'install']
   elif(os.uname().sysname == 'Darwin'):
     flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py'
   elif(os.uname().sysname == 'Linux'):
-    flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py'
+    flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py && sudo systemctl restart postgresql'
   subprocess.run(flask_cmd, executable=shell, shell=True, cwd='skynet-ai-dev-flask-api')
 
   # Node.js setup
@@ -54,10 +56,13 @@ def run():
   subprocess.run(npm_install, shell=True, cwd='skynet-neo')
   subprocess.run(npm_install, shell=True, cwd='skynet-react')
 
+  subprocess.run(npm_build, shell=True, cwd='skynet-neo')
+  subprocess.run(npm_build, shell=True, cwd='skynet-react')
+
   # Start servers
   servers = [
     ('python -m flask --app skynet-ai-dev-flask-api run --host 0.0.0.0 --port 5002', 'skynet-ai-dev-flask-api', 'Flask'),
-    ('npm run dev', 'skynet-neo', 'Neo'),
+    ('serve -s dist -p 3000', 'skynet-neo', 'Neo'),
     ('serve -s dist -p 5173', 'skynet-react', 'React')
   ]
 
