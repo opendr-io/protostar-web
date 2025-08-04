@@ -108,12 +108,15 @@
 		-	shell= <-- Keep blank if using Windows.
 
 5. Navigate to cert.conf skynet-ai-dev-flask-api and alter the followwing configurations:
-  - [alt_names]
-    DNS.1 = localhost
-    DNS.2 = 127.0.0.1
-    DNS.3 = [your_hostname] <--- The hostname of the server
-    IP.1 = 127.0.0.1
-    IP.2 = [your_server_ip] <--- The IP of the server
+	- [dn]
+		- CN=[your_hostname]
+
+	- [alt_names]
+		- DNS.1 = localhost
+		- DNS.2 = 127.0.0.1
+		- DNS.3 = [your_hostname] <--- The hostname of the server
+		- IP.1 = 127.0.0.1
+		- IP.2 = [your_server_ip] <--- The IP of the server
 
 6. To run the application across the network, make changes to the following files in the following directories:
    - skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=https://[server_hostname]
