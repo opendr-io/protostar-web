@@ -1,4 +1,4 @@
-# Skynet Setup Guide
+# Protostar Setup Guide
 ## Prereqs
 - Visual Studio Code (optional, helps make the installation process easier): https://code.visualstudio.com/
 - Node.js installation: https://nodejs.org/en/download
@@ -25,9 +25,9 @@
 	 - postgres.conf
 	 	- Parts of the file that are edited:
 			- listen_addresses = '*' <-- Needed to allow application to know which IP to connect to. Located on line 60. Modify this if needed.
-			- port = 4000 <-- Needed to tell which port the application will need to connect to. Located on line 64. Modify this if needed.
+			- port = 5432 <-- Needed to tell which port the application will need to connect to. Located on line 64. Modify this if needed.
 	 - Copy and paste these files to the data directory in Postgres which is typically located in the following:
-	 	- Windows: C:\Program Files\Postgres\\[postgres_version]\data 
+	 	- Windows: C:\Program Files\Postgres\\[postgres_version]\data
 		- Linux: /etc/postgresql/[postgres_version]/main
 
 2. Navigate to the baseconfig under the skynet-ai-dev-flask-api directory again and make the appropriate edits to the following file for Neo4j: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
@@ -47,6 +47,8 @@
 			- DatabaseName=protostar
 			- RootDatabaseUserName=[postgres_root_user]
 			- RootDatabasePassword=[postgres_root_password]
+			- SSLMode= <--- Keep blank
+			- SSLRootCert= <--- Keep blank
 			- ApplicationUser=[The_first_user_of_application]
 			- ApplicationUserPassword=[Password_of_the_first_user_of_application]
 
@@ -56,23 +58,33 @@
 
 	- [Postgres]
 		- PostgresVersion=
+		- PostgresCertificatePath="" <--- Keep blank
+
+	- [Neo4j]
+		- Neo4jCertificatePath="" <--- Keep blank
+		- Neo4jPath="" <--- Below are where the path is located in these operating systems
+			- Windows: C:\Users\\[username]\\.Neo4jDesktop2\Data\dbmss\\[instance_id]\bin
+			- Linux: /home/[username]/.config/neo4j-desktop/Application/Data/dbmss/[instance_id]/bin
+			- MacOS: /Users/[username]/Library/Application Support/Neo4j Desktop/Application/relate-data/dbmss/[instance_id]/bin
 	
 	- [OSConfig]
 		-	shell= <-- Keep blank if using Windows.
 
 5. To run the application across the network, make changes to the following files in the following directories:
    - skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
-   - skynet-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="http://[server_hostname]:[port]/db/neo4j"
+   - skynet-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="http://[server_hostname]:7474/db/neo4j"
 
 6. To be able to run using hostname modify allowedHosts settings in the following paths:
 	- skynet-react/vite.config.ts
+		- https: false
 		- allowedHosts: ['your_hostname'] 
 	- skynet-neo/vite.config.ts
+		- https: false
 		- allowedHosts: ['your_hostname']
 
-7. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-opus-4-20250514 which is shown below. This can be changed based on user preference.)
+7. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-3-7-sonnet-20250219 which is shown below. This can be changed based on user preference.)
 	- [Anthropic]
-		- ModelName=claude-opus-4-20250514
+		- ModelName=claude-3-7-sonnet-20250219
 		- AnthropicKey=
 			
 	- [OpenAI]
@@ -87,5 +99,5 @@
 		- ModelName=
 		- PerplexityKey=
 
-8. Once thse steps have been completed run the following command (Make sure you are running the command prompt or PowerShell in Administrator mode in Windows when running this command):
+8. Once thse steps have been completed run the following command (Make sure you are running the command prompt or PowerShell in Administrator mode in Windows when running this command. If an error comes up rerun the command again):
 	- sudo python startup.py

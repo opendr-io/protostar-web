@@ -35,6 +35,7 @@ def run():
   print("Setting up environments...")
   # Neo4j configuration
   neo4jkeypath = config.get('Neo4j', 'Neo4jCertificatePath') # Needs to be filled in by user
+  neo4jpath = config.get('Neo4j', 'Neo4jPath')
   postgreskeypath = config.get('Postgres', 'PostgresCertificatePath')
   postgresversion = config.get('Postgres', 'PostgresVersion')
   shell = config.get('OSConfig', 'Shell')
@@ -43,12 +44,12 @@ def run():
   flask_cmd = 'python -m venv .venv'
   npm_install = ['npm install']
   if(os.name == 'nt'):
-    flask_cmd += ' && .venv\\Scripts\\activate.bat && pip install -r requirements.txt && python dbcreation.py && mkdir keys && copy cert.conf keys\\cert.conf && cd keys && openssl req -x509 -newkey rsa:4096 -keyout skynet-key.pem -out skynet-cert.pem -days 365 -nodes -config cert.conf -extensions v3_req && powershell -Command "Import-Certificate -FilePath "skynet-cert.pem" -CertStoreLocation Cert:\\LocalMachine\\Root" && copy skynet-cert.pem ' + neo4jkeypath + ' && copy skynet-key.pem ' + neo4jkeypath + ' && copy skynet-key.pem ' + postgreskeypath + ' && copy skynet-cert.pem ' + postgreskeypath + ' && del cert.conf && cd .. && net stop postgresql-x64-' + postgresversion + ' && net start postgresql-x64-' + postgresversion
+    flask_cmd += ' && .venv\\Scripts\\activate.bat && pip install -r requirements.txt && python dbcreation.py && mkdir keys && copy cert.conf keys\\cert.conf && cd keys && openssl req -x509 -newkey rsa:4096 -keyout protostar-key.pem -out protostar-cert.pem -days 365 -nodes -config cert.conf -extensions v3_req && powershell -Command "Import-Certificate -FilePath "protostar-cert.pem" -CertStoreLocation Cert:\\LocalMachine\\Root" && copy protostar-cert.pem ' + neo4jkeypath + ' && copy protostar-key.pem ' + neo4jkeypath + ' && copy protostar-key.pem ' + postgreskeypath + ' && copy protostar-cert.pem ' + postgreskeypath + ' && del cert.conf && cd .. && net stop postgresql-x64-' + postgresversion + ' && net start postgresql-x64-' + postgresversion + ' && ' + neo4jpath + 'neo4j windows-service install && ' + neo4jpath + 'neo4j restart'
     npm_install = ['npm', 'install']
   elif(os.uname().sysname == 'Darwin'):
-    flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py && mkdir keys && cp cert.conf keys/cert.conf && cd keys && openssl req -x509 -newkey rsa:4096 -keyout skynet-key.pem -out skynet-cert.pem -days 365 -nodes -config cert.conf -extensions v3_req && sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain skynet-cert.pem && cp skynet-cert.pem ' + neo4jkeypath + '&& cp skynet-key.pem ' + neo4jkeypath + ' && rm cert.conf && cd ..'
+    flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py && mkdir keys && cp cert.conf keys/cert.conf && cd keys && openssl req -x509 -newkey rsa:4096 -keyout protostar-key.pem -out protostar-cert.pem -days 365 -nodes -config cert.conf -extensions v3_req && sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain protostar-cert.pem && cp protostar-cert.pem ' + neo4jkeypath + '&& cp protostar-key.pem ' + neo4jkeypath + ' && rm cert.conf && cd ..'
   elif(os.uname().sysname == 'Linux'):
-    flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py && mkdir keys && cp cert.conf keys/cert.conf && cd keys && openssl req -x509 -newkey rsa:4096 -keyout skynet-key.pem -out skynet-cert.pem -days 365 -nodes -config cert.conf -extensions v3_req && sudo cp skynet-cert.pem /usr/local/share/ca-certificates/skynet-cert.crt && sudo update-ca-certificates && cp skynet-cert.pem ' + neo4jkeypath + '&& cp skynet-key.pem ' + neo4jkeypath + ' && cp skynet-cert.pem ' + postgreskeypath + ' && cp skynet-cert.pem ' + postgreskeypath + ' && rm cert.conf && cd .. && sudo service postgresql restart'
+    flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py && mkdir keys && cp cert.conf keys/cert.conf && cd keys && openssl req -x509 -newkey rsa:4096 -keyout protostar-key.pem -out protostar-cert.pem -days 365 -nodes -config cert.conf -extensions v3_req && sudo cp protostar-cert.pem /usr/local/share/ca-certificates/protostar-cert.crt && sudo update-ca-certificates && cp protostar-cert.pem ' + neo4jkeypath + '&& cp protostar-key.pem ' + neo4jkeypath + ' && cp protostar-cert.pem ' + postgreskeypath + ' && cp protostar-cert.pem ' + postgreskeypath + ' && rm cert.conf && cd .. && sudo service postgresql restart && ' + neo4jpath + 'neo4j restart'
   subprocess.run(flask_cmd, executable=shell, shell=True, cwd='skynet-ai-dev-flask-api')
 
   # Node.js setup
@@ -58,7 +59,7 @@ def run():
 
   # Start servers
   servers = [
-    ('python -m flask --app skynet-ai-dev-flask-api run --cert=keys/skynet-cert.pem --key=keys/skynet-key.pem --host 0.0.0.0 --port 5002', 'skynet-ai-dev-flask-api', 'Flask'),
+    ('python -m flask --app skynet-ai-dev-flask-api run --cert=keys/protostar-cert.pem --key=keys/protostar-key.pem --host 0.0.0.0 --port 5002', 'skynet-ai-dev-flask-api', 'Flask'),
     ('npm run dev', 'skynet-neo', 'Neo'),
     ('npm run dev', 'skynet-react', 'React')
   ]
