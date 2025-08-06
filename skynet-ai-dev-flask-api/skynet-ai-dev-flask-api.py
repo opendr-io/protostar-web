@@ -7,6 +7,7 @@ import configparser
 from flask import Flask, request, make_response, jsonify
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import (JWTManager, jwt_required, get_jwt_identity)
+from flask_talisman import Talisman
 sys.path.append('services')
 from llmservice import LLMService
 from telemetryservice import TelemetryService
@@ -20,6 +21,15 @@ app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=2)
 app.config['JWT_ERROR_MESSAGE_KEY'] = 'message'
+
+csp = {
+  'default-src': "'self'",
+  'script-src': "'none'",
+  'style-src': "'self'",
+  'img-src': "'self'",
+}
+
+talisman = Talisman(app, force_https=False)
 jwt = JWTManager(app)
 
 llmservice = LLMService()

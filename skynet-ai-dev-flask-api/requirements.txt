@@ -2,6 +2,7 @@ psycopg[binary]
 flask
 flask_cors
 flask_jwt_extended
+flask-talisman
 neo4j
 pandas
 py2neo
