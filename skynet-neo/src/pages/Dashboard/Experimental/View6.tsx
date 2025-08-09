@@ -21,7 +21,11 @@ export function View6()
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[*]->(a:ALERT) where not n.entity = "172.16.200.110" and (a.detection_type = "CLOUD_ANOMALY" or a.detection_type = "CLOUD_ALERT") RETURN path`
+            statement: `MATCH (n:ENTITY {view: 1})-[r]->(m {view: 1})
+                        WITH n, count(r) AS count_of_first_layer_nodes
+                        WHERE count_of_first_layer_nodes = 1
+                        MATCH p=(n)-[r*]->(m)
+                        RETURN p`
           },
         ],
       }),
@@ -44,7 +48,7 @@ export function View6()
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-30}
+        strength={-300}
         labelNodeTypes={['SEVERITY_CLUSTER']}
       />
     </div>

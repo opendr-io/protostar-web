@@ -22,7 +22,7 @@ export function View2()
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (h:ENTITY)-[r]->() WHERE NOT type(r) IN ['AS_SOURCE', 'AS_DEST'] WITH h, collect(DISTINCT type(r)) AS relationshipTypes WHERE size(relationshipTypes) >= 2 and h.view = 1 MATCH p=(h)-[r*]->() RETURN p`,
+            statement: `MATCH (h:ENTITY)-[r]->() WHERE NOT type(r) IN ['AS_SOURCE', 'AS_DEST'] WITH h, collect(DISTINCT type(r)) AS relationshipTypes WHERE size(relationshipTypes) >= 3 and h.view = 1 MATCH p=(h)-[r*]->() RETURN p`,
           },
         ],
       }),
@@ -45,7 +45,7 @@ export function View2()
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-300}
+        strength={-500}
         labelNodeTypes={['ENTITY', 'NAME_CLUSTER']}
       />
     </div>
