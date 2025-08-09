@@ -99,12 +99,13 @@ export function Home()
         <h1 className="text-3xl font-bold mt-4">Protostar: AI Powered Detection Management</h1>
         <h1 className="mt-4 flex-1">
         
-          Tactical: An AI interface into detection elements by entity. From here, you can drilldown into the details of a detection element and ask questions of the AI interface<p><br></br>
-          Visual: Graphs of the detection elements From here, you can drilldown into the a subgraph of a single detection element or read its component alerts and elements <p><br></br>
-          Alerts: AI interface into individual alerts for an entity graph. From here you can ask questions about alerts and detection elements.  <p></p> 
-         </p></p></h1>
+          Tactical: An AI interface into detection elements by entity. From here, you can drilldown into the details of a detection element and ask questions of the AI interface<br></br><br></br>
+          Visual: Graphs of the detection elements From here, you can drilldown into the a subgraph of a single detection element or read its component alerts and elements. In the visual graph interface, there are three levels of detection elements: alpha, beta and gamma. Alpha elements have the highest atomic weights and are the most critical. Other element types include isotopes and signal coefficients. <br></br><br></br>
+          Alerts: AI interface into individual alerts for an entity graph. From here you can ask questions about alerts and detection elements.
+         </h1>
         <div className='mt-4 flex-1'>
-          <h1>The latest AI analysis and recomendations will appear below. The summary includes a high level overview of the
+        <h1 className="text-2xl font-bold mt-4">Situation Report:</h1>
+          <h1><br></br>The latest AI analysis and recomendations will appear below. The summary includes a high level overview of the
             open threat detection elemets, the type of entity in each detecton element, and overall reccomendations. </h1>
           <div className="mt-4">
             <textarea readOnly={true} 

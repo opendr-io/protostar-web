@@ -21,11 +21,7 @@ export function View6()
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (n:ENTITY {view: 1})-[r]->(m {view: 1})
-                        WITH n, count(r) AS count_of_first_layer_nodes
-                        WHERE count_of_first_layer_nodes = 1
-                        MATCH p=(n)-[r*]->(m)
-                        RETURN p`
+            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[*]->(a:ALERT) where (a.detection_type = "SIGNAL" or a.detection_type = "ML_CORRELATION") RETURN path`
           },
         ],
       }),
@@ -48,7 +44,7 @@ export function View6()
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-300}
+        strength={-500}
         labelNodeTypes={['SEVERITY_CLUSTER']}
       />
     </div>

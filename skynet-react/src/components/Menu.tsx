@@ -35,8 +35,8 @@ export function Menu()
     { id: 5, label: 'Gamma Signals', link: '/view5', element: <View5 /> },
     { id: 2, label: 'Detail View', link: '/entity', element: <EntityDash /> },
     { id: 3, label: 'Global View', link: '/everything', element: <EverythingDash/> },
-    { id: 6, label: 'View 6', link: '/view6', element: <View6 /> },
-    { id: 7, label: 'View 7', link: '/view7', element: <View7 /> },
+    { id: 6, label: 'Signal Coefficients', link: '/view6', element: <View6 /> },
+    { id: 7, label: 'Isotopes', link: '/view7', element: <View7 /> },
   ];
 
   function MenuOptions()
