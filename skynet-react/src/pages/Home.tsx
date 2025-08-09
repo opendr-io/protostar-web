@@ -94,13 +94,27 @@ export function Home()
     }
   }, []);
   return (
-    <div className='bg-black text-white ml-10 min-h-screen mt-20'>
-      <h1 className="text-3xl font-bold mt-4">Star Dash</h1>
-      <div className='mt-4'>
-        <h1>Briefing on Tactical Page</h1>
-        <textarea readOnly={true} placeholder={tacticalSummary} style={{
-            '--base-size': `${tacticalSummary.length/40}rem`
-          } as React.CSSProperties} className="bg-[#1B1B1B] calculated-textarea-height w-[60rem] h-[30rem] text-gray-200 border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" />
+    <div className='bg-black text-white min-h-screen mt-[48px] px-4'>
+      <div className='max-w-6xl mx-auto'>
+        <h1 className="text-3xl font-bold mt-4">Protostar: AI Powered Detection Management</h1>
+        <h1 className="mt-4 flex-1">
+        
+          Tactical: An AI interface into detection elements by entity. From here, you can drilldown into the details of a detection element and ask questions of the AI interface<p><br></br>
+          Visual: Graphs of the detection elements From here, you can drilldown into the a subgraph of a single detection element or read its component alerts and elements <p><br></br>
+          Alerts: AI interface into individual alerts for an entity graph. From here you can ask questions about alerts and detection elements.  <p></p> 
+         </p></p></h1>
+        <div className='mt-4 flex-1'>
+          <h1>The latest AI analysis and recomendations will appear below. The summary includes a high level overview of the
+            open threat detection elemets, the type of entity in each detecton element, and overall reccomendations. </h1>
+          <div className="mt-4">
+            <textarea readOnly={true} 
+                      placeholder={tacticalSummary} 
+                      style={{
+                        '--base-size': `${tacticalSummary.length/40}rem`
+                      } as React.CSSProperties} 
+                      className="bg-[#1B1B1B] calculated-textarea-height w-full h-[calc(100vh-12rem)] text-gray-200 border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" />
+          </div>
+        </div>
       </div>
     </div>
   )

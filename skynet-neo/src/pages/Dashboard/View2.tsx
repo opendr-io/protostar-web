@@ -45,7 +45,7 @@ export function View2()
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-200}
+        strength={-300}
         labelNodeTypes={['ENTITY', 'NAME_CLUSTER']}
       />
     </div>
