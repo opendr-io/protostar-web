@@ -9,6 +9,6 @@ export default defineConfig({
     // @ts-ignore
     https: false,
     port: 3000,
-    allowedHosts: ['your_hostname'], // <== Must be an array
+    allowedHosts: ['desktop-iagnt81'], // <== Must be an array
   },
 })
