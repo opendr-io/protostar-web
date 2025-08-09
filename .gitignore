@@ -16,4 +16,5 @@ skynet-react/node_modules
 TLSSetup.md
 *.ini
 *.ini
+.env
 skynet-neo/.env
