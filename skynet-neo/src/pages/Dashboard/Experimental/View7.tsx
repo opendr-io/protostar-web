@@ -21,7 +21,7 @@ export function View7()
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[*]->(a:ALERT) where not n.entity = "172.16.200.110" and not (a.detection_type = "CLOUD_ANOMALY" or a.detection_type = "CLOUD_ALERT") RETURN path`
+            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[*]->(a:ALERT) where (a.detection_type = "HOT_ISOTOPE" or a.detection_type = "STABLE_ISOTOPE") RETURN path`
           },
         ],
       }),
@@ -44,7 +44,7 @@ export function View7()
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-30}
+        strength={-300}
         labelNodeTypes={['SEVERITY_CLUSTER']}
       />
     </div>

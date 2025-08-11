@@ -14,3 +14,5 @@ skynet-ai-dev-flask-api/services/__pycache__
 skynet-neo/node_modules
 skynet-react/node_modules
 TLSSetup.md
+**/*.ini
+**/*.env
