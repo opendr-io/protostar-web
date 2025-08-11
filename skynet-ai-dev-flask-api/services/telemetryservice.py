@@ -47,7 +47,7 @@ class TelemetryService:
           WHERE n.view = 2
           MATCH (n)-[*]->(m:ALERT)
         RETURN DISTINCT
-          substring(n.entity, apoc.text.indexOf(n.entity, '-') + 2) AS entity
+          substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity
         ORDER BY entity ASC
         """).to_data_frame()
       data = result_df.to_json()
@@ -113,7 +113,7 @@ class TelemetryService:
           MATCH (n)-[*]->(m:ALERT)
           where n.entity contains '{entity}'
           RETURN
-              substring(n.entity, apoc.text.indexOf(n.entity, '-') + 2) AS entity,
+              substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity,
               m.detection_type AS detection_type,
               m.mitre_tactic AS mitre_tactic,
               m.name as name,

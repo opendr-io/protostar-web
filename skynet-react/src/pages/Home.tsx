@@ -94,7 +94,7 @@ export function Home()
     }
   }, []);
   return (
-    <div className='bg-black text-white min-h-screen mt-[48px] px-4'>
+    <div className='bg-black text-white min-h-screen mt-20 px-4'>
       <div className='max-w-6xl mx-auto'>
         <h1 className="text-3xl font-bold mt-4">Protostar: AI Powered Detection Management</h1>
         <h1 className="mt-4 flex-1">

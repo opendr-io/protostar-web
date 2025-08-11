@@ -35,11 +35,11 @@ export function Summary()
     function ManipulateDataEntry(data: string)
     {
       let splitData = data.split(',');
-      let furtherSplit = splitData[splitData.length - 2].split(/-(.*)/, 2);
+      let furtherSplit = splitData[splitData.length - 2].split(/- (.*)/, 2);
       let entity = furtherSplit[furtherSplit.length - 1].trim();
-      let atomicWeightField = furtherSplit[0].split(':')[0].trim().replace(/\b\w/g, letter => letter.toUpperCase());
-      let atomicWeight = furtherSplit[0].split(':')[1];
-      let updatedEntry = [entity, splitData[1], splitData[2], atomicWeight, splitData[3]];
+      let atomicWeightField = 'Atomic Weight'; // furtherSplit[0].split(':')[0].trim().replace(/\b\w/g, letter => letter.toUpperCase());
+      let atomicWeight = furtherSplit[0].split(/:\s/)[1];
+      let updatedEntry = [String(entity).trim(), String(splitData[1]).trim(), String(splitData[2]).trim(), String(atomicWeight).trim(), (splitData[3]).trim()];
       return { updatedEntry, atomicWeightField };
     }
 
@@ -146,18 +146,19 @@ export function Summary()
     }
   }
 
-  const getVisibleItems = () => {
-  return highLevelDataFields
-    .map((item: any, index: any) => ({ value: item, originalIndex: index }))
-    .filter((item: any) => highLevelDataFieldVisibility[item.originalIndex]);
-};
-
-// Helper function to count visible columns (for grid layout)
-const getVisibleColumnCount = () => {
-  // Count visible header columns (first 5 items)
-  const visibleHeaders = highLevelDataFieldVisibility.slice(0, 5).filter(Boolean).length;
-  return Math.max(visibleHeaders, 1); // Ensure at least 1 column
-};
+  const getVisibleItems = () => 
+  {
+    return highLevelDataFields
+      .map((item: any, index: any) => ({ value: item, originalIndex: index }))
+      .filter((item: any) => highLevelDataFieldVisibility[item.originalIndex]);
+  };
+  ``
+  // Helper function to count visible columns (for grid layout)
+  const getVisibleColumnCount = () => {
+    // Count visible header columns (first 5 items)
+    const visibleHeaders = highLevelDataFieldVisibility.slice(0, 5).filter(Boolean).length;
+    return Math.max(visibleHeaders, 1); // Ensure at least 1 column
+  };``
 
   if(highLevelDataFields)
   {
