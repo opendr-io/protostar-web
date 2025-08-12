@@ -30,13 +30,13 @@ export function Menu()
 {
   let sms = new SessionManagementService();
   const subMenuItems = [
-    { id: 1, label: 'Primary View', link:'/primary', element: <PrimaryDash /> },
-    { id: 2, label: 'Entity View', link: '/entity', element: <EntityDash /> },
-    { id: 3, label: 'Everything', link: '/everything', element: <EverythingDash/> },
-    { id: 4, label: 'View 4', link: '/view4', element: <View4 /> },
-    { id: 5, label: 'View 5', link: '/view5', element: <View5 /> },
-    { id: 6, label: 'View 6', link: '/view6', element: <View6 /> },
-    { id: 7, label: 'View 7', link: '/view7', element: <View7 /> },
+    { id: 1, label: 'Alpha Signals', link:'/primary', element: <PrimaryDash /> },
+    { id: 4, label: 'Beta Signals', link: '/view4', element: <View4 /> },
+    { id: 5, label: 'Gamma Signals', link: '/view5', element: <View5 /> },
+    { id: 2, label: 'Detail View', link: '/entity', element: <EntityDash /> },
+    { id: 3, label: 'Global View', link: '/everything', element: <EverythingDash/> },
+    { id: 6, label: 'Signal Coefficients', link: '/view6', element: <View6 /> },
+    { id: 7, label: 'Isotopes', link: '/view7', element: <View7 /> },
   ];
 
   function MenuOptions()
@@ -56,7 +56,7 @@ export function Menu()
             <div className="inline-flex cursor-pointer flex-col items-center justify-center hover:bg-gray-600 px-3 relative" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
               <span>Visual</span>
               <div className={`
-              absolute left-0 mt-[21.5rem] w-40 rounded-md shadow-lg bg-black text-white
+              absolute left-0 mt-[23rem] w-40 rounded-md shadow-lg bg-black text-white
               transition-all duration-300 ease-in-out
               ${isHovered ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
                 <div>

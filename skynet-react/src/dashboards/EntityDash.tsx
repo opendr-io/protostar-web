@@ -24,7 +24,6 @@ export function EntityDash()
   }, []);
   return (
     <div className="min-h-screen mx-10 text-3xl font-bold pt-4 bg-black text-white mt-20">
-      <h1>Entity Dash</h1>
       <iframe className="mt-4 w-full h-[88vh] rounded-md" src={`${config.ServerURL()}:3000/view3`} />
     </div>
   )

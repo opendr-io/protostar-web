@@ -223,8 +223,7 @@ export function Details()
                                 element.style.textAlign = 'center';
                               }
                             }}>
-                            <span className="inline-block w-full pointer-events-none">{rowData.value}</span>
-                            
+                            <span className="inline-block w-full pointer-events-none">{(rowData.value == "") ? "-" : rowData.value}</span>
                             {/* Resize handle for data cells */}
                             <div className="absolute right-0 top-0 bottom-0 w-3 cursor-col-resize bg-transparent hover:bg-blue-500/30 transition-colors duration-200 opacity-0 group-hover/resize:opacity-100 flex items-center justify-center z-10"
                               onMouseDown={(e) => {
