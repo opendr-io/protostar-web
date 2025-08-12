@@ -37,9 +37,9 @@ export function Summary()
       let splitData = data.split(',');
       let furtherSplit = splitData[splitData.length - 2].split(/- (.*)/, 2);
       let entity = furtherSplit[furtherSplit.length - 1].trim();
-      let atomicWeightField = 'Atomic Weight'; // furtherSplit[0].split(':')[0].trim().replace(/\b\w/g, letter => letter.toUpperCase());
+      let atomicWeightField = 'Atomic Weight';
       let atomicWeight = furtherSplit[0].split(/:\s/)[1];
-      let updatedEntry = [String(entity).trim(), String(splitData[1]).trim(), String(splitData[2]).trim(), String(atomicWeight).trim(), (splitData[3]).trim()];
+      let updatedEntry = [String(entity).trim(), String(splitData[1]).trim(), (String(splitData[2]).trim() == "" ? "-" : String(splitData[2]).trim()) , (String(atomicWeight).trim() == "undefined" ? "-" : String(atomicWeight).trim()), (splitData[3]).trim()];
       return { updatedEntry, atomicWeightField };
     }
 
@@ -53,6 +53,7 @@ export function Summary()
     async function FetchData()
     {
       let pgd = await ts.RetrieveGraphData('view2');
+      console.log(pgd);
       let highLevelDataFields = new Set();
       let highLevel = new Set();
       let midLevelData:any = []; 
