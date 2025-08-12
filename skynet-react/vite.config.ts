@@ -8,6 +8,6 @@ export default defineConfig({
   server: {
     host: true,
     https: false,
-    allowedHosts: ['localhost'], // <== Must be an array
+    allowedHosts: ['hostname'], // <== Must be an array
   },
 })

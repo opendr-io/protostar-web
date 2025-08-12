@@ -1,10 +1,73 @@
+*.log
+*.txt
+*.cer
+*.crt
+*.crl
+*.pfx
+*.p12
+*.pml
+
+# API keys and credentials
+*.env
+.env
+.env.local
+.env.production
+.env.development
+*.secret
+*.credentials
+config/secrets.yml
+
+# SSH keys
+*.pem
+*.key
+*.pub
+id_rsa
+id_rsa.pub
+id_ecdsa
+id_ecdsa.pub
+id_ed25519
+id_ed25519.pub
+.ssh/
+
+# VS Code
+.vscode/
+
+# JetBrains IDEs (PyCharm, IntelliJ, etc.)
+.idea/
+
+# Sublime
+*.sublime-workspace
+*.sublime-project
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+
+# Virtual environments
+venv/
+.env/
+*.egg-info/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS-specific files
+.DS_Store           # macOS
+Thumbs.db           # Windows
+
+# Environment files
+.env
+.env.*
+
+
+*.conf
+*.ini
+
 skynet-ai-dev-flask-api/.DS_Store
 skynet-ai-dev-flask-api/.venv
 skynet-ai-dev-flask-api/keys
-skynet-ai-dev-flask-api/cert.conf
-skynet-ai-dev-flask-api/dbconfig.ini
-skynet-ai-dev-flask-api/agentconfig.ini
-secureconfig.ini
 skynet-ai-dev-flask-api/neo4j.conf
 skynet-ai-dev-flask-api/postgres.conf
 skynet-ai-dev-flask-api/neo4j-tls.conf
@@ -13,6 +76,3 @@ skynet-ai-dev-flask-api/__pycache__
 skynet-ai-dev-flask-api/services/__pycache__
 skynet-neo/node_modules
 skynet-react/node_modules
-TLSSetup.md
-**/*.ini
-**/*.env
