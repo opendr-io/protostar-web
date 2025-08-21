@@ -1,4 +1,4 @@
-import { createBrowserRouter, data, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, data, RouterProvider, useLocation } from "react-router-dom";
 import React, { useState, useEffect, useRef } from 'react';
 // import Papa, { parse } from 'papaparse';
 import LLMService from '../services/LLMService.ts';
@@ -25,23 +25,30 @@ export function Alerts()
   const [entityCounter, setEntityCounter] = useState<number>(0)
   const [entityDetails, setEntityDetails] = useState<any>(null);
   const [llmOutput, setLLMOutput] = useState('');
+  const data = useLocation().state;
   const llm = new LLMService();
   const ts = new TelemetryService();
   const ps = new PromptService();
   let hts = new HelpTextService();
+
+  async function FetchEntities()
+  {
+    let neoEntities = await ts.GetEntitiesNeo();
+    let neoEArr = Object.values(neoEntities['entity']);
+    let neoDetails = await ts.RetrieveRawEntityDetailsNeo(neoEArr[0]);
+    let neoDArr = Object.values(neoDetails);
+    setEntityCounter(neoEArr.length)
+    setEntities(neoEArr);
+    setEntityDetails(neoDArr);
+  }
+
   useEffect(() =>
   {
-    async function FetchEntities()
-    {
-      let neoEntities = await ts.GetEntitiesNeo();
-      let neoEArr = Object.values(neoEntities['entity']);
-      let neoDetails = await ts.RetrieveRawEntityDetailsNeo(neoEArr[0]);
-      let neoDArr = Object.values(neoDetails);
-      setEntityCounter(neoEArr.length)
-      setEntities(neoEArr);
-      setEntityDetails(neoDArr);
-    }
     FetchEntities();
+    if(data) 
+    {
+      LoadEntityData(data);
+    }
   }, []);
   
   const handleChange = (event: any) =>
@@ -49,16 +56,21 @@ export function Alerts()
     setLLMQuestion(event.target.value);
   };
 
-  const handleEntityDataStorage = async (event: any) =>
+  async function LoadEntityData(entity: any)
   {
-    setIsOpen(!isOpen);
+    console.log(entity);
     setEntityDetails(null);
-    let option = event.currentTarget.dataset.value;
-    let neoDetails = await ts.RetrieveRawEntityDetailsNeo(option);
+    let neoDetails = await ts.RetrieveRawEntityDetailsNeo(entity);
     let neoDArr = Object.values(neoDetails);
     let l = Object.values(neoDetails['name']);
     setEntityCounter(l.length);
     setEntityDetails(neoDArr);
+  }
+
+  const handleEntityDataStorage = async (event: any) =>
+  {
+    setIsOpen(!isOpen);
+    LoadEntityData(event.currentTarget.dataset.value);
   }
   
   if(entities)

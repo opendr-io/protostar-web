@@ -1,4 +1,4 @@
-import { createBrowserRouter, data, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, data, RouterProvider, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from "react-redux";
 import LLMService from '../services/LLMService.ts';
@@ -9,6 +9,7 @@ import HelpTextService from "../services/HelpTextService.ts";
 
 export function Details()
 {
+  const navigate = useNavigate();
   const [entityDetails, setEntityDetails] = useState<any>([]);
   const [entityFields, setEntityFields] = useState<any>([]);
   const [entityFieldsVisibility, setEntityFieldsVisibility] = useState<any>([]);
@@ -69,13 +70,19 @@ export function Details()
     setOpen(false);
   }
 
+  function NavigateToAlertsPage(entity: any)
+  {
+    // console.log(entity);
+    navigate('/alerts', { state: entity });
+  }
+
   if(entityDetails)
   {
     return (
       <div className="py-4 mx-10 min-h-screen mt-20">
         <h1 className="text-3xl font-bold mb-4">Details</h1>
         <div className="mt-4">
-          <h2 className="font-semibold text-xl mb-2">Entity: <span className="">{entity[0]}</span></h2>
+          <h2 className="font-semibold text-xl mb-2">Entity: <span onClick={() => NavigateToAlertsPage(entity[0])} className="cursor-pointer text-blue-600">{entity[0]}</span></h2>
           <h2 className="font-semibold text-xl mb-2">Entity Type: <span className="">{entity[1]}</span></h2>
           <h2 className="font-semibold text-xl mb-4">IP: <span className="">{entity[2]}</span></h2>
         </div>
