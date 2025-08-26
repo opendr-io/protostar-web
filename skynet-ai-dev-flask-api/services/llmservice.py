@@ -15,9 +15,9 @@ config.read(Path(__file__).parent.parent.absolute() / "agentconfig.ini")
 class LLMService:
   def __init__(self):
     self.uselocalllm = True
-    config.get('Anthropic', 'AnthropicKey')
     self.anthropickey = config.get('Anthropic', 'AnthropicKey')
     self.sonarkey = config.get('Perplexity', 'PerplexityKey')
+    self.openaikey = config.get('OpenAI', 'OpenAIKey')
 
   def ask_claude(self, question):
     try:
@@ -38,11 +38,15 @@ class LLMService:
       return ''
   
   def ask_chat_gpt(self, question):
-    pass
+    try:
+      llm = llm = ChatOpenAI(model=config.get("OpenAI", "ModelName"), api_key=self.openaikey, temperature=0, max_tokens=None, timeout=None, max_retries=2)
+      result = llm.invoke([HumanMessage(content=question)]).content
+      return result
+    except Exception as e:
+      print(e)
+      return ''
   
   def ask_local_llm(self, question):
-    # model = LiteLLMModel(model_id="ollama_chat/hermes3:3b", api_base="http://localhost:11434/api/chat", api_key='not-needed', max_tokens=8000)
-    # model = OpenAIServerModel(model_id="gemma-3-4b-it-qat", api_base="http://127.0.0.1:1234/v1", api_key="not-needed")
     try:
       llm = ChatOpenAI(base_url="http://127.0.0.1:1234/v1", api_key="lm-studio", temperature=0.5)
       result = llm.invoke([HumanMessage(content=question)]).content

@@ -4,8 +4,8 @@ import { useSelector } from "react-redux";
 import LLMService from '../services/LLMService.ts';
 import PromptService from "../services/PromptService.ts";
 import TelemetryService from "../services/TelemetryService.ts";
-import { X, Plus, ChevronDown } from 'lucide-react';
 import HelpTextService from "../services/HelpTextService.ts";
+import { X, Plus, ChevronDown } from 'lucide-react';
 
 export function Details()
 {
