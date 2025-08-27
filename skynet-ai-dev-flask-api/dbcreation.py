@@ -42,7 +42,31 @@ def setup_postgres_tables():
         sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers})"
         final_params = [config.get('Database', 'ApplicationUser', fallback='appuser'), hashed_password]
         cursor.execute(sqlInsertStatement, final_params)
-        connection.commit()
+
+        password = config.get('Database', 'ApplicationUserPassword2', fallback='appuser').encode('utf-8')
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password, salt)
+        fillers = ("%s," * 2)[:-1]
+        sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers})"
+        final_params = [config.get('Database', 'ApplicationUser2', fallback='appuser'), hashed_password]
+        cursor.execute(sqlInsertStatement, final_params)
+
+        password = config.get('Database', 'ApplicationUserPassword3', fallback='appuser').encode('utf-8')
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password, salt)
+        fillers = ("%s," * 2)[:-1]
+        sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers})"
+        final_params = [config.get('Database', 'ApplicationUser3', fallback='appuser'), hashed_password]
+        cursor.execute(sqlInsertStatement, final_params) 
+
+        password = config.get('Database', 'ApplicationUserPassword4', fallback='appuser').encode('utf-8')
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password, salt)
+        fillers = ("%s," * 2)[:-1]
+        sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers})"
+        final_params = [config.get('Database', 'ApplicationUser4', fallback='appuser'), hashed_password]
+        cursor.execute(sqlInsertStatement, final_params)
+        connection.commit()       
         print('Users Created!')
       except:
         print('Users have already been created!')

@@ -118,7 +118,10 @@ export function Details()
                     let answer = await llm.AskLLM(summaryPrompt);
                     setLLMOutput(answer);
                   }
-                } className="bg-black text-white border border-gray-300 mt-4 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">AI Explaination</button>
+                } className="bg-black text-white border border-gray-300 mt-4 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">AI Explaination</button>              
+            </div>
+            <div className="flex-row">
+              <button className="bg-black text-white border border-gray-300 mt-4 w-48 py-2 ml-4 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Create Case</button>
             </div>
           </div>
         </div>

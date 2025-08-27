@@ -56,8 +56,8 @@ def run():
   subprocess.run(npm_install, shell=True, cwd='skynet-neo')
   subprocess.run(npm_install, shell=True, cwd='skynet-react')
 
-  subprocess.run(npm_build, shell=True, cwd='skynet-neo')
-  subprocess.run(npm_build, shell=True, cwd='skynet-react')
+  # subprocess.run(npm_build, shell=True, cwd='skynet-neo')
+  # subprocess.run(npm_build, shell=True, cwd='skynet-react')
 
   # Start servers
   servers = [

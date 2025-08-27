@@ -5,6 +5,8 @@ import LLMService from '../services/LLMService.ts';
 import PromptService from "../services/PromptService.ts";
 import TelemetryService from "../services/TelemetryService.ts";
 import HelpTextService from "../services/HelpTextService.ts";
+import { CasesOverview } from "./CasesOverview.tsx";
+import { CaseDetails } from "./CaseDetails.tsx";
 
 export function Cases()
 {
@@ -33,6 +35,13 @@ export function Cases()
       text: `With the extra width, you have more space for images, tables, or other content
             that benefits from a wider display area.`,
     },
+
+    {
+      id: 4,
+      title: "All",
+      text: `With the extra width, you have more space for images, tables, or other content
+            that benefits from a wider display area.`,
+    },
   ];
 
   const users = [
@@ -56,52 +65,21 @@ export function Cases()
   }
 
   return (
-    <div className="relative min-h-screen mt-20">
+    <div className="relative min-h-screen mt-20 bg-black text-white">
       <h1 className="pl-10 text-3xl font-bold py-4">Cases</h1>
-      <div className={`min-h-screen bg-gray-100 transition-opacity duration-500 ${(!isCaseWizardOpen) && (!isEntitySelected) ? "opacity-100 pointer-events-auto" : "opacity-40 pointer-events-none"}`}>
-        {/* Container with three columns */}
+      <div className={`min-h-screen transition-opacity duration-500 ${(!isCaseWizardOpen) ? "opacity-100 pointer-events-auto" : "opacity-40 pointer-events-none"}`}>
         <div className={`flex flex-row flex-wrap min-h-screen max-w-full overflow-x-hidden`}>
-          {/* Left Sidebar */}
-          <aside className={`w-1/6 bg-blue-100 p-6 transition-opacity`}>
-            <button onClick={() => ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen)} className="cursor-pointer hover:bg-gray-200 active:bg-gray-400 text-black bg-white px-8 py-2 shadow rounded-lg">Create Case</button>
-            <div className="space-y-4 my-4">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Assignees</h2>
-              {/* <div className="bg-white p-4 rounded-lg shadow">
-              </div> */}
-              <div className="bg-white p-4 rounded-lg shadow hover:bg-gray-200">
-                <p className="text-black cursor-pointer select-none" onClick={() => ToggleWindow(isUserListOpen, setIsUserListOpen)}>List of Assignees</p>
-                <div className={`absolute mt-2 w-fit rounded-md shadow-lg bg-white transform transition-all duration-300 ease-in-out ${isUserListOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-                  <div>
-                    <ul className="list-inside space-y-4 list-none">
-                      {users.map((item, index) => (
-                        <li key={index} onClick={() => ToggleWindow(isUserListOpen, setIsUserListOpen)} className="text-gray-800 cursor-pointer px-4 py-2 hover:bg-gray-200 active:bg-gray-400">
-                          <span>{item.user}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          <main className="w-2/3 bg-white p-6">
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Your Cases</h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-6">
-              {contentSections.map(({ id, title, text }) => (
-                <div key={id} className="bg-gray-50 text-gray-800 rounded-lg shadow cursor-pointer aspect-square p-6 flex flex-col" onClick={() => {setSelected({ title, text }); ToggleWindow(isEntitySelected, setIsEntitySelected)}}>
-                  <h3 className="text-lg text-black font-semibold mb-3">{title}</h3>
-                  <p className="text-gray-700 line-clamp-4">{text}</p>
-                </div>
-              ))}
-            </div>
+          {/* Left Portion */}
+          <main className="w-5/6 p-6">
+            {(selected != null) ? <CaseDetails selected={selected} setSelected={setSelected} /> : <CasesOverview users={users} contentSections={contentSections} ToggleWindow={ToggleWindow} isUserListOpen={isUserListOpen} setIsUserListOpen={setIsUserListOpen} 
+            isEntitySelected={isEntitySelected} setIsEntitySelected={setIsEntitySelected} setSelected={setSelected} />}
           </main>
-
-          {/* Right Sidebar */}
-          <aside className="w-1/6 bg-green-100 p-6">
+          {/* Right Portion */}
+          <aside className="w-1/6 p-6">
             <div className="space-y-4">
-              <div className="bg-white p-4 rounded-lg shadow hover:bg-gray-200">
-                <p onClick={() => ToggleWindow(isEntityListOpen, setIsEntityListOpen)} className="text-black cursor-pointer select-none">Select a Case</p>
+              <button onClick={() => ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen)} className="bg-black text-white border border-gray-300 mt-4 w-full py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Create Case</button>
+              <div className="bg-black text-white p-4 border rounded-lg shadow hover:bg-gray-600">
+                <p onClick={() => ToggleWindow(isEntityListOpen, setIsEntityListOpen)} className="cursor-pointer select-none">Select a Case</p>
                 <div className={`absolute mt-2 w-fit rounded-md shadow-lg bg-white transform transition-all duration-300 ease-in-out ${isEntityListOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
                   <div>
                     <ul className="list-inside space-y-4 list-none">
@@ -114,13 +92,13 @@ export function Cases()
                   </div>
                 </div>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow">
-                <p className="text-gray-600">Chat</p>
-                <input type="text" className="w-full text-black border border-gray-300 rounded mt-1 p-2" placeholder="start typing...."/>
-                <button className="w-full text-black bg-white hover:bg-gray-200 active:bg-gray-400 border border-gray-300 rounded mt-1 p-2">Enter</button>
+              <div className="bg-[#1B1B1B] p-4 rounded-lg shadow text-white">
+                <p className="">Chat</p>
+                <input type="text" className="w-full border border-gray-300 rounded mt-1 p-2 " placeholder="start typing...."/>
+                <button className="w-full text-white hover:bg-gray-600 active:bg-gray-800 border border-gray-300 rounded mt-1 p-2">Enter</button>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow">
-                <p className="text-gray-600 rounded-lg">Chat History</p>
+              <div className="bg-[#1B1B1B] p-4 rounded-lg shadow">
+                <p className="rounded-lg">Chat History</p>
               </div>
             </div>
           </aside>
@@ -146,39 +124,6 @@ export function Cases()
             </form>
           </div>
         </div>
-      </div>
-      <div className={`flex items-center justify-center transition-opacity duration-500 ${isEntitySelected ? "opacity-100 pointer-events-auto" : "opacity-0 bg-black pointer-events-none"}`}>
-        {selected && (
-          <div className={`fixed inset-0 transition-colors flex items-center justify-center text-black`}>
-            <div className={`bg-white rounded-lg p-6 w-full max-w-md mx-4 transform`}>
-              <h2 className="text-xl font-semibold mb-4">Case {selected.title}</h2>
-              <form>
-                <label className="block mb-4">
-                  <span className="font-semibold">Entity</span>
-                </label>
-                <label className="block mb-2">
-                  <span className="font-semibold">Assignee</span>
-                </label>
-                <label className="block mb-4">
-                  <span className="font-semibold">Evidence</span>
-                  <p className="text-gray-800 whitespace-pre-line ml-1">{selected.text}</p>
-                </label>
-                <div className="flex justify-end space-x-2">
-                  <button type="button" onClick={() =>  {setSelected(null); ToggleWindow(isEntitySelected, setIsEntitySelected)}} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Close</button>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow my-4">
-                  <p className="text-gray-600">Chat</p>
-                  <input type="text" className="w-full text-black border border-gray-300 rounded mt-1 p-2" placeholder="start typing...."/>
-                  <button className="w-full text-black bg-white hover:bg-gray-200 active:bg-gray-400 border border-gray-300 rounded mt-1 p-2">Enter</button>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <p className="text-gray-600 rounded-lg">Chat History</p>
-                </div>
-
-              </form>
-            </div>
-        </div>
-      )}
       </div>
     </div>
   )
