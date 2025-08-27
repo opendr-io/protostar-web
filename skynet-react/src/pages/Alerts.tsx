@@ -35,9 +35,10 @@ export function Alerts()
   {
     let neoEntities = await ts.GetEntitiesNeo();
     let neoEArr = Object.values(neoEntities['entity']);
-    let neoDetails = await ts.RetrieveRawEntityDetailsNeo(neoEArr[0]);
+    let neoDetails = (data) ? await ts.RetrieveRawEntityDetailsNeo(data) : await ts.RetrieveRawEntityDetailsNeo(neoEArr[0]);
     let neoDArr = Object.values(neoDetails);
-    setEntityCounter(neoEArr.length)
+    let l = Object.values(neoDetails['name']);
+    setEntityCounter(l.length)
     setEntities(neoEArr);
     setEntityDetails(neoDArr);
   }
@@ -45,10 +46,6 @@ export function Alerts()
   useEffect(() =>
   {
     FetchEntities();
-    if(data) 
-    {
-      LoadEntityData(data);
-    }
   }, []);
   
   const handleChange = (event: any) =>
@@ -58,7 +55,6 @@ export function Alerts()
 
   async function LoadEntityData(entity: any)
   {
-    console.log(entity);
     setEntityDetails(null);
     let neoDetails = await ts.RetrieveRawEntityDetailsNeo(entity);
     let neoDArr = Object.values(neoDetails);
