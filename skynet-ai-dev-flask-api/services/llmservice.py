@@ -15,13 +15,12 @@ config.read(Path(__file__).parent.parent.absolute() / "agentconfig.ini")
 class LLMService:
   def __init__(self):
     self.uselocalllm = True
-    self.anthropickey = config.get('Anthropic', 'AnthropicKey')
-    self.sonarkey = config.get('Perplexity', 'PerplexityKey')
-    self.openaikey = config.get('OpenAI', 'OpenAIKey')
+    self.llmkey = config.get('General', 'OpenRouterKey')
+    self.llmapiroute = config.get('General', 'OpenRouterURL')
 
   def ask_claude(self, question):
     try:
-      llm = ChatAnthropic(model=config.get('Anthropic', 'ModelName'), api_key=self.anthropickey)
+      llm = ChatOpenAI(model=config.get("Anthropic", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute)
       result = llm.invoke([HumanMessage(content=question)]).content
       return result
     except Exception as e:
@@ -30,7 +29,7 @@ class LLMService:
 
   def ask_sonar(self, question):
     try:
-      llm = ChatPerplexity(model=config.get("Perplexity", "ModelName"), api_key=self.sonarkey)
+      llm = ChatPerplexity(model=config.get("Perplexity", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute)
       result = llm.invoke([HumanMessage(content=question)]).content
       return result
     except Exception as e:
@@ -39,7 +38,7 @@ class LLMService:
   
   def ask_chat_gpt(self, question):
     try:
-      llm = llm = ChatOpenAI(model=config.get("OpenAI", "ModelName"), api_key=self.openaikey, temperature=0, max_tokens=None, timeout=None, max_retries=2)
+      llm = llm = ChatOpenAI(model=config.get("OpenAI", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute, temperature=0, max_tokens=None, timeout=None, max_retries=2)
       result = llm.invoke([HumanMessage(content=question)]).content
       return result
     except Exception as e:

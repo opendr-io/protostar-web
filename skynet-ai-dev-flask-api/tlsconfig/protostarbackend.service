@@ -1,0 +1,11 @@
+[Unit]
+Description=uWSGI instance for Flask API
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/protostarbackend
+ExecStart=/var/www/protostarbackend/.venv/bin/python -m flask --app skynet-ai-dev-flask-api run --host 127.0.0.1 --port 5002
+
+EOF
