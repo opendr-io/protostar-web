@@ -137,17 +137,6 @@
 	- [Anthropic]
 		- ModelName=claude-3-7-sonnet-20250219
 		- AnthropicKey=
-			
-	- [OpenAI]
-		- ModelName=
-		- OpenAIKey=
-
-	- [LMStudio]
-		- ModelName=
-		- LMStudio=NotRequired
-
-	- [Perplexity]
-		- ModelName=
 
 10. Once thse steps have been completed run the following command (Make sure you are running the command prompt or PowerShell in Administrator mode in Windows when running this command. If an error comes up rerun the command again):
 	- sudo python startup.py
