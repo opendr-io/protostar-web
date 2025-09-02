@@ -71,6 +71,7 @@ skynet-ai-dev-flask-api/keys
 skynet-ai-dev-flask-api/neo4j.conf
 skynet-ai-dev-flask-api/postgres.conf
 skynet-ai-dev-flask-api/neo4j-tls.conf
+skynet-ai-dev-flask-api/tlsconfig/nginx.conf
 skynet-ai-dev-flask-api/tlsconfig/protostarbackend.service
 skynet-ai-dev-flask-api/postgres-tls.conf
 skynet-ai-dev-flask-api/__pycache__
