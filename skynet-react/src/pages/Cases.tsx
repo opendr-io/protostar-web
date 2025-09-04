@@ -5,6 +5,7 @@ import LLMService from '../services/LLMService.ts';
 import PromptService from "../services/PromptService.ts";
 import TelemetryService from "../services/TelemetryService.ts";
 import HelpTextService from "../services/HelpTextService.ts";
+import AppService from "../services/AppService.ts";
 import { CasesOverview } from "./CasesOverview.tsx";
 import { CaseDetails } from "./CaseDetails.tsx";
 
@@ -13,8 +14,22 @@ export function Cases()
   const [isCaseWizardOpen, setIsCaseWizardOpenOpen] = useState(false);
   const [isEntityListOpen, setIsEntityListOpen] = useState(false);
   const [isUserListOpen, setIsUserListOpen] = useState(false);
-  const [isEntitySelected, setIsEntitySelected] = useState(false);
+  const [isEntitySelected, setIsEntitySelected] = useState(false);  
   const [selected, setSelected] = useState(null);
+  const [selectedEntity, setSelectedEntity] = useState("");
+  const [userAssigned, setUserAssigned] = useState("");
+  const [casePriority, setCasePriority] = useState(0);
+  const [caseName, setCaseName] = useState("");
+  const [caseDescription, setCaseDescription] = useState("");
+  const [userList, setUserList] = useState([]);
+  const [entityList, setEntityList] = useState([]);
+
+  let ts = new TelemetryService();
+  let llm = new LLMService();
+  let hts = new HelpTextService();
+  let ps = new PromptService();
+  let as = new AppService();
+
   const contentSections = [
     {
       id: 1,
@@ -35,7 +50,6 @@ export function Cases()
       text: `With the extra width, you have more space for images, tables, or other content
             that benefits from a wider display area.`,
     },
-
     {
       id: 4,
       title: "All",
@@ -44,20 +58,34 @@ export function Cases()
     },
   ];
 
-  const users = [
+  useEffect(() =>
+  {
+    async function RetrieveEntities()
     {
-      id: 1,
-      user: "User 1",
-    },
+      let e = await ts.GetAllEntitiesNeo();
+      setEntityList(e);
+    }
+
+    async function RetrieveUsers()
     {
-      id: 2,
-      user: "User 2"
-    },
-    {
-      id: 3,
-      user: "User 3",
-    },
-  ];
+      let u = await as.GetUsers();
+      setUserList(u);
+    }
+    RetrieveUsers();
+    RetrieveEntities();
+  }, []);
+
+  const handleSubmit = (event: any) => 
+  {
+    event.preventDefault();
+    let assginedUser:any = localStorage.getItem('username');
+    as.CreateCase(selectedEntity, assginedUser, caseName, caseDescription, casePriority);
+    setSelectedEntity("");
+    setUserAssigned("");
+    setUserAssigned("");
+    setCaseName("");
+    ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen);
+  };
 
   function ToggleWindow(isOpen: boolean, setVar: React.Dispatch<React.SetStateAction<boolean>>)
   {
@@ -71,7 +99,7 @@ export function Cases()
         <div className={`flex flex-row flex-wrap min-h-screen max-w-full overflow-x-hidden`}>
           {/* Left Portion */}
           <main className="w-5/6 p-6">
-            {(selected != null) ? <CaseDetails selected={selected} setSelected={setSelected} /> : <CasesOverview users={users} contentSections={contentSections} ToggleWindow={ToggleWindow} isUserListOpen={isUserListOpen} setIsUserListOpen={setIsUserListOpen} 
+            {(selected != null) ? <CaseDetails selected={selected} setSelected={setSelected} /> : <CasesOverview users={userList} contentSections={contentSections} ToggleWindow={ToggleWindow} isUserListOpen={isUserListOpen} setIsUserListOpen={setIsUserListOpen} 
             isEntitySelected={isEntitySelected} setIsEntitySelected={setIsEntitySelected} setSelected={setSelected} />}
           </main>
           {/* Right Portion */}
@@ -108,18 +136,37 @@ export function Cases()
         <div className={`fixed inset-0 transition-colors flex items-center justify-center text-black`}>
           <div className={`bg-white rounded-lg p-6 w-full max-w-md mx-4 transform`}>
             <h2 className="text-xl font-semibold mb-4">Case Setup</h2>
-            <form>
+            <form onSubmit={handleSubmit}>
               <label className="block mb-2">
-                <span>Assignee</span>
-                <input type="text" className="w-full border border-gray-300 rounded mt-1 p-2" placeholder="Enter the assignee for this case"/>
+                <span>Case Name</span>
+                <input type="text" onChange={(e) => setCaseName(e.target.value)} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" required onInvalid={(e) => e.target.setCustomValidity('Please enter the name for this case')} />
               </label>
+              {/* <label className="block mb-2">
+                <span>Assignee</span>
+                <input type="text" value={userAssigned} onChange={(e) => setUserAssigned(e.target.value)} className="w-full border border-gray-300 rounded mt-1 p-2" placeholder="Enter the assignee for this case"/>
+              </label> */}
               <label className="block mb-4">
                 <span>Entity</span>
-                <input type="email" className="w-full border border-gray-300 rounded mt-1 p-2" placeholder="Select Entity"/>
+                <select onChange={(e) => setSelectedEntity(e.target.value)} className="w-full border border-gray-300 rounded mt-1 p-2" required onInvalid={(e) => e.target.setCustomValidity('Please select an entity from the list')}>
+                  <option disabled selected>Select Entity</option>
+                  {entityList.map((entity, index) => (
+                    <option key={index} value={entity}>
+                      {entity}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block mb-2">
+                <span>Priority</span>
+                <input type="number" onChange={(e) => setCasePriority(Number(e.target.value))} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" />
+              </label>
+              <label className="block mb-2">
+                <span>Desription</span>
+                <textarea className="block w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-black transition-colors duration-200" onChange={(e) => setCaseDescription(e.target.value)} rows={6} placeholder="Enter Case Description" />
               </label>
               <div className="flex justify-end space-x-2">
-                <button type="button" onClick={() => ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen)} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Create Case</button>
+                <button type="button" onClick={() => { ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen); setSelectedEntity(""); setUserAssigned(""); setCaseName(""); }} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-black text-white rounded hover:bg-black">Create Case</button>
               </div>
             </form>
           </div>

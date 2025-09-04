@@ -182,6 +182,17 @@ class TelemetryService:
       print(e)
     return data
   
+  def get_all_entities(self):
+    data = []
+    try:
+      neo4j = self.neo4j_driver
+      result_df = neo4j.query("""MATCH (n:ENTITY) 
+      RETURN collect(DISTINCT n.entity) AS entities""").to_data_frame()
+      data = jsonify(result_df.iloc[0,0])
+    except Exception as e:
+      print(e)
+    return data
+  
   def form_data(self, result):
     nodes = {}
     links = []

@@ -29,7 +29,7 @@ export function CasesOverview({ users, contentSections, ToggleWindow, isUserList
             <ul className="list-inside space-y-4 list-none">
               {users.map((item: any, index: any) => (
                 <li key={index} onClick={() => ToggleWindow(isUserListOpen, setIsUserListOpen)} className="text-gray-800 cursor-pointer px-4 py-2 hover:bg-gray-200 active:bg-gray-400">
-                  <span>{item.user}</span>
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>

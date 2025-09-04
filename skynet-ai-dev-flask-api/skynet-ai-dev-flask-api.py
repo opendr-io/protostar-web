@@ -12,9 +12,11 @@ sys.path.append('services')
 from llmservice import LLMService
 from telemetryservice import TelemetryService
 from authservice import AuthService
+from appservice import AppService
 
 config = configparser.ConfigParser()
 config.read(Path(__file__).parent.absolute() / "appconfig.ini")
+
 app = Flask(__name__)
 app.config["JWT_ALGORITHM"] = "HS512"
 app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)
@@ -35,6 +37,7 @@ jwt = JWTManager(app)
 llmservice = LLMService()
 telemetryservice = TelemetryService()
 authservice = AuthService()
+appservice = AppService()
 
 @app.route('/login', methods=['POST'])
 @cross_origin()
@@ -187,6 +190,38 @@ def retrieve_raw_entity_details_neo():
 def retrieve_column_names():
   d = request.get_json().get('type')
   return telemetryservice.get_columns(d)
+
+@app.route('/getusers', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def get_users():
+  users = appservice.get_users()
+  return users
+
+@app.route('/getallentities', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def get_all_entiies():
+  users = telemetryservice.get_all_entities()
+  return users
+
+@app.route('/createcase', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def create_case():
+  data = request.get_json()
+  assigned_user = data.get('username')
+  investigated_entity = data.get('entity')
+  case_name = data.get('casename')
+  case_description = data.get('description')
+  case_priority = data.get('priority')
+  print("Assgined User: " + str(assigned_user))
+  print("Investigated Entity: " + str(investigated_entity))
+  print("Case Name: " + str(case_name))
+  print("Case Description: " + str(case_description))
+  print("Case Priority: " + str(case_priority))
+  status = appservice.create_case(investigated_entity, assigned_user, case_name, case_description, case_priority)
+  return status
 
 @app.route('/showgraph', methods=['POST'])
 @jwt_required()

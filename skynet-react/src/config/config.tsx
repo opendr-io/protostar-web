@@ -60,6 +60,21 @@ export default class Config
     return this.baseUrl + '/rawentitydetailsneo';
   }
 
+  public GetUsersURL()
+  {
+    return this.baseUrl + '/getusers';
+  }
+
+  public GetAllEntitiesURL()
+  {
+    return this.baseUrl + '/getallentities';
+  }
+
+  public CreateCaseURL()
+  {
+    return this.baseUrl + '/createcase';
+  }
+
   public ServerURL()
   {
     return this.url;

@@ -25,49 +25,27 @@ def setup_postgres_tables():
     with connection.cursor() as cursor:
       print('Creating PostgreSQL Tables and Users')
       try:
-        cursor.execute("""CREATE TABLE appusers (id serial PRIMARY KEY, username text, hashed_password BYTEA)""")
+        cursor.execute("""CREATE TABLE appusers (id serial PRIMARY KEY, username text UNIQUE NOT NULL, hashed_password BYTEA)""")
       except Exception:
         print('Table appusers has already been created')
       try:
         cursor.execute("""CREATE TABLE expired_tokens (id serial PRIMARY KEY, token text)""")
       except Exception:
         print('Table expired_tokens has already been created')
+      try:
+        cursor.execute("""CREATE TABLE cases (case_id serial PRIMARY KEY, assigned_user TEXT REFERENCES appusers(username), casename TEXT NOT NULL, description TEXT, priority INTEGER NOT NULL DEFAULT 0, investigated_entity TEXT NOT NULL, properties JSONB, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, resolved_at TIMESTAMP)""")
+      except Exception:
+        print('Table expired_tokens has already been created')
       finally:
         print('Tables Created!')
       try:
-        password = config.get('Database', 'ApplicationUserPassword', fallback='appuser').encode('utf-8')
+        password = config.get('Database', 'ApplicationUserPassword', fallback='demouser').encode('utf-8')
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(password, salt)
         fillers = ("%s," * 2)[:-1]
         sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers})"
-        final_params = [config.get('Database', 'ApplicationUser', fallback='appuser'), hashed_password]
+        final_params = [config.get('Database', 'ApplicationUser', fallback='demouser'), hashed_password]
         cursor.execute(sqlInsertStatement, final_params)
-
-        password = config.get('Database', 'ApplicationUserPassword2', fallback='appuser').encode('utf-8')
-        salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password, salt)
-        fillers = ("%s," * 2)[:-1]
-        sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers})"
-        final_params = [config.get('Database', 'ApplicationUser2', fallback='appuser'), hashed_password]
-        cursor.execute(sqlInsertStatement, final_params)
-
-        password = config.get('Database', 'ApplicationUserPassword3', fallback='appuser').encode('utf-8')
-        salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password, salt)
-        fillers = ("%s," * 2)[:-1]
-        sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers})"
-        final_params = [config.get('Database', 'ApplicationUser3', fallback='appuser'), hashed_password]
-        cursor.execute(sqlInsertStatement, final_params) 
-
-        password = config.get('Database', 'ApplicationUserPassword4', fallback='appuser').encode('utf-8')
-        salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password, salt)
-        fillers = ("%s," * 2)[:-1]
-        sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers})"
-        final_params = [config.get('Database', 'ApplicationUser4', fallback='appuser'), hashed_password]
-        cursor.execute(sqlInsertStatement, final_params)
-        connection.commit()       
-        print('Users Created!')
       except:
         print('Users have already been created!')
 

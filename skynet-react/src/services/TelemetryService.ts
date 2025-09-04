@@ -63,15 +63,14 @@ export default class TelemetryService
 
   async RetrieveEntityDetailsNeo(entity: any)
   {
-    let config = new Config();
-    let sms = new SessionManagementService();
     try
     {
+      let config = new Config();
       let token = localStorage.getItem('token');
       const response = await axios.post(config.EntityDetailsNeoURL(), 
       {
         'entity': entity
-      }, 
+      },
       {
         headers: 
         {
@@ -83,17 +82,16 @@ export default class TelemetryService
     catch(error)
     {
       console.error('Error:', error);
-      sms.Logout();
+      new SessionManagementService().Logout();
       window.location.href = '/login';
     }
   }
 
   async RetrieveRawEntityDetailsNeo(entity: any)
   {
-    let config = new Config();
-    let sms = new SessionManagementService();
     try
     {
+      let config = new Config();
       let token = localStorage.getItem('token');
       const response = await axios.post(config.RawEntityDetailsURL(), 
       {
@@ -110,7 +108,30 @@ export default class TelemetryService
     catch(error)
     {
       console.error('Error:', error);
-      sms.Logout();
+      new SessionManagementService().Logout();
+      window.location.href = '/login';
+    }
+  }
+
+  async GetAllEntitiesNeo()
+  {
+    try
+    {
+      let config = new Config();
+      let token = localStorage.getItem('token');
+      const response = await axios.post(config.GetAllEntitiesURL(), 
+      {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    }
+    catch(error)
+    {
+      console.error('Error:', error);
+      new SessionManagementService().Logout();
       window.location.href = '/login';
     }
   }

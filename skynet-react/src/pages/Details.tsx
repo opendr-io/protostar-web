@@ -18,9 +18,9 @@ export function Details()
   const [open, setOpen] = useState(false);
   const [entityCounter, setEntityCounter] = useState<number>(0)
   let ts = new TelemetryService();
-  const llm = new LLMService();
-  let ps = new PromptService();
+  let llm = new LLMService();
   let hts = new HelpTextService();
+  let ps = new PromptService();
   const entity = useSelector((state) => state.data.value);
   const handleChange = (event: any) =>
   {
