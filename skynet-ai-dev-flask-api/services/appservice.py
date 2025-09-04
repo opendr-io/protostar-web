@@ -31,7 +31,6 @@ class AppService:
       user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
         with connection.cursor() as cursor:
           fillers ="%s,%s,%s,%s,%s,%s,Default,%s"
-          # fillers = ("%s," * 8)[:-1]
           sqlInsertStatement = f"insert into cases(assigned_user, casename, description, priority, investigated_entity, properties, created_at, resolved_at) values({fillers})"
           final_params = [assigned_user, case_name, case_description, priority, investigated_entity, None, None]
           cursor.execute(sqlInsertStatement, final_params)
