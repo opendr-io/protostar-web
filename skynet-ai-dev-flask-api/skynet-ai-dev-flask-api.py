@@ -215,11 +215,6 @@ def create_case():
   case_name = data.get('casename')
   case_description = data.get('description')
   case_priority = data.get('priority')
-  print("Assgined User: " + str(assigned_user))
-  print("Investigated Entity: " + str(investigated_entity))
-  print("Case Name: " + str(case_name))
-  print("Case Description: " + str(case_description))
-  print("Case Priority: " + str(case_priority))
   status = appservice.create_case(investigated_entity, assigned_user, case_name, case_description, case_priority)
   return status
 
