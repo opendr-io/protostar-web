@@ -26,11 +26,12 @@ function ProtectedRoute(token: any)
     return <Navigate to={'/login'} replace />;
   }
   return <Outlet />;
-};
+}
 
 export function Menu()
 {
   let sms = new SessionManagementService();
+
   const subMenuItems = [
     { id: 1, label: 'Alpha Signals', link:'/primary', element: <PrimaryDash /> },
     { id: 4, label: 'Beta Signals', link: '/view4', element: <View4 /> },

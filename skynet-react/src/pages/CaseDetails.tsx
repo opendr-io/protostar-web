@@ -48,7 +48,6 @@ export function CaseDetails({ selected, setSelected } : CaseDetailsProps)
                   <div className="bg-white p-4 rounded-lg shadow">
                     <p className="text-gray-600 rounded-lg">Chat History</p>
                   </div>
-
                 </form>
               </div>
           </div>

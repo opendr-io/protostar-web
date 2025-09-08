@@ -21,6 +21,7 @@ export function Cases()
   const [casePriority, setCasePriority] = useState(0);
   const [caseName, setCaseName] = useState("");
   const [caseDescription, setCaseDescription] = useState("");
+  const [caseList, setCaseList] = useState([]);
   const [userList, setUserList] = useState([]);
   const [entityList, setEntityList] = useState([]);
 
@@ -71,6 +72,14 @@ export function Cases()
       let u = await as.GetUsers();
       setUserList(u);
     }
+
+    async function RetrieveCases() 
+    {
+      let c = await as.GetAllCases();
+      console.log(c);
+      setCaseList(c);
+    }
+    RetrieveCases();
     RetrieveUsers();
     RetrieveEntities();
   }, []);

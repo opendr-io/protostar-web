@@ -75,6 +75,11 @@ export default class Config
     return this.baseUrl + '/createcase';
   }
 
+  public GetAllCasesURL()
+  {
+    return this.baseUrl + '/getallcases';
+  }
+
   public ServerURL()
   {
     return this.url;

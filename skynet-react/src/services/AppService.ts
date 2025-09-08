@@ -4,17 +4,18 @@ import SessionManagementService from './SessionManagementService';
 
 export default class AppService
 {
+  private config: Config;
   constructor()
   {
+    this.config = new Config();
   }
 
   async GetUsers()
   {
     try
     {
-      let config = new Config();
       let token = localStorage.getItem('token');
-      const response = await axios.post(config.GetUsersURL(), 
+      const response = await axios.post(this.config.GetUsersURL(), 
       {
       }, 
       {
@@ -38,9 +39,8 @@ export default class AppService
   {
     try
     {
-      let config = new Config();
       let token = localStorage.getItem('token');
-      const response = await axios.post(config.CreateCaseURL(), 
+      const response = await axios.post(this.config.CreateCaseURL(), 
       {
         'entity': entity,
         'username': assignedUser,
@@ -56,6 +56,29 @@ export default class AppService
       });
       return response.data;
     }    
+    catch(error)
+    {
+      console.log('An error has been thrown');
+      new SessionManagementService().Logout();
+      window.location.href = '/login';
+      console.log(error);
+    }
+  }
+
+  async GetAllCases()
+  {
+    try
+    {
+      let token = localStorage.getItem('token');
+      const response = await axios.post(this.config.GetAllCasesURL(),
+      {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    }
     catch(error)
     {
       console.log('An error has been thrown');

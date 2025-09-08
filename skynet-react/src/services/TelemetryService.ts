@@ -5,18 +5,19 @@ import SessionManagementService from './SessionManagementService';
 
 export default class TelemetryService
 {
+  private config: Config;
   constructor()
   {
+    this.config = new Config();
   }
 
   async RetrieveGraphData(view: any)
   {
-    let config = new Config();
     let sms = new SessionManagementService();
     try
     {
       let token = localStorage.getItem('token');
-      const r = await axios.post(config.ShowGraphURL(),
+      const r = await axios.post(this.config.ShowGraphURL(),
       {
         'view': view
       }, 
@@ -39,12 +40,11 @@ export default class TelemetryService
 
   async GetEntitiesNeo()
   {
-    let config = new Config();
     let sms = new SessionManagementService();
     try
     {
       let token = localStorage.getItem('token');
-      const r = await axios.get(config.EntitiesNeoURL(), 
+      const r = await axios.get(this.config.EntitiesNeoURL(), 
       {
         headers: 
         {
@@ -65,9 +65,8 @@ export default class TelemetryService
   {
     try
     {
-      let config = new Config();
       let token = localStorage.getItem('token');
-      const response = await axios.post(config.EntityDetailsNeoURL(), 
+      const response = await axios.post(this.config.EntityDetailsNeoURL(), 
       {
         'entity': entity
       },
@@ -91,9 +90,8 @@ export default class TelemetryService
   {
     try
     {
-      let config = new Config();
       let token = localStorage.getItem('token');
-      const response = await axios.post(config.RawEntityDetailsURL(), 
+      const response = await axios.post(this.config.RawEntityDetailsURL(), 
       {
         'entity': entity
       }, 
@@ -117,9 +115,8 @@ export default class TelemetryService
   {
     try
     {
-      let config = new Config();
       let token = localStorage.getItem('token');
-      const response = await axios.post(config.GetAllEntitiesURL(), 
+      const response = await axios.post(this.config.GetAllEntitiesURL(), 
       {
         headers:
         {

@@ -23,7 +23,7 @@ export function CasesOverview({ users, contentSections, ToggleWindow, isUserList
   return (
     <main>
       <div onClick={() => ToggleWindow(isUserListOpen, setIsUserListOpen)} className="bg-black text-white mx-4 border border-gray-300 mt-4 py-2 p-4 rounded-md hover:bg-gray-600 font-normal cursor-pointer">
-        <p className="cursor-pointer select-none">Assignee</p>
+        <p className="cursor-pointer select-none">Cases</p>
         <div className={`absolute mt-2 w-fit rounded-md shadow-lg bg-white transform transition-all duration-300 ease-in-out ${isUserListOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
           <div>
             <ul className="list-inside space-y-4 list-none">

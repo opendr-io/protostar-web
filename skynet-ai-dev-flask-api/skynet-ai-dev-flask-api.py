@@ -218,6 +218,13 @@ def create_case():
   status = appservice.create_case(investigated_entity, assigned_user, case_name, case_description, case_priority)
   return status
 
+@app.route('/getallcases', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def get_all_cases():
+  cases = appservice.get_all_cases()
+  return cases
+
 @app.route('/showgraph', methods=['POST'])
 @jwt_required()
 @cross_origin()

@@ -3,13 +3,16 @@ import Config from '../config/config';
 
 export default class SessionManagementService
 {
-  constructor() {}
+  private config: Config;
+  constructor() 
+  {
+    this.config = new Config();
+  }
 
   public async Login(username: string, password: string)
   {
     console.log('login attempt');
-    let config = new Config();
-    await axios.post(config.LoginURL(), 
+    await axios.post(this.config.LoginURL(), 
     {
       'username': username,
       'password': password
@@ -23,11 +26,10 @@ export default class SessionManagementService
 
   public async RenewSession()
   {
-    let config = new Config();
     console.log('RenewSession()');
     let refresh = localStorage.getItem('refresh_token');
     console.log(refresh);
-    await axios.post(config.RenewURL(),
+    await axios.post(this.config.RenewURL(),
     {
       headers: 
       {
