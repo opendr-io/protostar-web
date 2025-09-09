@@ -192,33 +192,3 @@ class TelemetryService:
     except Exception as e:
       print(e)
     return data
-  
-  def form_data(self, result):
-    nodes = {}
-    links = []
-    for record in result:
-      # print(record)
-      # Process both source and target nodes
-      for key in ['p']:
-        # print(record)
-        node = record[key]
-        # print(node)
-        node_id = node('start')
-        # print(node_id)
-        if node_id not in nodes:
-          nodes[node_id] = {
-            "id": node_id,
-            "labels": list(node.labels),
-            "properties": dict(node)
-          }
-      # Process the relationship details
-      rel = record['r']
-      links.append(
-      {
-        "id": rel.id,
-        "source": rel.start_node.id,
-        "target": rel.end_node.id,
-        "type": rel.type,
-        "properties": dict(rel)
-      })
-      return {"nodes": list(nodes.values()), "links": links}

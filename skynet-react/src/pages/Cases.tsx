@@ -31,34 +31,6 @@ export function Cases()
   let ps = new PromptService();
   let as = new AppService();
 
-  const contentSections = [
-    {
-      id: 1,
-      title: "Case 1",
-      text: `This is the main content area. It now takes up even more space in the layout (60% of the width).
-            You can add your primary content, articles, posts, or any main information here.
-            The wider layout gives you more room for content presentation.`,
-    },
-    {
-      id: 2,
-      title: "Case 2",
-      text: `Additional content sections can be added here. The center column is now significantly
-            wider than the sidebars, making it the clear focal point of your page layout.`,
-    },
-    {
-      id: 3,
-      title: "Case 3",
-      text: `With the extra width, you have more space for images, tables, or other content
-            that benefits from a wider display area.`,
-    },
-    {
-      id: 4,
-      title: "All",
-      text: `With the extra width, you have more space for images, tables, or other content
-            that benefits from a wider display area.`,
-    },
-  ];
-
   useEffect(() =>
   {
     async function RetrieveEntities()
@@ -76,8 +48,7 @@ export function Cases()
     async function RetrieveCases() 
     {
       let c = await as.GetAllCases();
-      console.log(c);
-      setCaseList(c);
+      setCaseList(c.flat());
     }
     RetrieveCases();
     RetrieveUsers();
@@ -108,7 +79,7 @@ export function Cases()
         <div className={`flex flex-row flex-wrap min-h-screen max-w-full overflow-x-hidden`}>
           {/* Left Portion */}
           <main className="w-5/6 p-6">
-            {(selected != null) ? <CaseDetails selected={selected} setSelected={setSelected} /> : <CasesOverview users={userList} contentSections={contentSections} ToggleWindow={ToggleWindow} isUserListOpen={isUserListOpen} setIsUserListOpen={setIsUserListOpen} 
+            {(selected != null) ? <CaseDetails selected={selected} setSelected={setSelected} /> : <CasesOverview users={userList} contentSections={caseList} ToggleWindow={ToggleWindow} isUserListOpen={isUserListOpen} setIsUserListOpen={setIsUserListOpen} 
             isEntitySelected={isEntitySelected} setIsEntitySelected={setIsEntitySelected} setSelected={setSelected} />}
           </main>
           {/* Right Portion */}
@@ -120,9 +91,9 @@ export function Cases()
                 <div className={`absolute mt-2 w-fit rounded-md shadow-lg bg-white transform transition-all duration-300 ease-in-out ${isEntityListOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
                   <div>
                     <ul className="list-inside space-y-4 list-none">
-                      {contentSections.map((item, index) => (
+                      {caseList.map((item, index) => (
                         <li key={index} onClick={() => ToggleWindow(isEntityListOpen, setIsEntityListOpen)} className="text-gray-800 cursor-pointer px-4 py-2 hover:bg-gray-200 active:bg-gray-400">
-                          <span>{item.title}</span>
+                          <span>{item.casename}</span>
                         </li>
                       ))}
                     </ul>
@@ -150,10 +121,6 @@ export function Cases()
                 <span>Case Name</span>
                 <input type="text" onChange={(e) => setCaseName(e.target.value)} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" required onInvalid={(e) => e.target.setCustomValidity('Please enter the name for this case')} />
               </label>
-              {/* <label className="block mb-2">
-                <span>Assignee</span>
-                <input type="text" value={userAssigned} onChange={(e) => setUserAssigned(e.target.value)} className="w-full border border-gray-300 rounded mt-1 p-2" placeholder="Enter the assignee for this case"/>
-              </label> */}
               <label className="block mb-4">
                 <span>Entity</span>
                 <select onChange={(e) => setSelectedEntity(e.target.value)} className="w-full border border-gray-300 rounded mt-1 p-2" required onInvalid={(e) => e.target.setCustomValidity('Please select an entity from the list')}>

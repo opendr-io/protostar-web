@@ -44,7 +44,7 @@ class AppService:
       with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),
       user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
         with connection.cursor() as cursor:
-          cursor.execute('select row_to_json(t) from cases as t')
+          cursor.execute('select row_to_json(t) from cases as t order by t.created_at desc')
           cases = cursor.fetchall()
           json_cases = json.dumps(cases)
           return json_cases
