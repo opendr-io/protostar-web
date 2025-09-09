@@ -1,12 +1,10 @@
 import { createBrowserRouter, data, RouterProvider, useNavigate } from "react-router-dom";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSelector } from "react-redux";
 import LLMService from '../services/LLMService.ts';
 import PromptService from "../services/PromptService.ts";
 import TelemetryService from "../services/TelemetryService.ts";
 import HelpTextService from "../services/HelpTextService.ts";
-
-const [filterPriority, setFilterPriority] = useState<number>();
 
 interface CasesOverviewProps 
 {
@@ -22,6 +20,17 @@ interface CasesOverviewProps
 
 export function CasesOverview({ users, contentSections, ToggleWindow, isUserListOpen, setIsUserListOpen, isEntitySelected, setIsEntitySelected, setSelected } : CasesOverviewProps)
 {
+  const [filterPriority, setFilterPriority] = useState<any>(5);
+  const priorities = contentSections.map(({ priority }) => priority);
+  const uniqueSet = new Set(priorities);
+  const uniquePriorities = Array.from(uniqueSet).sort((a, b) => b - a);
+
+  function FilterCases(priority: string)
+  {
+    ToggleWindow(isUserListOpen, setIsUserListOpen);
+    setFilterPriority(priority);
+  }
+
   return (
     <main>
       <div onClick={() => ToggleWindow(isUserListOpen, setIsUserListOpen)} className="bg-black text-white mx-4 border border-gray-300 mt-4 py-2 p-4 rounded-md hover:bg-gray-600 font-normal cursor-pointer">
@@ -29,9 +38,9 @@ export function CasesOverview({ users, contentSections, ToggleWindow, isUserList
         <div id="filterlist" className={`absolute mt-2 w-fit rounded-md shadow-lg bg-white transform transition-all duration-300 ease-in-out ${isUserListOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
           <div>
             <ul className="list-inside space-y-4 list-none">
-              {contentSections.map(({ id, priority }) => (
-                <li key={id} onClick={() => ToggleWindow(isUserListOpen, setIsUserListOpen)} className="text-gray-800 cursor-pointer px-4 py-2 hover:bg-gray-200 active:bg-gray-400">
-                  <span onClick={() => setFilterPriority(priority)}>{priority}</span>
+              {uniquePriorities.map((priority) => (
+                <li onClick={() => FilterCases(priority)} className="text-gray-800 cursor-pointer px-4 py-2 hover:bg-gray-200 active:bg-gray-400">
+                  <span>{priority}</span>
                 </li>
               ))}
             </ul>
