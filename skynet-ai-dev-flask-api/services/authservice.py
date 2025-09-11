@@ -1,3 +1,4 @@
+import uuid
 import bcrypt
 import psycopg
 import pathlib

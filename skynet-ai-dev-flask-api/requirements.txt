@@ -12,5 +12,6 @@ langchain
 langchain-anthropic 
 anthropic
 python-dotenv
+langgraph
 langchain-perplexity
 langchain-openai
