@@ -19,15 +19,17 @@ config.read(Path(__file__).parent.parent.absolute() / "agentconfig.ini")
 
 class LLMService:
   def __init__(self):
+    self.memory = []
     self.uselocalllm = True
     self.llmkey = config.get('General', 'OpenRouterKey')
     self.llmapiroute = config.get('General', 'OpenRouterURL')
-    self.memory = MemorySaver()
+    self.memory.append(MemorySaver())
+    self.chatgpt_llm = ChatOpenAI(model=config.get("OpenAI", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute, temperature=0, max_tokens=None, timeout=None, max_retries=2)
+    self.claude_llm = ChatOpenAI(model=config.get("Anthropic", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute)
 
   def ask_claude(self, question):
     try:
-      llm = ChatOpenAI(model=config.get("Anthropic", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute)
-      result = llm.invoke([HumanMessage(content=question)]).content
+      result = self.claude_llm.invoke([HumanMessage(content=question)]).content
       return result
     except Exception as e:
       print(e)
@@ -44,8 +46,7 @@ class LLMService:
   
   def ask_chat_gpt(self, question):
     try:
-      llm = llm = ChatOpenAI(model=config.get("OpenAI", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute, temperature=0, max_tokens=None, timeout=None, max_retries=2)
-      result = llm.invoke([HumanMessage(content=question)]).content
+      result = self.chatgpt_llm.invoke([HumanMessage(content=question)]).content
       return result
     except Exception as e:
       print(e)
@@ -62,8 +63,7 @@ class LLMService:
     
   def chat_with_claude(self, chat):
     try:
-      llm = ChatOpenAI(model=config.get("Anthropic", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute)
-      result = llm.invoke([HumanMessage(content=chat)]).content
+      result = self.chatgpt_llm.invoke([HumanMessage(content=chat)]).content
       return result
     except Exception as e:
       print(e)
