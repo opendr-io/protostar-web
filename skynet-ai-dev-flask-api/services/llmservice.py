@@ -20,18 +20,19 @@ config.read(Path(__file__).parent.parent.absolute() / "agentconfig.ini")
 class LLMService:
   def __init__(self):
     self.memory = []
-    self.uselocalllm = True
     self.llmkey = config.get('General', 'OpenRouterKey')
     self.llmapiroute = config.get('General', 'OpenRouterURL')
+    self.llm = {
+      'chatgpt': ChatOpenAI(model=config.get("OpenAI", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute, temperature=0, max_tokens=None, timeout=None, max_retries=2),
+      'claude': ChatOpenAI(model=config.get("Anthropic", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute),
+      'sonar': ChatOpenAI(model=config.get("Perplexity", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute),
+      'lmstudio': ChatOpenAI(model=config.get("LMStudio", "ModelName"), base_url="http://127.0.0.1:1234/v1", api_key="lm-studio", temperature=0.5)
+    }
     self.memory.append(MemorySaver())
-    self.chatgpt_llm = ChatOpenAI(model=config.get("OpenAI", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute, temperature=0, max_tokens=None, timeout=None, max_retries=2)
-    self.claude_llm = ChatOpenAI(model=config.get("Anthropic", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute)
-    self.sonar_llm = ChatOpenAI(model=config.get("Perplexity", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute)
-    self.lmstudio_llm = ChatOpenAI(model=config.get("LMStudio", "ModelName"), base_url="http://127.0.0.1:1234/v1", api_key="lm-studio", temperature=0.5)
 
   def ask_claude(self, question):
     try:
-      result = self.claude_llm.invoke([HumanMessage(content=question)]).content
+      result = self.llm['claude'].invoke([HumanMessage(content=question)]).content
       return result
     except Exception as e:
       print(e)
@@ -39,8 +40,7 @@ class LLMService:
 
   def ask_sonar(self, question):
     try:
-      llm = ChatPerplexity(model=config.get("Perplexity", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute)
-      result = llm.invoke([HumanMessage(content=question)]).content
+      result = self.llm['sonar'].invoke([HumanMessage(content=question)]).content
       return result
     except Exception as e:
       print(e)
@@ -48,7 +48,7 @@ class LLMService:
   
   def ask_chat_gpt(self, question):
     try:
-      result = self.chatgpt_llm.invoke([HumanMessage(content=question)]).content
+      result = self.llm['chatgpt'].invoke([HumanMessage(content=question)]).content
       return result
     except Exception as e:
       print(e)
@@ -56,15 +56,15 @@ class LLMService:
   
   def ask_local_llm(self, question):
     try:
-      result = self.lmstudio_llm.invoke([HumanMessage(content=question)]).content
+      result = self.llm['lmstudio'].invoke([HumanMessage(content=question)]).content
       return result
     except Exception as e:
       print(e)
       return ''
-    
-  def chat_with_claude(self, chat):
+
+  def case_investigation(self, chat, model, case):
     try:
-      result = self.chatgpt_llm.invoke([HumanMessage(content=chat)]).content
+      result = self.llm[model].invoke([HumanMessage(content=chat)]).content
       return result
     except Exception as e:
       print(e)
