@@ -81,7 +81,7 @@ def ask_llm():
   try:
     data = request.get_json()
     question = data.get('question')
-    answer = llmservice.ask_claude(question)
+    answer = llmservice.ask_local_llm(question)
     return answer
   except Exception as e:
     response = make_response(jsonify({"error": "Something went wrong"}), 401)

@@ -26,6 +26,8 @@ class LLMService:
     self.memory.append(MemorySaver())
     self.chatgpt_llm = ChatOpenAI(model=config.get("OpenAI", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute, temperature=0, max_tokens=None, timeout=None, max_retries=2)
     self.claude_llm = ChatOpenAI(model=config.get("Anthropic", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute)
+    self.sonar_llm = ChatOpenAI(model=config.get("Perplexity", "ModelName"), openai_api_key=self.llmkey, openai_api_base=self.llmapiroute)
+    self.lmstudio_llm = ChatOpenAI(model=config.get("LMStudio", "ModelName"), base_url="http://127.0.0.1:1234/v1", api_key="lm-studio", temperature=0.5)
 
   def ask_claude(self, question):
     try:
@@ -54,8 +56,7 @@ class LLMService:
   
   def ask_local_llm(self, question):
     try:
-      llm = ChatOpenAI(base_url="http://127.0.0.1:1234/v1", api_key="lm-studio", temperature=0.5)
-      result = llm.invoke([HumanMessage(content=question)]).content
+      result = self.lmstudio_llm.invoke([HumanMessage(content=question)]).content
       return result
     except Exception as e:
       print(e)
