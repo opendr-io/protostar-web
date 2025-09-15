@@ -55,7 +55,7 @@ export function Cases()
     RetrieveEntities();
   }, []);
 
-  const handleSubmit = (event: any) => 
+  function handleSubmit(event: any)
   {
     event.preventDefault();
     let assginedUser:any = localStorage.getItem('username');

@@ -25,17 +25,38 @@ def setup_postgres_tables():
     with connection.cursor() as cursor:
       print('Creating PostgreSQL Tables and Users')
       try:
-        cursor.execute("""CREATE TABLE appusers (id serial PRIMARY KEY, username text UNIQUE NOT NULL, hashed_password BYTEA)""")
+        cursor.execute("""CREATE TABLE appusers (
+          id serial PRIMARY KEY,
+          username text UNIQUE NOT NULL,
+          hashed_password BYTEA)""")
       except Exception:
         print('Table appusers has already been created')
       try:
-        cursor.execute("""CREATE TABLE expired_tokens (id serial PRIMARY KEY, token text)""")
+        cursor.execute("""CREATE TABLE expired_tokens (
+          id serial PRIMARY KEY, 
+          token text)""")
       except Exception:
         print('Table expired_tokens has already been created')
       try:
-        cursor.execute("""CREATE TABLE cases (case_id serial PRIMARY KEY, assigned_user TEXT REFERENCES appusers(username), casename TEXT NOT NULL, description TEXT, priority INTEGER NOT NULL DEFAULT 0, investigated_entity TEXT NOT NULL, properties JSONB, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, resolved_at TIMESTAMP)""")
+        cursor.execute("""CREATE TABLE cases (
+          case_id serial PRIMARY KEY,
+          assigned_user TEXT REFERENCES appusers(username),
+          casename TEXT NOT NULL, description TEXT,
+          priority INTEGER NOT NULL DEFAULT 0,
+          investigated_entity TEXT NOT NULL,
+          properties JSONB, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          resolved_at TIMESTAMP)""")
       except Exception:
-        print('Table expired_tokens has already been created')
+        print('Table cases has already been created')
+      try:
+        cursor.execute("""CREATE TABLE comments (
+          comment_id SERIAL PRIMARY KEY,
+          case_id INTEGER REFERENCES cases(case_id),
+          comment_user TEXT REFERENCES appusers(username),
+          comment TEXT NOT NULL,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);""")
+      except Exception:
+        print('Table comments has already been created')
       finally:
         print('Tables Created!')
       try:
