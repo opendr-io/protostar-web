@@ -50,3 +50,13 @@ class AppService:
           return json_cases
     except Exception as exc:
       print(exc)
+
+  def post_case_comment(self):
+    try:
+      with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),
+      user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
+        with connection.cursor() as cursor:
+          fillers ="%s,%s,%s,%s,%s,%s,Default,%s"
+          sqlInsertStatement = f"insert into case_comments (assigned_user, casename, description, priority, investigated_entity, properties, created_at, resolved_at) values({fillers})"
+    except Exception as exc:
+      print(exc)

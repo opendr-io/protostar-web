@@ -87,4 +87,33 @@ export default class AppService
       console.log(error);
     }
   }
+
+  async PostComment(user: string, userComment: string)
+  {
+    try
+    {
+      let token = localStorage.getItem('token');
+      console.log(user);
+      console.log(userComment);
+      const response = await axios.post(this.config.PostCaseCommentURL(),
+      {
+        'user': user,
+        'comment': userComment
+      },
+      {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    }
+    catch(error)
+    {
+      console.log('An error has been thrown');
+      new SessionManagementService().Logout();
+      window.location.href = '/login';
+      console.log(error);
+    }
+  }
 }

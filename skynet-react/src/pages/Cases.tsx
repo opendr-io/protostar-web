@@ -79,7 +79,7 @@ export function Cases()
         <div className={`flex flex-row flex-wrap min-h-screen max-w-full overflow-x-hidden`}>
           {/* Left Portion */}
           <main className="w-5/6 p-6">
-            {(selected != null) ? <CaseDetails selected={selected} setSelected={setSelected} /> : <CasesOverview users={userList} contentSections={caseList} ToggleWindow={ToggleWindow} isUserListOpen={isUserListOpen} setIsUserListOpen={setIsUserListOpen} 
+            {(selected != null) ? <CaseDetails selected={selected} setSelected={setSelected} appService={as} /> : <CasesOverview users={userList} contentSections={caseList} ToggleWindow={ToggleWindow} isUserListOpen={isUserListOpen} setIsUserListOpen={setIsUserListOpen} 
             isEntitySelected={isEntitySelected} setIsEntitySelected={setIsEntitySelected} setSelected={setSelected} />}
           </main>
           {/* Right Portion */}

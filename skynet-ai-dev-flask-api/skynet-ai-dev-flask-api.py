@@ -277,6 +277,22 @@ def create_case():
   except Exception as e:
     response = make_response(jsonify({"error": "Something went wrong"}), 401)
     return response
+  
+@app.route('/postcasecomment', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def post_case_comment():
+  try:
+    data = request.get_json()
+    user = data.get('user')
+    comment = data.get('comment')
+    print(user)
+    print(comment)
+    # status = appservice.post_case_comment(investigated_entity, assigned_user, case_name, case_description, case_priority)
+    return "status"
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
 
 @app.route('/getallcases', methods=['POST'])
 @jwt_required()

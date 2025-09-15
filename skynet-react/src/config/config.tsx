@@ -80,6 +80,11 @@ export default class Config
     return this.baseUrl + '/getallcases';
   }
 
+  public PostCaseCommentURL()
+  {
+    return this.baseUrl + '/postcasecomment';
+  }
+
   public ServerURL()
   {
     return this.url;

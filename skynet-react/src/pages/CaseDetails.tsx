@@ -5,14 +5,16 @@ import LLMService from '../services/LLMService.ts';
 import PromptService from "../services/PromptService.ts";
 import TelemetryService from "../services/TelemetryService.ts";
 import HelpTextService from "../services/HelpTextService.ts";
+import AppService from "../services/AppService.ts";
 
 interface CaseDetailsProps 
 {
   selected: any;
   setSelected: any;
+  appService: AppService
 }
 
-export function CaseDetails({ selected, setSelected } : CaseDetailsProps)
+export function CaseDetails({ selected, setSelected, appService } : CaseDetailsProps)
 {
   const [comment, setComment] = useState("");
   function handleGoBack() 
@@ -23,7 +25,7 @@ export function CaseDetails({ selected, setSelected } : CaseDetailsProps)
   function SubmitComment(event: any)
   {
     let assginedUser:any = localStorage.getItem('username');
-    console.log(selected);
+    appService.PostComment(assginedUser, comment);
     event.preventDefault();
   }
 
@@ -46,9 +48,12 @@ export function CaseDetails({ selected, setSelected } : CaseDetailsProps)
         </div>
         <div className="flex-row">
           <h1>Comments</h1>
+          <div className="bg-[#1B1B1B]">
+            <p>Comment Post</p>
+          </div>
           <form onSubmit={SubmitComment}>
+            <button type="submit" className="px-4 cursor-pointer border mb-2 w-full py-2 bg-black text-white rounded hover:bg-black">Post Comment</button>
             <textarea className="block w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-black transition-colors duration-200" onChange={(e) => setComment(e.target.value)} rows={6} placeholder="Enter Comment" />
-            <button type="submit" className="px-4 cursor-pointer border mt-2 w-full py-2 bg-black text-white rounded hover:bg-black">Create Case</button>
           </form>
         </div>
       </div>

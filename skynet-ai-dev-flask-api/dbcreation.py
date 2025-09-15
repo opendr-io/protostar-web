@@ -49,7 +49,7 @@ def setup_postgres_tables():
       except Exception:
         print('Table cases has already been created')
       try:
-        cursor.execute("""CREATE TABLE comments (
+        cursor.execute("""CREATE TABLE case_comments (
           comment_id SERIAL PRIMARY KEY,
           case_id INTEGER REFERENCES cases(case_id),
           comment_user TEXT REFERENCES appusers(username),
