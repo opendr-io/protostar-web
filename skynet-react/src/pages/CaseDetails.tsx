@@ -17,16 +17,38 @@ interface CaseDetailsProps
 export function CaseDetails({ selected, setSelected, appService } : CaseDetailsProps)
 {
   const [comment, setComment] = useState("");
-  function handleGoBack() 
+  const [comments, setComments] = useState([])
+  function handleGoBack()
   {
     setSelected(null);
   }
 
+  async function LoadComments()
+  {
+    let comments = await appService.LoadCaseComments(selected.case_id);
+    setComments(comments.flat())
+  }
+
+  function ClearData()
+  {
+    setComment("");
+  }
+
+  useEffect(() => 
+  {
+    LoadComments();
+  }, []);
+
   function SubmitComment(event: any)
   {
-    let assginedUser:any = localStorage.getItem('username');
-    appService.PostComment(assginedUser, comment);
     event.preventDefault();
+    let assginedUser:any = localStorage.getItem('username');
+    appService.PostComment(assginedUser, comment, selected.case_id);
+    ClearData();
+    for(let i = 0; i < 2; i++)
+    {
+      LoadComments();
+    }
   }
 
   return (
@@ -48,11 +70,20 @@ export function CaseDetails({ selected, setSelected, appService } : CaseDetailsP
         </div>
         <div className="flex-row">
           <h1>Comments</h1>
-          <div className="bg-[#1B1B1B]">
+          <div className="bg-[#1B1B1B] mt-2">
             <p>Comment Post</p>
+            <div>
+              {comments.map((item, index) => (
+                <li key={index} className="text-white cursor-pointer px-4 py-2 hover:bg-gray-600 list-none">
+                  <span className="mx-1">{item.f1}</span>
+                  <span className="mx-1">{item.f2}</span>
+                  <span className="mx-1 text-xs">{item.f3}</span>
+                </li>
+              ))}
+            </div>
           </div>
           <form onSubmit={SubmitComment}>
-            <button type="submit" className="px-4 cursor-pointer border mb-2 w-full py-2 bg-black text-white rounded hover:bg-black">Post Comment</button>
+            <button type="submit" className="px-4 mt-4 cursor-pointer border mb-2 w-full py-2 bg-black text-white rounded hover:bg-gray-600 active:bg-gray-800">Post Comment</button>
             <textarea className="block w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-black transition-colors duration-200" onChange={(e) => setComment(e.target.value)} rows={6} placeholder="Enter Comment" />
           </form>
         </div>

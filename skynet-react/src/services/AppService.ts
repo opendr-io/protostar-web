@@ -88,17 +88,42 @@ export default class AppService
     }
   }
 
-  async PostComment(user: string, userComment: string)
+  async PostComment(user: string, userComment: string, selectedCase: number)
   {
     try
     {
       let token = localStorage.getItem('token');
-      console.log(user);
-      console.log(userComment);
       const response = await axios.post(this.config.PostCaseCommentURL(),
       {
+        'case': selectedCase,
         'user': user,
         'comment': userComment
+      },
+      {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    }
+    catch(error)
+    {
+      console.log('An error has been thrown');
+      new SessionManagementService().Logout();
+      window.location.href = '/login';
+      console.log(error);
+    }
+  }
+
+  async LoadCaseComments(selectedCase: number)
+  {
+    try
+    {
+      let token = localStorage.getItem('token');
+      const response = await axios.post(this.config.LoadCaseCommentsURL(),
+      {
+        'case': selectedCase
       },
       {
         headers:

@@ -51,12 +51,26 @@ class AppService:
     except Exception as exc:
       print(exc)
 
-  def post_case_comment(self):
+  def post_case_comment(self, case, user, comment):
     try:
       with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),
       user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
         with connection.cursor() as cursor:
-          fillers ="%s,%s,%s,%s,%s,%s,Default,%s"
-          sqlInsertStatement = f"insert into case_comments (assigned_user, casename, description, priority, investigated_entity, properties, created_at, resolved_at) values({fillers})"
+          fillers ="%s,%s,%s,Default"
+          sqlInsertStatement = f"insert into case_comments (case_id, comment_user, comment, created_at) values({fillers})"
+          final_params = [case, user, comment]
+          cursor.execute(sqlInsertStatement, final_params)
+    except Exception as exc:
+      print(exc)
+
+  def load_case_comments(self, case):
+    try:
+      with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),
+      user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
+        with connection.cursor() as cursor:
+          cursor.execute(f'SELECT row_to_json(row(comment_user, comment, created_at)) FROM case_comments where case_id = {case} ORDER BY created_at DESC')
+          comments = cursor.fetchall()
+          json_comments = json.dumps(comments)
+          return json_comments
     except Exception as exc:
       print(exc)

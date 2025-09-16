@@ -48,8 +48,8 @@ export function CasesOverview({ users, contentSections, ToggleWindow, isUserList
         </div>
       </div>
       <div id="card" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-6">
-        {contentSections.filter(({ priority }) => priority == filterPriority).map(({ id, assigned_user, casename, description, priority, investigated_entity }) => (
-          <div key={id} className="bg-[#1B1B1B] text-white rounded-lg shadow cursor-pointer aspect-square p-6 flex flex-col" onClick={() => {setSelected({ casename, description, assigned_user, priority, investigated_entity }); ToggleWindow(isEntitySelected, setIsEntitySelected)}}>
+        {contentSections.filter(({ priority }) => priority == filterPriority).map(({ case_id, assigned_user, casename, description, priority, investigated_entity }) => (
+          <div key={case_id} className="bg-[#1B1B1B] text-white rounded-lg shadow cursor-pointer aspect-square p-6 flex flex-col" onClick={() => {setSelected({ case_id, casename, description, assigned_user, priority, investigated_entity }); ToggleWindow(isEntitySelected, setIsEntitySelected)}}>
             <h3 className="text-lg font-semibold mb-3">{casename}</h3>
             <p className="line-clamp-4">{description}</p>
           </div>

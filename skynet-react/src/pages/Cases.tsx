@@ -31,28 +31,42 @@ export function Cases()
   let ps = new PromptService();
   let as = new AppService();
 
-  useEffect(() =>
+  async function RetrieveEntities()
   {
-    async function RetrieveEntities()
-    {
-      let e = await ts.GetAllEntitiesNeo();
-      setEntityList(e);
-    }
+    let e = await ts.GetAllEntitiesNeo();
+    setEntityList(e);
+  }
 
-    async function RetrieveUsers()
-    {
-      let u = await as.GetUsers();
-      setUserList(u);
-    }
+  async function RetrieveUsers()
+  {
+    let u = await as.GetUsers();
+    setUserList(u);
+  }
 
-    async function RetrieveCases() 
-    {
-      let c = await as.GetAllCases();
-      setCaseList(c.flat());
-    }
+  async function RetrieveCases() 
+  {
+    let c = await as.GetAllCases();
+    setCaseList(c.flat());
+  }
+
+  async function LoadData()
+  {
     RetrieveCases();
     RetrieveUsers();
     RetrieveEntities();
+  }
+
+  function ClearData()
+  {
+    setSelectedEntity("");
+    setUserAssigned("");
+    setUserAssigned("");
+    setCaseName("");
+  }
+
+  useEffect(() =>
+  {
+    LoadData();
   }, []);
 
   function handleSubmit(event: any)
@@ -60,11 +74,12 @@ export function Cases()
     event.preventDefault();
     let assginedUser:any = localStorage.getItem('username');
     as.CreateCase(selectedEntity, assginedUser, caseName, caseDescription, casePriority);
-    setSelectedEntity("");
-    setUserAssigned("");
-    setUserAssigned("");
-    setCaseName("");
+    ClearData();
     ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen);
+    for(let i = 0; i < 2; i++)
+    {
+      LoadData();
+    }
   };
 
   function ToggleWindow(isOpen: boolean, setVar: React.Dispatch<React.SetStateAction<boolean>>)
@@ -123,7 +138,7 @@ export function Cases()
               </label>
               <label className="block mb-4">
                 <span>Entity</span>
-                <select onChange={(e) => setSelectedEntity(e.target.value)} className="w-full border border-gray-300 rounded mt-1 p-2" required onInvalid={(e) => e.target.setCustomValidity('Please select an entity from the list')}>
+                <select onChange={(e) => { setSelectedEntity(e.target.value); }} className="w-full border border-gray-300 rounded mt-1 p-2" required onInvalid={(e) => e.target.setCustomValidity('Please select an entity from the list')}>
                   <option disabled selected>Select Entity</option>
                   {entityList.map((entity, index) => (
                     <option key={index} value={entity}>

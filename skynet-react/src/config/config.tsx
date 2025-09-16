@@ -85,6 +85,11 @@ export default class Config
     return this.baseUrl + '/postcasecomment';
   }
 
+  public LoadCaseCommentsURL()
+  {
+    return this.baseUrl + '/loadcasecomments';
+  }
+
   public ServerURL()
   {
     return this.url;
