@@ -3,13 +3,14 @@ flask
 flask_cors
 flask_jwt_extended
 flask-talisman
+marshmallow
 neo4j
 pandas
 py2neo
 bcrypt
 pyOpenSSL
 langchain 
-langchain-anthropic 
+langchain-anthropic
 anthropic
 python-dotenv
 langgraph
