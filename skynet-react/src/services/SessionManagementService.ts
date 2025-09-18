@@ -1,6 +1,7 @@
 import axios from 'axios';
+import validator from 'validator';
+import DOMPurify from 'dompurify';
 import Config from '../config/config';
-
 export default class SessionManagementService
 {
   private config: Config;
