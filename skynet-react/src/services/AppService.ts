@@ -41,6 +41,11 @@ export default class AppService
   {
     try
     {
+      entity = DOMPurify.sanitize(entity);
+      assignedUser = DOMPurify.sanitize(assignedUser);
+      caseName = DOMPurify.sanitize(caseName);
+      caseDescription = DOMPurify.sanitize(caseDescription);
+      casePriority = Number(DOMPurify.sanitize(String(casePriority)));
       let token = localStorage.getItem('token');
       const response = await axios.post(this.config.CreateCaseURL(), 
       {
@@ -94,6 +99,9 @@ export default class AppService
   {
     try
     {
+      selectedCase = Number(DOMPurify.sanitize(String(selectedCase)));
+      userComment = DOMPurify.sanitize(userComment);
+      user = DOMPurify.sanitize(user);
       let token = localStorage.getItem('token');
       const response = await axios.post(this.config.PostCaseCommentURL(),
       {
@@ -122,6 +130,7 @@ export default class AppService
   {
     try
     {
+      selectedCase = Number(DOMPurify.sanitize(String(selectedCase)));
       let token = localStorage.getItem('token');
       const response = await axios.post(this.config.LoadCaseCommentsURL(),
       {

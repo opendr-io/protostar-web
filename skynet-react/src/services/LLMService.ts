@@ -10,6 +10,7 @@ export default class LLMService
 {
   async AskLLM(question: any)
   {
+    question = DOMPurify.sanitize(question);
     let sms = new SessionManagementService();
     try
     {
@@ -25,6 +26,7 @@ export default class LLMService
   async AskClaude(question: any)
   {
     let config = new Config();
+    question = DOMPurify.sanitize(question);
     let sms = new SessionManagementService();
     try
     {

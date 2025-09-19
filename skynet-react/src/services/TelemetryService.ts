@@ -1,5 +1,7 @@
 // import Anthropic from "@anthropic-ai/sdk";
 import axios from 'axios';
+import validator from 'validator';
+import DOMPurify from 'dompurify';
 import Config from '../config/config';
 import SessionManagementService from './SessionManagementService';
 
@@ -17,6 +19,7 @@ export default class TelemetryService
     try
     {
       let token = localStorage.getItem('token');
+      view = DOMPurify.sanitize(view);
       const r = await axios.post(this.config.ShowGraphURL(),
       {
         'view': view
@@ -66,6 +69,7 @@ export default class TelemetryService
     try
     {
       let token = localStorage.getItem('token');
+      entity = DOMPurify.sanitize(entity);
       const response = await axios.post(this.config.EntityDetailsNeoURL(), 
       {
         'entity': entity
@@ -90,6 +94,7 @@ export default class TelemetryService
   {
     try
     {
+      entity = DOMPurify.sanitize(entity);
       let token = localStorage.getItem('token');
       const response = await axios.post(this.config.RawEntityDetailsURL(), 
       {

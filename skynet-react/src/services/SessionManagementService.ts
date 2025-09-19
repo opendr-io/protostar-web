@@ -12,11 +12,13 @@ export default class SessionManagementService
 
   public async Login(username: string, password: string)
   {
+    let un = DOMPurify.sanitize(username);
+    let pass = DOMPurify.sanitize(password);
     console.log('login attempt');
     await axios.post(this.config.LoginURL(), 
     {
-      'username': username,
-      'password': password
+      'username': un,
+      'password': pass
     }).then((r: any) => 
     {
       localStorage.setItem('token', r.data.access_token);

@@ -4,6 +4,7 @@ import psycopg
 import bcrypt
 import configparser
 from pathlib import Path
+from marshmallow import Schema, fields, validate, pre_load, post_load
 
 config = configparser.ConfigParser()
 config.read(Path(__file__).parent.absolute() / "dbconfig.ini")

@@ -4,6 +4,7 @@ import pandas as pd
 from flask import jsonify
 from llmservice import LLMService
 from py2neo import Graph, Node, Relationship
+from marshmallow import Schema, fields, validate, pre_load, post_load
 
 class TelemetryService:
   def __init__(self):
