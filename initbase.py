@@ -56,14 +56,14 @@ def run():
   subprocess.run(npm_install, shell=True, cwd='skynet-neo')
   subprocess.run(npm_install, shell=True, cwd='skynet-react')
 
-  subprocess.run(npm_build, shell=True, cwd='skynet-neo')
-  subprocess.run(npm_build, shell=True, cwd='skynet-react')
+  # subprocess.run(npm_build, shell=True, cwd='skynet-neo')
+  # subprocess.run(npm_build, shell=True, cwd='skynet-react')
 
   # Start servers
   servers = [
     ('python -m flask --app skynet-ai-dev-flask-api run --host 0.0.0.0 --port 5002', 'skynet-ai-dev-flask-api', 'Flask'),
-    ('serve -s dist -p 3000', 'skynet-neo', 'Neo'),
-    ('serve -s dist -p 5173', 'skynet-react', 'React')
+    ('npm run dev', 'skynet-neo', 'Neo'),
+    ('npm run dev', 'skynet-react', 'React')
   ]
 
   processes = []

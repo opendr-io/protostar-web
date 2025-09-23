@@ -53,7 +53,6 @@ export function Summary()
     async function FetchData()
     {
       let pgd = await ts.RetrieveGraphData('view2');
-      console.log(pgd);
       let highLevelDataFields = new Set();
       let highLevel = new Set();
       let midLevelData:any = []; 

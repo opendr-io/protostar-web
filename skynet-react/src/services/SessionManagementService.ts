@@ -1,32 +1,38 @@
 import axios from 'axios';
+import validator from 'validator';
+import DOMPurify from 'dompurify';
 import Config from '../config/config';
-
 export default class SessionManagementService
 {
-  constructor() {}
+  private config: Config;
+  constructor() 
+  {
+    this.config = new Config();
+  }
 
   public async Login(username: string, password: string)
   {
+    let un = DOMPurify.sanitize(username);
+    let pass = DOMPurify.sanitize(password);
     console.log('login attempt');
-    let config = new Config();
-    await axios.post(config.LoginURL(), 
+    await axios.post(this.config.LoginURL(), 
     {
-      'username': username,
-      'password': password
+      'username': un,
+      'password': pass
     }).then((r: any) => 
     {
       localStorage.setItem('token', r.data.access_token);
       localStorage.setItem('refresh_token', r.data.refresh_token);
+      localStorage.setItem('username', username);
     });
   }
 
   public async RenewSession()
   {
-    let config = new Config();
     console.log('RenewSession()');
     let refresh = localStorage.getItem('refresh_token');
     console.log(refresh);
-    await axios.post(config.RenewURL(),
+    await axios.post(this.config.RenewURL(),
     {
       headers: 
       {

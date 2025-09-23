@@ -1,5 +1,7 @@
 // import Anthropic from "@anthropic-ai/sdk";
 import axios from 'axios';
+import validator from 'validator';
+import DOMPurify from 'dompurify';
 import Config from '../config/config';
 import { errorUtils } from './ErrorHandlingService';
 import SessionManagementService from './SessionManagementService';
@@ -8,6 +10,7 @@ export default class LLMService
 {
   async AskLLM(question: any)
   {
+    question = DOMPurify.sanitize(question);
     let sms = new SessionManagementService();
     try
     {
@@ -23,6 +26,7 @@ export default class LLMService
   async AskClaude(question: any)
   {
     let config = new Config();
+    question = DOMPurify.sanitize(question);
     let sms = new SessionManagementService();
     try
     {

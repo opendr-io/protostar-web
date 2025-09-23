@@ -4,6 +4,7 @@ import pandas as pd
 from flask import jsonify
 from llmservice import LLMService
 from py2neo import Graph, Node, Relationship
+from marshmallow import Schema, fields, validate, pre_load, post_load
 
 class TelemetryService:
   def __init__(self):
@@ -182,32 +183,13 @@ class TelemetryService:
       print(e)
     return data
   
-  def form_data(self, result):
-    nodes = {}
-    links = []
-    for record in result:
-      # print(record)
-      # Process both source and target nodes
-      for key in ['p']:
-        # print(record)
-        node = record[key]
-        # print(node)
-        node_id = node('start')
-        # print(node_id)
-        if node_id not in nodes:
-          nodes[node_id] = {
-            "id": node_id,
-            "labels": list(node.labels),
-            "properties": dict(node)
-          }
-      # Process the relationship details
-      rel = record['r']
-      links.append(
-      {
-        "id": rel.id,
-        "source": rel.start_node.id,
-        "target": rel.end_node.id,
-        "type": rel.type,
-        "properties": dict(rel)
-      })
-      return {"nodes": list(nodes.values()), "links": links}
+  def get_all_entities(self):
+    data = []
+    try:
+      neo4j = self.neo4j_driver
+      result_df = neo4j.query("""MATCH (n:ENTITY) 
+      RETURN collect(DISTINCT n.entity) AS entities""").to_data_frame()
+      data = jsonify(result_df.iloc[0,0])
+    except Exception as e:
+      print(e)
+    return data

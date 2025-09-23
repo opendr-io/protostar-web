@@ -1,14 +1,15 @@
-import { createBrowserRouter, data, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, data, RouterProvider, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from "react-redux";
 import LLMService from '../services/LLMService.ts';
 import PromptService from "../services/PromptService.ts";
 import TelemetryService from "../services/TelemetryService.ts";
-import { X, Plus, ChevronDown } from 'lucide-react';
 import HelpTextService from "../services/HelpTextService.ts";
+import { X, Plus, ChevronDown } from 'lucide-react';
 
 export function Details()
 {
+  const navigate = useNavigate();
   const [entityDetails, setEntityDetails] = useState<any>([]);
   const [entityFields, setEntityFields] = useState<any>([]);
   const [entityFieldsVisibility, setEntityFieldsVisibility] = useState<any>([]);
@@ -17,9 +18,9 @@ export function Details()
   const [open, setOpen] = useState(false);
   const [entityCounter, setEntityCounter] = useState<number>(0)
   let ts = new TelemetryService();
-  const llm = new LLMService();
-  let ps = new PromptService();
+  let llm = new LLMService();
   let hts = new HelpTextService();
+  let ps = new PromptService();
   const entity = useSelector((state) => state.data.value);
   const handleChange = (event: any) =>
   {
@@ -69,13 +70,19 @@ export function Details()
     setOpen(false);
   }
 
+  function NavigateToAlertsPage(entity: any)
+  {
+    // console.log(entity);
+    navigate('/alerts', { state: entity });
+  }
+
   if(entityDetails)
   {
     return (
       <div className="py-4 mx-10 min-h-screen mt-20">
         <h1 className="text-3xl font-bold mb-4">Details</h1>
         <div className="mt-4">
-          <h2 className="font-semibold text-xl mb-2">Entity: <span className="">{entity[0]}</span></h2>
+          <h2 className="font-semibold text-xl mb-2">Entity: <span onClick={() => NavigateToAlertsPage(entity[0])} className="cursor-pointer text-blue-600">{entity[0]}</span></h2>
           <h2 className="font-semibold text-xl mb-2">Entity Type: <span className="">{entity[1]}</span></h2>
           <h2 className="font-semibold text-xl mb-4">IP: <span className="">{entity[2]}</span></h2>
         </div>
@@ -111,7 +118,10 @@ export function Details()
                     let answer = await llm.AskLLM(summaryPrompt);
                     setLLMOutput(answer);
                   }
-                } className="bg-black text-white border border-gray-300 mt-4 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">AI Explaination</button>
+                } className="bg-black text-white border border-gray-300 mt-4 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">AI Explaination</button>              
+            </div>
+            <div className="flex-row">
+              <button className="bg-black text-white border border-gray-300 mt-4 w-48 py-2 ml-4 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Create Case</button>
             </div>
           </div>
         </div>
