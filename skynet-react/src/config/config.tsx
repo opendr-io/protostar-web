@@ -60,6 +60,11 @@ export default class Config
     return this.baseUrl + '/rawentitydetailsneo';
   }
 
+  public DistictRawEntityDetailsURL()
+  {
+    return this.baseUrl + '/distictrawentitydetailsneo';
+  }
+
   public GetUsersURL()
   {
     return this.baseUrl + '/getusers';

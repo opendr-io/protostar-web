@@ -32,7 +32,6 @@ class TelemetryService:
         where not n.entity = "172.16.200.110" RETURN path""")
         data = result.data()
         # print(data.pop().pop())
-        self.form_graph_relationships(data)
         d = pd.DataFrame.from_dict(data).to_json()
         return d
     except Exception as e:
@@ -167,7 +166,7 @@ class TelemetryService:
       data = result_df.to_json()
     except Exception as e:
       print(e)
-    return jsonify(data)
+    return data
   
   def get_view7(self):
     data = []

@@ -11,13 +11,14 @@ interface CaseDetailsProps
 {
   selected: any;
   setSelected: any;
-  appService: AppService
+  appService: AppService;
+  telemetryService: TelemetryService
 }
 
-export function CaseDetails({ selected, setSelected, appService } : CaseDetailsProps)
+export function CaseDetails({ selected, setSelected, appService, telemetryService } : CaseDetailsProps)
 {
   const [comment, setComment] = useState("");
-  const [comments, setComments] = useState([])
+  const [comments, setComments] = useState([]);
   function handleGoBack()
   {
     setSelected(null);
@@ -29,6 +30,13 @@ export function CaseDetails({ selected, setSelected, appService } : CaseDetailsP
     setComments(comments.flat())
   }
 
+  async function LoadCaseData()
+  {
+    let data = await telemetryService.RetrieveRawEntityDetailsNeo(selected.investigated_entity);
+    console.log(data);
+
+  }
+
   function ClearData()
   {
     setComment("");
@@ -37,6 +45,7 @@ export function CaseDetails({ selected, setSelected, appService } : CaseDetailsP
   useEffect(() => 
   {
     LoadComments();
+    LoadCaseData();
   }, []);
 
   function SubmitComment(event: any)

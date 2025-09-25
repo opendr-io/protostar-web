@@ -23,9 +23,9 @@ export default class TelemetryService
       const r = await axios.post(this.config.ShowGraphURL(),
       {
         'view': view
-      }, 
+      },
       {
-        headers: 
+        headers:
         {
           'Authorization': `Bearer ${token}`
         }
@@ -49,7 +49,7 @@ export default class TelemetryService
       let token = localStorage.getItem('token');
       const r = await axios.get(this.config.EntitiesNeoURL(), 
       {
-        headers: 
+        headers:
         {
           Authorization: `Bearer ${token}`
         }
@@ -75,7 +75,7 @@ export default class TelemetryService
         'entity': entity
       },
       {
-        headers: 
+        headers:
         {
           'Authorization': `Bearer ${token}`
         }
@@ -99,9 +99,9 @@ export default class TelemetryService
       const response = await axios.post(this.config.RawEntityDetailsURL(), 
       {
         'entity': entity
-      }, 
+      },
       {
-        headers: 
+        headers:
         {
           'Authorization': `Bearer ${token}`
         }

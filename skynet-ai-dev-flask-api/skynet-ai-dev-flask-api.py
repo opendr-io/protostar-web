@@ -227,6 +227,19 @@ def retrieve_raw_entity_details_neo():
   except Exception as e:
     response = make_response(jsonify({"error": "Something went wrong"}), 401)
     return response
+  
+@app.route('/distictrawentitydetailsneo', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def retrieve_distict_raw_entity_details_neo():
+  try:
+    data = request.get_json()
+    entity = data.get('entity')
+    details = telemetryservice.get_distinct_raw_entity_details_neo(entity)
+    return details
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
 
 @app.route('/retrievecolumnnames', methods=['POST'])
 @jwt_required()
