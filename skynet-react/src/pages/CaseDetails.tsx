@@ -19,6 +19,7 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
 {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
+  const [entityData, setEntityData] = useState<any>([]);
   function handleGoBack()
   {
     setSelected(null);
@@ -30,11 +31,32 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
     setComments(comments.flat())
   }
 
+  function DedupeValuesPreserveStructure(obj: Record<string, any>): Record<string, any> 
+  {
+    const result: Record<string, any> = {};
+    for(const [key, value] of Object.entries(obj)) 
+    {
+      if(Array.isArray(value))
+      {
+        result[key] = [...new Set(value)];
+      } 
+      else if(typeof value === 'object' && value !== null)
+      {
+        result[key] = DedupeValuesPreserveStructure(value);
+      }
+      else
+      {
+        result[key] = value;
+      }
+    }
+    return result;
+  }
+
   async function LoadCaseData()
   {
     let data = await telemetryService.RetrieveRawEntityDetailsNeo(selected.investigated_entity);
-    console.log(data);
-
+    let d = DedupeValuesPreserveStructure(data);
+    setEntityData(d);
   }
 
   function ClearData()
@@ -68,11 +90,16 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
           <h1 className="text-xl font-semibold">Case Details</h1>
             {selected && (
               <div className={`flex flex-col mx-4 mt-2`}>
-                <h1 className="text-lg font-semibold">Case Name: { selected.casename }</h1>
-                <h1 className="text-lg font-semibold">Investigate Entity: { selected.investigated_entity }</h1>
-                <div className="mx-2 mt-2 flex-row">
-                  <p className="text-base">Priority: { selected.priority }</p>
-                  <p className="text-base">Description: { selected.description }</p>
+                <div>
+                  <h1 className="text-lg font-semibold">Case Name: { selected.casename }</h1>
+                  <h1 className="text-lg font-semibold">Investigate Entity: { selected.investigated_entity }</h1>
+                  <div className="mx-2 mt-2 flex-row">
+                    <p className="text-base">Priority: { selected.priority }</p>
+                    <p className="text-base">Description: { selected.description }</p>
+                  </div>
+                </div>
+                <div>
+                  <span>{entityData}</span>
                 </div>
               </div>
             )}

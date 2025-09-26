@@ -98,7 +98,7 @@ export function Details()
                   absolute top-full left-0 mt-2 w-48 rounded-md shadow-lg bg-black z-50
                   transform transition-all duration-300 ease-in-out
                   ${open ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-              <div>
+                <div>
                   {entityFields.map((option: any, index: any) => (
                     <div onClick={handleFieldVisibility} className={`${(index < 5 && !entityFieldsVisibility[index]) ? 'block' : 'hidden'}`}>
                       <button className="w-48 text-left px-4 py-2 text-white hover:bg-gray-600 cursor-default"
