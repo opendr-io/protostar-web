@@ -20,6 +20,7 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
   const [entityData, setEntityData] = useState<any>([]);
+  const [entityFieldNames, setEntityFieldNames] = useState<any>([]);
   function handleGoBack()
   {
     setSelected(null);
@@ -54,9 +55,13 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
 
   async function LoadCaseData()
   {
-    let data = await telemetryService.RetrieveRawEntityDetailsNeo(selected.investigated_entity);
-    let d = DedupeValuesPreserveStructure(data);
-    setEntityData(d);
+    let dataset = await telemetryService.RetrieveRawEntityDetailsNeo(selected.investigated_entity);
+    let distinctData = DedupeValuesPreserveStructure(dataset);
+    let fieldNames:any = Object.keys(distinctData);
+    let entityData = Object.values(distinctData);
+    console.log(entityData);
+    setEntityFieldNames(fieldNames);
+    setEntityData(entityData);
   }
 
   function ClearData()
@@ -99,7 +104,11 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
                   </div>
                 </div>
                 <div>
-                  <span>{entityData}</span>
+                    {entityData.map((item: any, index: any) => (
+                      <li key={index} className="text-gray-800 cursor-pointer px-4 py-2 hover:bg-gray-200 active:bg-gray-400">
+                        <span>{item[0]}</span>
+                      </li>
+                    ))}
                 </div>
               </div>
             )}
