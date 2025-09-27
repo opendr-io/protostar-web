@@ -56,12 +56,8 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
   async function LoadCaseData()
   {
     let dataset = await telemetryService.RetrieveRawEntityDetailsNeo(selected.investigated_entity);
-    let distinctData = DedupeValuesPreserveStructure(dataset);
-    let fieldNames:any = Object.keys(distinctData);
-    let entityData = Object.values(distinctData);
-    console.log(entityData);
-    setEntityFieldNames(fieldNames);
-    setEntityData(entityData);
+    const ed = Object.entries(dataset).map(([key, value]) => ({ key, value }));
+    setEntityData(ed);
   }
 
   function ClearData()
@@ -103,17 +99,19 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
                     <p className="text-base">Description: { selected.description }</p>
                   </div>
                 </div>
-                <div>
-                    {entityData.map((item: any, index: any) => (
-                      <li key={index} className="text-gray-800 cursor-pointer px-4 py-2 hover:bg-gray-200 active:bg-gray-400">
-                        <span>{item[0]}</span>
-                      </li>
-                    ))}
-                </div>
               </div>
             )}
         </div>
-        <div className="flex-row">
+        <div className="w-fit mr-10 mt-10">
+          {entityData.map((row: any, i: any) => (
+            <div key={i} className="hover:bg-gray-600 cursor-pointer">
+              <div className="flex flex-row border border-gray-200 px-4 py-2 font-mono">
+                <span className="mr-4">{row.key}</span> <span>{typeof row.value === "object" ? JSON.stringify(row.value) : String(row.value)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex-row mt-10">
           <h1>Comments</h1>
           <div className="bg-[#1B1B1B] mt-2">
             <p>Comment Post</p>

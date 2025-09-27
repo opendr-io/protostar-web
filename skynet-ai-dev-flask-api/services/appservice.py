@@ -12,7 +12,7 @@ config.read(Path(__file__).parent.absolute() / "dbconfig.ini")
 class AppService:
   def __init__(self):
     self.config = configparser.ConfigParser()
-    self.config.read(Path(__file__).parent.absolute() / "../dbconfig.ini")    
+    self.config.read(Path(__file__).parent.absolute() / "../dbconfig.ini")
 
   def get_users(self):
     try:
