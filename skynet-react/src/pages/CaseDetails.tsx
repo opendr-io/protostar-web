@@ -75,8 +75,10 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
   {
     event.preventDefault();
     let assginedUser:any = localStorage.getItem('username');
+    console.log(comment);
     appService.PostComment(assginedUser, comment, selected.case_id);
     ClearData();
+    document.getElementById('txtCommentField').value = '';
     for(let i = 0; i < 2; i++)
     {
       LoadComments();
@@ -102,12 +104,11 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
               </div>
             )}
           <div className="flex-row mt-10">
-            <h1>Comments</h1>
+            <h1 className="font-semibold">Comments</h1>
             <div className="bg-[#1B1B1B] mt-2">
-              <p>Comment Post</p>
-              <div>
+              <div className="max-h-96 overflow-y-auto border border-gray-600 rounded-lg p-2 space-y-1">
                 {comments.map((item, index) => (
-                  <li key={index} className="text-white cursor-pointer px-4 py-2 hover:bg-gray-600 list-none">
+                  <li key={index} className="text-white cursor-pointer px-4 py-2 hover:bg-gray-700 list-none">
                     <span className="mx-1">{item.f1}</span>
                     <span className="mx-1">{item.f2}</span>
                     <span className="mx-1 text-xs">{item.f3}</span>
@@ -117,7 +118,7 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
             </div>
             <form onSubmit={SubmitComment}>
               <button type="submit" className="px-4 mt-4 cursor-pointer border mb-2 w-full py-2 bg-black text-white rounded hover:bg-gray-600 active:bg-gray-800">Post Comment</button>
-              <textarea className="block w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-black transition-colors duration-200" onChange={(e) => setComment(e.target.value)} rows={6} placeholder="Enter Comment" />
+              <textarea id='txtCommentField' className="block w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-black transition-colors duration-200" onChange={(e) => setComment(e.target.value)} rows={6} placeholder="Enter Comment" required />
             </form>
           </div>
         </div>

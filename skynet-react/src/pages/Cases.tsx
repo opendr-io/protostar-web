@@ -75,6 +75,8 @@ export function Cases()
     let assginedUser:any = localStorage.getItem('username');
     as.CreateCase(selectedEntity, assginedUser, caseName, caseDescription, casePriority);
     ClearData();
+    document.getElementById('lstEntities').value = 'Select Entity';
+    document.getElementById('txtPriority').value = document.getElementById('txtCaseName').value = document.getElementById('txtDescription').value = '';
     ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen);
     for(let i = 0; i < 2; i++)
     {
@@ -117,7 +119,7 @@ export function Cases()
               </div>
               <div className="bg-[#1B1B1B] p-4 rounded-lg shadow text-white">
                 <p className="">Chat</p>
-                <input type="text" className="w-full border border-gray-300 rounded mt-1 p-2 " placeholder="start typing...."/>
+                <input id='txtLLMSidebarChat' type="text" className="w-full border border-gray-300 rounded mt-1 p-2 " placeholder="start typing...."/>
                 <button className="w-full text-white hover:bg-gray-600 active:bg-gray-800 border border-gray-300 rounded mt-1 p-2">Enter</button>
               </div>
               <div className="bg-[#1B1B1B] p-4 rounded-lg shadow">
@@ -134,11 +136,11 @@ export function Cases()
             <form onSubmit={handleSubmit}>
               <label className="block mb-2">
                 <span>Case Name</span>
-                <input type="text" onChange={(e) => setCaseName(e.target.value)} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" required onInvalid={(e) => e.target.setCustomValidity('Please enter the name for this case')} />
+                <input id='txtCaseName' type="text" autoComplete="off" onChange={(e) => setCaseName(e.target.value)} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" required onInvalid={(e) => e.target.setCustomValidity('Please enter the name for this case')} />
               </label>
               <label className="block mb-4">
                 <span>Entity</span>
-                <select onChange={(e) => { setSelectedEntity(e.target.value); }} className="w-full border border-gray-300 rounded mt-1 p-2" required onInvalid={(e) => e.target.setCustomValidity('Please select an entity from the list')}>
+                <select id='lstEntities' onChange={(e) => { setSelectedEntity(e.target.value); }} className="w-full border border-gray-300 rounded mt-1 p-2" required onInvalid={(e) => e.target.setCustomValidity('Please select an entity from the list')}>
                   <option disabled selected>Select Entity</option>
                   {entityList.map((entity, index) => (
                     <option key={index} value={entity}>
@@ -149,11 +151,11 @@ export function Cases()
               </label>
               <label className="block mb-2">
                 <span>Priority</span>
-                <input type="number" onChange={(e) => setCasePriority(Number(e.target.value))} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" />
+                <input id='txtPriority' autoComplete="off" type="number" onChange={(e) => setCasePriority(Number(e.target.value))} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" />
               </label>
               <label className="block mb-2">
-                <span>Desription</span>
-                <textarea className="block w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-black transition-colors duration-200" onChange={(e) => setCaseDescription(e.target.value)} rows={6} placeholder="Enter Case Description" />
+                <span>Description</span>
+                <textarea id='txtDescription' autoComplete="off" className="block w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-black transition-colors duration-200" onChange={(e) => setCaseDescription(e.target.value)} rows={6} placeholder="Enter Case Description" />
               </label>
               <div className="flex justify-end space-x-2">
                 <button type="button" onClick={() => { ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen); setSelectedEntity(""); setUserAssigned(""); setCaseName(""); }} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
