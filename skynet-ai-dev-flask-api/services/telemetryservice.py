@@ -1,8 +1,6 @@
-import os
-import json
 import pandas as pd
 from flask import jsonify
-from llmservice import LLMService
+# from llmservice import LLMService
 from py2neo import Graph, Node, Relationship
 
 class TelemetryService:
@@ -22,21 +20,33 @@ class TelemetryService:
         rel_props = relationship.properties
     except Exception as e:
       print(e)
-  
+
+  # def get_view1(self):
+  #   try:
+  #     with(self.neo4j_driver.session()) as session:
+  #       result = session.run("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
+  #       MATCH path = (n)-[*]->(:ALERT)
+  #       where not n.entity = "172.16.200.110" RETURN path""")
+  #       data = result.data()
+  #       # print(data.pop().pop())
+  #       self.form_graph_relationships(data)
+  #       d = pd.DataFrame.from_dict(data).to_json()
+  #       return d
+  #   except Exception as e:
+  #     print(e)
+  #   return []
+
   def get_view1(self):
+    data = []
     try:
-      with(self.neo4j_driver.session()) as session:
-        result = session.run("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
+      neo4j = self.neo4j_driver
+      result_df = neo4j.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
         MATCH path = (n)-[*]->(:ALERT)
-        where not n.entity = "172.16.200.110" RETURN path""")
-        data = result.data()
-        # print(data.pop().pop())
-        self.form_graph_relationships(data)
-        d = pd.DataFrame.from_dict(data).to_json()
-        return d
+        where not n.entity = "172.16.200.110" RETURN path""").to_data_frame()
+      data = result_df.to_json()
     except Exception as e:
       print(e)
-    return []
+    return data
 
   def get_entities_neo(self):
     data = []
@@ -166,7 +176,7 @@ class TelemetryService:
       data = result_df.to_json()
     except Exception as e:
       print(e)
-    return jsonify(data)
+    return data
   
   def get_view7(self):
     data = []
@@ -181,33 +191,3 @@ class TelemetryService:
     except Exception as e:
       print(e)
     return data
-  
-  def form_data(self, result):
-    nodes = {}
-    links = []
-    for record in result:
-      # print(record)
-      # Process both source and target nodes
-      for key in ['p']:
-        # print(record)
-        node = record[key]
-        # print(node)
-        node_id = node('start')
-        # print(node_id)
-        if node_id not in nodes:
-          nodes[node_id] = {
-            "id": node_id,
-            "labels": list(node.labels),
-            "properties": dict(node)
-          }
-      # Process the relationship details
-      rel = record['r']
-      links.append(
-      {
-        "id": rel.id,
-        "source": rel.start_node.id,
-        "target": rel.end_node.id,
-        "type": rel.type,
-        "properties": dict(rel)
-      })
-      return {"nodes": list(nodes.values()), "links": links}
