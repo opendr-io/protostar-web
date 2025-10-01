@@ -9,21 +9,7 @@ from marshmallow import Schema, fields, validate, pre_load, post_load
 class TelemetryService:
   def __init__(self):
     self.neo4j_driver = Graph("bolt://localhost:7687", auth=("neo4j", "password"))
-  
-  def form_graph_relationships(self, data):
-    try:
-      print('testing')
-      graphData = {
-        "nodes": [],
-        "relationships": []
-      }
-      for record in data:
-        relationship = record["r"]
-        rel_type = relationship.type
-        rel_props = relationship.properties
-    except Exception as e:
-      print(e)
-  
+   
   def get_view1(self):
     try:
       with(self.neo4j_driver.session()) as session:
@@ -41,8 +27,7 @@ class TelemetryService:
   def get_entities_neo(self):
     data = []
     try:
-      neo4j = self.neo4j_driver
-      result_df = neo4j.query(f"""
+      result_df = self.neo4j_driver.query(f"""
         MATCH (n:ENTITY)
           WHERE n.view = 2
           MATCH (n)-[*]->(m:ALERT)
@@ -59,8 +44,7 @@ class TelemetryService:
   def get_entity_details_neo(self, entity):
     data = []
     try:
-      neo4j = self.neo4j_driver
-      result_df = neo4j.query(f"""
+      result_df = self.neo4j_driver.query(f"""
         MATCH (n:ENTITY)
           WHERE n.view = 2
           MATCH (n)-[*]->(m:ALERT)
@@ -81,7 +65,6 @@ class TelemetryService:
   def get_detections_neo(self, detection_type):
     data = []
     try:
-      neo4j = self.neo4j_driver
       query = f"""
       MATCH (n:ENTITY)
         WHERE n.view = 2
@@ -97,7 +80,7 @@ class TelemetryService:
         COUNT(*) AS count
         ORDER BY detection_type ASC, count ASC
       """
-      result_df = neo4j.query(query).to_data_frame()
+      result_df = self.neo4j_driver.query(query).to_data_frame()
       data = result_df.to_json()
     except Exception as e:
       print(e)
@@ -106,7 +89,6 @@ class TelemetryService:
   def get_raw_entity_details_neo(self, entity):
     data = []
     try:
-      neo4j = self.neo4j_driver
       query = f"""
         MATCH (n:ENTITY)
           WHERE n.view = 2
@@ -130,7 +112,7 @@ class TelemetryService:
               m.dest_port as dest_port
           ORDER BY n.entity ASC
         """
-      result_df = neo4j.query(query).to_data_frame()
+      result_df = self.neo4j_driver.query(query).to_data_frame()
       data = result_df.to_json()
     except Exception as e:
       print(e)
@@ -139,8 +121,7 @@ class TelemetryService:
   def get_view2(self):
     data = []
     try:
-      neo4j = self.neo4j_driver
-      result_df = neo4j.query("""
+      result_df = self.neo4j_driver.query("""
         MATCH (n:ENTITY)-[r]->(m) WHERE n.view = 1 
         AND m.view = 1 WITH n, collect(DISTINCT type(r)) 
         AS relTypes, collect(r) AS relationships, collect(m) 
@@ -157,8 +138,7 @@ class TelemetryService:
   def get_view6(self):
     data = []
     try:
-      neo4j = self.neo4j_driver
-      result_df = neo4j.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
+      result_df = self.neo4j_driver.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
       MATCH path = (n)-[*]->(a:ALERT) where 
       not n.entity = "172.16.200.110" 
       and (a.detection_type = "CLOUD_ANOMALY" 
@@ -171,8 +151,7 @@ class TelemetryService:
   def get_view7(self):
     data = []
     try:
-      neo4j = self.neo4j_driver
-      result_df = neo4j.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
+      result_df = self.neo4j_driver.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
       MATCH path = (n)-[*]->(a:ALERT) 
       where not n.entity = "172.16.200.110" 
       and not (a.detection_type = "CLOUD_ANOMALY" 
@@ -185,8 +164,7 @@ class TelemetryService:
   def get_all_entities(self):
     data = []
     try:
-      neo4j = self.neo4j_driver
-      result_df = neo4j.query("""MATCH (n:ENTITY) 
+      result_df = self.neo4j_driver.query("""MATCH (n:ENTITY) 
       RETURN collect(DISTINCT n.entity) AS entities""").to_data_frame()
       data = jsonify(result_df.iloc[0,0])
     except Exception as e:

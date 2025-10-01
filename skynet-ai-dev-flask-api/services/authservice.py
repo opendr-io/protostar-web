@@ -1,9 +1,8 @@
-import uuid
+# import uuid
 import bcrypt
 import psycopg
 import pathlib
 import configparser
-import pandas as pd
 from flask import jsonify
 from marshmallow import Schema, fields, validate, pre_load, post_load
 from flask_jwt_extended import (create_access_token, create_refresh_token)
