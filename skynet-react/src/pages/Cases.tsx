@@ -69,11 +69,18 @@ export function Cases()
     LoadData();
   }, []);
 
-  function handleSubmit(event: any)
+  async function handleSubmit(event: any)
   {
     event.preventDefault();
     let assginedUser:any = localStorage.getItem('username');
-    as.CreateCase(selectedEntity, assginedUser, caseName, caseDescription, casePriority);
+    // let caseid = await as.CreateCase(selectedEntity, assginedUser, caseName, caseDescription, casePriority);
+    let dataset = await ts.RetrieveRawEntityDetailsNeo(selectedEntity);
+    const ed = Object.entries(dataset).map(([key, value]) => ({ key, value }));
+    let prompt = ps.AgentCaseCommentPrompt(ed);
+    let agentComment = await llm.AskClaude(prompt);
+    console.log(agentComment);
+    console.log('Processing Complete!');
+    // await as.PostComment('agent', agentComment, caseid);
     ClearData();
     document.getElementById('lstEntities').value = 'Select Entity';
     document.getElementById('txtPriority').value = document.getElementById('txtCaseName').value = document.getElementById('txtDescription').value = '';

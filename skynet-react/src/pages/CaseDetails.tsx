@@ -44,7 +44,7 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
       if(Array.isArray(value))
       {
         result[key] = [...new Set(value)];
-      } 
+      }
       else if(typeof value === 'object' && value !== null)
       {
         result[key] = DedupeValuesPreserveStructure(value);
@@ -86,7 +86,7 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
     setComment("");
   }
 
-  useEffect(() => 
+  useEffect(() =>
   {
     LoadComments();
     LoadCaseData();

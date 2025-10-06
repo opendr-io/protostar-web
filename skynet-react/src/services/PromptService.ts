@@ -74,4 +74,12 @@ export default class PromptService
     of the response place the following message: "If you would like a more detailed response you will need to get the pro version of the application. Here's the output for the free version:"`;
     return finalPrompt;
   }
+
+  public AgentCaseCommentPrompt(details: any)
+  {
+    // let finalPrompt = `Can you give me a further summary and explain the security risks and mitigation steps based on this output: ${details}. Answer it as best as you can. At the beginning 
+    // of the response place the following message: "If you would like a more detailed response you will need to get the pro version of the application. Here's the output for the free version:"`;
+    let finalPrompt = ``
+    return finalPrompt;
+  }
 }
