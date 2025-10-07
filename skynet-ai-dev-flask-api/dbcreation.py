@@ -67,6 +67,14 @@ def setup_postgres_tables():
         sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers})"
         final_params = [config.get('Database', 'ApplicationUser', fallback='demouser'), hashed_password]
         cursor.execute(sqlInsertStatement, final_params)
+
+        password = config.get('Database', 'AgentPassword', fallback='agent').encode('utf-8')
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password, salt)
+        fillers = ("%s," * 2)[:-1]
+        sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers})"
+        final_params = [config.get('Database', 'AgentUser', fallback='agent'), hashed_password]
+        cursor.execute(sqlInsertStatement, final_params)
       except:
         print('Users have already been created!')
 

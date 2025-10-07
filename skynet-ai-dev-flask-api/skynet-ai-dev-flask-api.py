@@ -81,7 +81,7 @@ def ask_llm():
   try:
     data = request.get_json()
     question = data.get('question')
-    answer = llmservice.ask_local_llm(question)
+    answer = llmservice.ask_claude(question)
     return answer
   except Exception as e:
     response = make_response(jsonify({"error": "Something went wrong"}), 401)
@@ -285,8 +285,8 @@ def create_case():
     case_name = data.get('casename')
     case_description = data.get('description')
     case_priority = data.get('priority')
-    status = appservice.create_case(investigated_entity, assigned_user, case_name, case_description, case_priority)
-    return make_response(jsonify({"Success": "Case Created"}), 200)
+    created_case = appservice.create_case(investigated_entity, assigned_user, case_name, case_description, case_priority)
+    return make_response(jsonify({"Success": created_case}), 200)
   except Exception as e:
     response = make_response(jsonify({"error": "Something went wrong"}), 401)
     return response

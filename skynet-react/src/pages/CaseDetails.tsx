@@ -9,7 +9,7 @@ import AppService from "../services/AppService.ts";
 import { useDispatch } from 'react-redux';
 import { setData } from "../other/DataManagement.ts";
 
-interface CaseDetailsProps 
+interface CaseDetailsProps
 {
   selected: any;
   setSelected: any;
@@ -39,7 +39,7 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
   function DedupeValuesPreserveStructure(obj: Record<string, any>): Record<string, any> 
   {
     const result: Record<string, any> = {};
-    for(const [key, value] of Object.entries(obj)) 
+    for(const [key, value] of Object.entries(obj))
     {
       if(Array.isArray(value))
       {
@@ -131,7 +131,7 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
                     <div className="max-h-96 overflow-y-auto border border-gray-600 rounded-lg p-2 space-y-1">
                       {comments.map((item, index) => (
                         <li key={index} className="text-white cursor-pointer px-4 py-2 hover:bg-gray-700 list-none">
-                          <span className="mx-1">{item.f1}</span>
+                          <span className={`mx-1 font-semibold ${item.f1 == 'agent' ? 'text-purple-400' : 'text-teal-400'} `}>{item.f1}</span>
                           <span className="mx-1">{item.f2}</span>
                           <span className="mx-1 text-xs">{item.f3}</span>
                         </li>

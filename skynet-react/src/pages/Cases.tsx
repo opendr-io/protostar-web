@@ -73,14 +73,13 @@ export function Cases()
   {
     event.preventDefault();
     let assginedUser:any = localStorage.getItem('username');
-    // let caseid = await as.CreateCase(selectedEntity, assginedUser, caseName, caseDescription, casePriority);
+    let createdCase = await as.CreateCase(selectedEntity, assginedUser, caseName, caseDescription, casePriority);
     let dataset = await ts.RetrieveRawEntityDetailsNeo(selectedEntity);
-    const ed = Object.entries(dataset).map(([key, value]) => ({ key, value }));
-    let prompt = ps.AgentCaseCommentPrompt(ed);
-    let agentComment = await llm.AskClaude(prompt);
-    console.log(agentComment);
-    console.log('Processing Complete!');
-    // await as.PostComment('agent', agentComment, caseid);
+    let caseId = Number(Object.entries(createdCase).map(([key, value]) => ({ key, value }))[0].value);
+    let jsonDataset = JSON.stringify(dataset);
+    let prompt = ps.AgentCaseCommentPrompt(jsonDataset);
+    let agentComment = await llm.AskLocalLLM(prompt);
+    as.PostComment('agent', agentComment, caseId);
     ClearData();
     document.getElementById('lstEntities').value = 'Select Entity';
     document.getElementById('txtPriority').value = document.getElementById('txtCaseName').value = document.getElementById('txtDescription').value = '';
@@ -89,7 +88,7 @@ export function Cases()
     {
       LoadData();
     }
-  };
+  }
 
   function ToggleWindow(isOpen: boolean, setVar: React.Dispatch<React.SetStateAction<boolean>>)
   {

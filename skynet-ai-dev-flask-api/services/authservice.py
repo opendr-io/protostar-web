@@ -22,16 +22,17 @@ class AuthService:
     user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
       with connection.cursor() as cursor:
         username = data.get('username')
-        password = data.get('password').encode('utf-8')
-        sqlStatement = f"select hashed_password from appusers where username='{username}'"
-        cursor.execute(sqlStatement)
-        exists = cursor.fetchone()
-        if(exists):
-          hash_pass = exists[0]
-          if(bcrypt.checkpw(password, hash_pass)):
-            access_token = create_access_token(identity=username)
-            refresh_token = create_refresh_token(identity=username)
-            return (jsonify({"access_token": access_token, "refresh_token": refresh_token}), 200)
+        if(username != 'agent'):
+          password = data.get('password').encode('utf-8')
+          sqlStatement = f"select hashed_password from appusers where username='{username}'"
+          cursor.execute(sqlStatement)
+          exists = cursor.fetchone()
+          if(exists):
+            hash_pass = exists[0]
+            if(bcrypt.checkpw(password, hash_pass)):
+              access_token = create_access_token(identity=username)
+              refresh_token = create_refresh_token(identity=username)
+              return (jsonify({"access_token": access_token, "refresh_token": refresh_token}), 200)
     return (jsonify({"msg": "Incorrect username or password"}), 401)
 
   def register(self, data):
