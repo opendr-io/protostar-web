@@ -87,7 +87,7 @@ export default class PromptService
       4. timestamp: When the action took place.
       5. entity_type: Is a grouping of the entities that match a set of filter conditions.
       6. severity: Is a categorization of the risk and urgency of a vulnerability and the classification of alarm criticality within a monitoring system.
-    Based on the terms above write the summary and make it clear, concise, and brief. Make sure the summary is no longer than four sentences to a paragraph long Here's the entity to be investigated: ${details}`;
+    Based on the terms above write the summary and make it clear, concise, and brief. Make sure the summary is no longer than four sentences to a paragraph long. Here's the entity to be investigated: ${details}`;
     return finalPrompt;
   }
 }

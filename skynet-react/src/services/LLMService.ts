@@ -76,7 +76,7 @@ export default class LLMService
       });
       return response.data;
     }
-    catch(error) 
+    catch(error)
     {
       sms.Logout();
       window.location.href = '/login';

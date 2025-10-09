@@ -8,7 +8,7 @@ import { Detections } from "../pages/Detections";
 import { EverythingDash } from "../dashboards/EverythingDash";
 import { PrimaryDash } from "../dashboards/PrimaryDash";
 import { EntityDash } from "../dashboards/EntityDash";
-import { Settings } from "../pages/Settings";
+// import { Settings } from "../pages/Settings";
 import { Details } from "../pages/Details";
 import { View4 } from "../dashboards/View4";
 import { View5 } from "../dashboards/View5";
@@ -77,9 +77,9 @@ export function Menu()
             <Link to="/cases" className="inline-flex flex-col items-center justify-center hover:bg-gray-600 px-3">
               <span>Cases</span>
             </Link>
-            <Link to="/settings" className="inline-flex flex-col items-center justify-center hover:bg-gray-600 px-3">
+            {/* <Link to="/settings" className="inline-flex flex-col items-center justify-center hover:bg-gray-600 px-3">
               <span>Settings</span>
-            </Link>
+            </Link> */}
             <Link to="/login" onClick={async () => 
               {
                 sms.Logout();
@@ -104,7 +104,7 @@ export function Menu()
           <Route path="/cases" element={<Cases />} />
           <Route path="/detections" element={<Detections />} />
           <Route path="/summary" element={<Summary />} />
-          <Route path="/settings" element={<Settings />} />
+          {/* <Route path="/settings" element={<Settings />} /> */}
           {subMenuItems.map(item => (
             <Route path={item.link} element={item.element}></Route>
           ))}
