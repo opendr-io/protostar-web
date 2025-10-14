@@ -102,10 +102,11 @@ export function Summary()
       }
       else
       {
-        let finalPrompt = ps.ThreatStatusSummaryPrompt(highLevelData);
+        let finalPrompt = await ps.ThreatStatusSummaryPrompt(highLevelDataList);
         let answer:string = await llm.AskLLM(finalPrompt);
         localStorage.setItem('threatstatussummary', answer);
-        let answerSummary = await llm.AskLLM(ps.SummaryOfThreatStatusSummaryPrompt(answer));
+        let answerPrompt = await ps.SummaryOfThreatStatusSummaryPrompt(answer);
+        let answerSummary = await llm.AskLLM(answerPrompt);
         localStorage.setItem('summary', answerSummary);
         setLLMOutput(answer);
       }

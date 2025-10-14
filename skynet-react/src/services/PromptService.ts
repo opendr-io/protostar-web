@@ -1,5 +1,9 @@
 import validator from 'validator';
 import DOMPurify from 'dompurify';
+import axios from 'axios';
+import Config from '../config/config';
+import SessionManagementService from './SessionManagementService';
+
 export default class PromptService
 {
   constructor() {}
@@ -24,15 +28,39 @@ export default class PromptService
     return finalPrompt; 
   }
 
-  public ThreatStatusSummaryPrompt(details: any)
+  public async ThreatStatusSummaryPrompt(details: any)
   {
-    let finalPrompt = `Can you explain the security risks and steps for mitigation using a summary explanation of the data and what the scores mean. Give a 
-    summary report on the data and explain what the nature of the activity is. Be verbose and identify fields you recognize. Explain each 
-    field that you recognize and what kind of data it contains. Suggest possible investigative directions. ${details}. At the beginning of the response place 
-    the following message: "If you would like a more detailed response you will need to get the pro version of the application. Here's the output for the free version:" Do not forget to
-    place this message at the beginning of the output. It's important for the message to be there. As mentioned be detailed with the response but also concise and 
-    to the point.`;
-    return finalPrompt;
+    let sms = new SessionManagementService();
+    try
+    {
+      let config = new Config();
+      let token = localStorage.getItem('token');
+      let finalPrompt = await axios.post(config.GetFullyFormedPromptURL(),
+      {
+        'method': 'ThreatStatusSummaryPrompt',
+        'details': details
+      }, 
+      {
+        headers: 
+        {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      // console.log(response.data);
+      return finalPrompt.data;
+    } 
+    catch(error: any)
+    {
+      sms.Logout();
+      window.location.href = '/login';
+    }
+    // let finalPrompt = `Can you explain the security risks and steps for mitigation using a summary explanation of the data and what the scores mean. Give a 
+    // summary report on the data and explain what the nature of the activity is. Be verbose and identify fields you recognize. Explain each 
+    // field that you recognize and what kind of data it contains. Suggest possible investigative directions. ${details}. At the beginning of the response place 
+    // the following message: "If you would like a more detailed response you will need to get the pro version of the application. Here's the output for the free version:" Do not forget to
+    // place this message at the beginning of the output. It's important for the message to be there. As mentioned be detailed with the response but also concise and 
+    // to the point.`;
+    // return finalPrompt;
   }
 
   public ThreatStatusPrompt(question: string, details: any)
@@ -68,11 +96,35 @@ export default class PromptService
     return finalPrompt;
   }
 
-  public SummaryOfThreatStatusSummaryPrompt(details: any)
+  public async SummaryOfThreatStatusSummaryPrompt(details: any)
   {
-    let finalPrompt = `Can you give me a further summary and explain the security risks and mitigation steps based on this output: ${details}. Answer it as best as you can. At the beginning 
-    of the response place the following message: "If you would like a more detailed response you will need to get the pro version of the application. Here's the output for the free version:"`;
-    return finalPrompt;
+    let sms = new SessionManagementService();
+    try
+    {
+      let config = new Config();
+      let token = localStorage.getItem('token');
+      let finalPrompt = await axios.post(config.GetFullyFormedPromptURL(),
+      {
+        'method': 'SummaryOfThreatStatusSummaryPrompt',
+        'details': details
+      }, 
+      {
+        headers: 
+        {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      // console.log(response.data);
+      return finalPrompt.data;
+    } 
+    catch(error: any)
+    {
+      sms.Logout();
+      window.location.href = '/login';
+    }
+    // let finalPrompt = `Can you give me a further summary and explain the security risks and mitigation steps based on this output: ${details}. Answer it as best as you can. At the beginning 
+    // of the response place the following message: "If you would like a more detailed response you will need to get the pro version of the application. Here's the output for the free version:"`;
+    // return finalPrompt;
   }
 
   public AgentCaseCommentPrompt(details: any)

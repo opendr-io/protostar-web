@@ -77,9 +77,12 @@ export function Home()
       highLevelDataList.concat(highLevelDataFieldsList);
       setHighLevelData(highLevelDataList);
       setHighLevelDataFields(highLevelDataFieldsList);
-      let firstOutput = await llm.AskLLM(ps.ThreatStatusSummaryPrompt(highLevelDataList));
+      let formedThreatStatusSummaryPrompt = await ps.ThreatStatusSummaryPrompt(highLevelDataList);
+      console.log(formedThreatStatusSummaryPrompt);
+      let firstOutput = await llm.AskLLM(formedThreatStatusSummaryPrompt);
       localStorage.setItem('threatstatussummary', firstOutput);
-      let summaryOutput = await llm.AskLLM(ps.SummaryOfThreatStatusSummaryPrompt(firstOutput));
+      let formedSummaryOfThreatStatusSummaryPrompt = await ps.SummaryOfThreatStatusSummaryPrompt(firstOutput);
+      let summaryOutput = await llm.AskLLM(formedSummaryOfThreatStatusSummaryPrompt);
       localStorage.setItem('summary', summaryOutput);
       setTacticalSummary(summaryOutput);
     }

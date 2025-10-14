@@ -95,6 +95,11 @@ export default class Config
     return this.baseUrl + '/loadcasecomments';
   }
 
+  public GetFullyFormedPromptURL()
+  {
+    return this.baseUrl + '/formprompt';
+  }
+
   public ServerURL()
   {
     return this.url;

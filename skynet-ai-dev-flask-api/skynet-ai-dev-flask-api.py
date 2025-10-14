@@ -13,6 +13,7 @@ from llmservice import LLMService
 from telemetryservice import TelemetryService
 from authservice import AuthService
 from appservice import AppService
+from promptservice import PromptService
 
 config = configparser.ConfigParser()
 config.read(Path(__file__).parent.absolute() / "appconfig.ini")
@@ -38,6 +39,7 @@ llmservice = LLMService()
 telemetryservice = TelemetryService()
 authservice = AuthService()
 appservice = AppService()
+promptservice = PromptService()
 
 @app.route('/login', methods=['POST'])
 @cross_origin()
@@ -339,6 +341,7 @@ def case_investigation():
     data = request.get_json()
     model = data.get('model')
     conversation = data.get('conversation')
+    case = data.get('case')
     match(model):
       case "claude":
         response = llmservice.case_investigation(conversation, 'claude', case)
@@ -346,6 +349,29 @@ def case_investigation():
         response = llmservice.case_investigation(conversation, 'chatgpt', case)
       case "lmstudio":
         response = llmservice.case_investigation(conversation, 'lmstudio', case)
+    return response
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/formprompt', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def create_prompt():
+  try:
+    data = request.get_json()
+    promptMethod = data.get('method')
+    details = data.get('details')
+    match(promptMethod):
+      case "SummaryOfThreatStatusSummaryPrompt":
+        response = promptservice.summary_of_threat_status_summary_prompt(details)
+      case "ThreatStatusSummaryPrompt":
+        response = promptservice.threat_status_summary(details)
+      case "DetailsSummaryPrompt":
+        response = promptservice.details_summary_prompt(details)
+      case "AgentCaseCommentPrompt":
+        response = promptservice.summary_of_threat_status_summary_prompt(details)
+    print(response)
     return response
   except Exception as e:
     response = make_response(jsonify({"error": "Something went wrong"}), 401)
