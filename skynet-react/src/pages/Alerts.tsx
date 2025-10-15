@@ -131,7 +131,7 @@ export function Alerts()
                     {async() => 
                       {
                         let entitySpecificData = MergeData(entityDetails, index);
-                        let finalPrompt = ps.AlertSummaryPrompt(entityDetails, entitySpecificData);
+                        let finalPrompt = await ps.AlertSummaryPrompt(entityDetails, entitySpecificData);
                         let lm = await llm.AskLLM(finalPrompt);
                         setLLMOutput(lm);
                       }
@@ -160,7 +160,7 @@ export function Alerts()
                     {async() => 
                       {
                         let entitySpecificData = MergeData(entityDetails, index);
-                        let finalPrompt = ps.AlertPrompt(llmQuestion, entityDetails, entitySpecificData);
+                        let finalPrompt = await ps.AlertPrompt(llmQuestion, entityDetails, entitySpecificData);
                         let output = await llm.AskLLM(finalPrompt);
                         setLLMOutput(output);
                       }

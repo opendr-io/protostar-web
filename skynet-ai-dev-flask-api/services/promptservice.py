@@ -56,3 +56,16 @@ class PromptService:
     finalPrompt = f"""Can you give me a further summary and explain the security risks and mitigation steps based on this output: ${details}. Answer it as best as you can. At the beginning 
     of the response place the following message: "If you would like a more detailed response you will need to get the pro version of the application. Here's the output for the free version:"""
     return finalPrompt
+  
+  def agent_case_comment_prompt(self, details):
+    finalPrompt = f"""Here are some key terms to note for it's importance when making the summary:
+      1. detection_type: is the process of analyzing a security ecosystem at the holistic level to find malicious users, abnormal activity and anything that could compromise a network. Detection Type is built on threat
+        intelligence, which involves tools that are strategic, tactical and operational. Highly evasive cyber threats are the main focus of threat detection and response tools.
+      2. mitre_tactic: Represent the "why" of an ATT&CK technique or sub-technique. It is the adversary's tactical goal: the reason for performing an action. For example, an adversary may want to achieve credential access. Each representing a
+        stage in an adversary's objective, such as Initial Access, Privilege Escalation, or Exfiltration. Each technique is mapped to procedures, detection opportunities, and mitigations.
+      3. entity: An individual person, organization, device, or process that's being investigated.
+      4. timestamp: When the action took place.
+      5. entity_type: Is a grouping of the entities that match a set of filter conditions.
+      6. severity: Is a categorization of the risk and urgency of a vulnerability and the classification of alarm criticality within a monitoring system.
+    Based on the terms above write the summary and make it clear, concise, and brief. Make sure the summary is no longer than four sentences to a paragraph long. Here's the entity to be investigated: ${details}"""
+    return finalPrompt

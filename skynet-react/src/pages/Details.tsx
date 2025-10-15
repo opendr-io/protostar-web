@@ -114,7 +114,7 @@ export function Details()
               <button title={`${hts.AISummaryHelpText()}`} onClick={async () => 
                   {
                     let jsonEntityDetails = JSON.stringify(entityDetails);
-                    let summaryPrompt = ps.DetailsSummaryPrompt(jsonEntityDetails);
+                    let summaryPrompt = await ps.DetailsSummaryPrompt(jsonEntityDetails);
                     let answer = await llm.AskLLM(summaryPrompt);
                     setLLMOutput(answer);
                   }
@@ -287,7 +287,7 @@ export function Details()
                 {async () => 
                   {
                     let jsonEntityDetails = JSON.stringify(entityDetails);
-                    let finalPrompt = ps.DetailsPrompt(llmQuestion, jsonEntityDetails);
+                    let finalPrompt = await ps.DetailsPrompt(llmQuestion, jsonEntityDetails);
                     let answer = await llm.AskLLM(finalPrompt);
                     setLLMOutput(answer);
                   }

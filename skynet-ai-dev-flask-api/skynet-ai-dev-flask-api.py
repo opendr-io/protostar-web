@@ -362,6 +362,8 @@ def create_prompt():
     data = request.get_json()
     promptMethod = data.get('method')
     details = data.get('details')
+    question = data.get('question')
+    specificDetails = data.get('specificDetails')
     match(promptMethod):
       case "SummaryOfThreatStatusSummaryPrompt":
         response = promptservice.summary_of_threat_status_summary_prompt(details)
@@ -370,8 +372,15 @@ def create_prompt():
       case "DetailsSummaryPrompt":
         response = promptservice.details_summary_prompt(details)
       case "AgentCaseCommentPrompt":
-        response = promptservice.summary_of_threat_status_summary_prompt(details)
-    print(response)
+        response = promptservice.agent_case_comment_prompt(details)
+      case "ThreatStatusPrompt":
+        response = promptservice.threat_status_prompt(question, details)
+      case "AlertSummaryPrompt":
+        response = promptservice.alert_summary_prompt(question, details)
+      case "AlertPrompt":
+        response = promptservice.details_summary_prompt(question, details, specificDetails)
+      case "DetailsPrompt":
+        response = promptservice.details_prompt(question, details)
     return response
   except Exception as e:
     response = make_response(jsonify({"error": "Something went wrong"}), 401)

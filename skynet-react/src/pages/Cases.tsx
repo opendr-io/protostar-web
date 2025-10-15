@@ -72,18 +72,18 @@ export function Cases()
   async function handleSubmit(event: any)
   {
     event.preventDefault();
+    ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen);
     let assginedUser:any = localStorage.getItem('username');
     let createdCase = await as.CreateCase(selectedEntity, assginedUser, caseName, caseDescription, casePriority);
     let dataset = await ts.RetrieveRawEntityDetailsNeo(selectedEntity);
     let caseId = Number(Object.entries(createdCase).map(([key, value]) => ({ key, value }))[0].value);
     let jsonDataset = JSON.stringify(dataset);
-    let prompt = ps.AgentCaseCommentPrompt(jsonDataset);
+    let prompt = await ps.AgentCaseCommentPrompt(jsonDataset);
     let agentComment = await llm.AskLocalLLM(prompt);
     as.PostComment('agent', agentComment, caseId);
     ClearData();
     document.getElementById('lstEntities').value = 'Select Entity';
     document.getElementById('txtPriority').value = document.getElementById('txtCaseName').value = document.getElementById('txtDescription').value = '';
-    ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen);
     for(let i = 0; i < 2; i++)
     {
       LoadData();
@@ -157,7 +157,7 @@ export function Cases()
               </label>
               <label className="block mb-2">
                 <span>Priority</span>
-                <input id='txtPriority' autoComplete="off" type="number" onChange={(e) => setCasePriority(Number(e.target.value))} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" />
+                <input id='txtPriority' autoComplete="off" type="number" onChange={(e) => setCasePriority(Number(e.target.value))} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Priority" />
               </label>
               <label className="block mb-2">
                 <span>Description</span>
