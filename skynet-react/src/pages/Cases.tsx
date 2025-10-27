@@ -82,9 +82,9 @@ export function Cases()
     let dataset = await ts.RetrieveRawEntityDetailsNeo(selectedEntity);
     let caseId = Number(Object.entries(createdCase).map(([key, value]) => ({ key, value }))[0].value);
     let jsonDataset = JSON.stringify(dataset);
-    let prompt = await ps.AgentCaseCommentPrompt(jsonDataset);
-    let agentComment = await llm.AskLocalLLM(prompt);
-    as.PostComment('agent', agentComment, caseId);
+    // let prompt = await ps.AgentCaseCommentPrompt(jsonDataset);
+    // let agentComment = await llm.AskLocalLLM(prompt);
+    // as.PostComment('agent', agentComment, caseId);
     ClearData();
     document.getElementById('lstEntities').value = 'Select Entity';
     document.getElementById('txtPriority').value = document.getElementById('txtCaseName').value = document.getElementById('txtDescription').value = '';

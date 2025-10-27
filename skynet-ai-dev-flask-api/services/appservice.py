@@ -13,6 +13,7 @@ class AppService:
   def __init__(self):
     self.config = configparser.ConfigParser()
     self.config.read(Path(__file__).parent.absolute() / "../dbconfig.ini")
+    self.case_queue = []
 
   def get_users(self):
     try:
@@ -40,6 +41,12 @@ class AppService:
       print(exc)
       return "Something went wrong"
     
+  def add_to_case_queue(self, case_id, data, initial_prompt):
+    print(case_id)
+    print(data)
+    print(initial_prompt)
+    pass
+
   def get_all_cases(self):
     try:
       with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),

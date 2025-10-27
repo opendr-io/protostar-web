@@ -100,6 +100,11 @@ export default class Config
     return this.baseUrl + '/formprompt';
   }
 
+  public AddToCaseQueueURL()
+  {
+    return this.baseUrl + '/addtocasequeue';
+  }
+
   public ServerURL()
   {
     return this.url;

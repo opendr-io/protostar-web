@@ -95,6 +95,29 @@ export default class AppService
     }
   }
 
+  async AddToCaseAgentQueue(caseId: number, prompt: string)
+  {
+    try
+    {
+      let token = localStorage.getItem('token');
+      const response = await axios.post(this.config.AddToCaseQueueURL(),
+      {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    }
+    catch(error)
+    {
+      console.log('An error has been thrown');
+      new SessionManagementService().Logout();
+      window.location.href = '/login';
+      console.log(error);
+    }
+  }
+
   async PostComment(user: string, userComment: string, selectedCase: number)
   {
     try
