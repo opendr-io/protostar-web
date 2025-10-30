@@ -1,10 +1,10 @@
 import json
-# from flask_jwt_extended import JWTManager
+# import asyncio
+import threading
 import psycopg
 # import bcrypt
 import configparser
 from pathlib import Path
-# from marshmallow import Schema, fields, validate, pre_load, post_load
 
 config = configparser.ConfigParser()
 config.read(Path(__file__).parent.absolute() / "dbconfig.ini")
@@ -13,7 +13,6 @@ class AppService:
   def __init__(self):
     self.config = configparser.ConfigParser()
     self.config.read(Path(__file__).parent.absolute() / "../dbconfig.ini")
-    self.case_queue = []
 
   def get_users(self):
     try:
@@ -41,11 +40,17 @@ class AppService:
       print(exc)
       return "Something went wrong"
     
-  def add_to_case_queue(self, case_id, data, initial_prompt):
-    print(case_id)
-    print(data)
-    print(initial_prompt)
-    pass
+  def add_to_case_queue(self, case_id, initial_prompt, llmservice):
+    thread = threading.Thread(target=self.__process_case, args=([case_id, initial_prompt, llmservice],))
+    thread.daemon = True
+    thread.start()
+
+  def __process_case(self, caseinfo):
+    case_id = caseinfo[0]
+    prompt = caseinfo[1]
+    llmservice = caseinfo[2]
+    llmcomment = llmservice.ask_local_llm(prompt)
+    self.post_case_comment(case_id, 'agent', llmcomment)
 
   def get_all_cases(self):
     try:

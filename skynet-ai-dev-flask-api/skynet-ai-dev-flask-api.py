@@ -1,4 +1,5 @@
 import sys
+import asyncio
 import secrets
 from OpenSSL import SSL
 from datetime import timedelta
@@ -289,8 +290,8 @@ def create_case():
     case_priority = data.get('priority')
     created_case = appservice.create_case(investigated_entity, assigned_user, case_name, case_description, case_priority)
     details = telemetryservice.get_raw_entity_details_neo(investigated_entity)
-    prompt = promptservice.agent_case_comment_prompt(jsonify(details))
-    appservice.add_to_case_queue(created_case, details, prompt)
+    prompt = promptservice.agent_case_comment_prompt(details)
+    appservice.add_to_case_queue(created_case, prompt, llmservice)
     return make_response(jsonify({"Success": created_case}), 200)
   except Exception as e:
     response = make_response(jsonify({"error": "Something went wrong"}), 401)
