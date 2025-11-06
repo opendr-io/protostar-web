@@ -118,10 +118,10 @@ export function Cases()
             isEntitySelected={isEntitySelected} setIsEntitySelected={setIsEntitySelected} setSelected={setSelected} />}
           </main>
           {/* Right Portion */}
-          <aside className="w-1/6 p-6">
+          <aside className="w-1/6 p-6 mt-10">
             <div className="space-y-4">
-              <button onClick={() => ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen)} className="bg-black text-white border border-gray-300 mt-4 w-full py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Create Case</button>
-              <div className="bg-black text-white p-4 border rounded-lg shadow hover:bg-gray-600">
+              <button onClick={() => ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen)} className="bg-black text-white border border-gray-300 w-full py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Create Case</button>
+              {/* <div className="bg-black text-white p-4 border rounded-lg shadow hover:bg-gray-600">
                 <p onClick={() => ToggleWindow(isEntityListOpen, setIsEntityListOpen)} className="cursor-pointer select-none">Select a Case</p>
                 <div className={`absolute mt-2 w-fit rounded-md shadow-lg bg-white transform transition-all duration-300 ease-in-out ${isEntityListOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
                   <div>
@@ -134,15 +134,15 @@ export function Cases()
                     </ul>
                   </div>
                 </div>
-              </div>
-              <div className="bg-[#1B1B1B] p-4 rounded-lg shadow text-white">
+              </div> */}
+              {/* <div className="bg-[#1B1B1B] p-4 rounded-lg shadow text-white">
                 <p className="">Chat</p>
                 <input id='txtLLMSidebarChat' type="text" className="w-full border border-gray-300 rounded mt-1 p-2 " placeholder="start typing...."/>
                 <button className="w-full text-white hover:bg-gray-600 active:bg-gray-800 border border-gray-300 rounded mt-1 p-2">Enter</button>
               </div>
               <div className="bg-[#1B1B1B] p-4 rounded-lg shadow">
                 <p className="rounded-lg">Chat History</p>
-              </div>
+              </div> */}
             </div>
           </aside>
         </div>
