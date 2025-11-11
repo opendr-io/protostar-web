@@ -49,7 +49,7 @@ class AppService:
     case_id = caseinfo[0]
     prompt = caseinfo[1]
     llmservice = caseinfo[2]
-    llmcomment = llmservice.ask_local_llm(prompt)
+    llmcomment = llmservice.ask_claude(prompt)
     self.post_case_comment(case_id, 'agent', llmcomment)
 
   def get_all_cases(self):

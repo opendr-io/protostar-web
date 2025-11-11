@@ -14,7 +14,7 @@ export default class LLMService
     let sms = new SessionManagementService();
     try
     {
-      return await this.AskLocalLLM(question);
+      return await this.AskClaude(question);
     }
     catch(error: any)
     {
