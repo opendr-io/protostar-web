@@ -24,7 +24,6 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.2.0",
     "tailwindcss": "^4.0.1",
-    "validator": "^13.15.15",
     "vite-plugin-mkcert": "^1.17.8"
   },
   "devDependencies": {

@@ -1,4 +1,3 @@
-import validator from 'validator';
 import DOMPurify from 'dompurify';
 import axios from 'axios';
 import Config from '../config/config';
