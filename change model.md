@@ -1,4 +1,4 @@
-**Change Default Model**
+**Change Model**
 
 To change the model you would like to run, go to the **skynet-ai-dev-flask-api.py** in the **skynet-ai-dev-flask-api** directory.
 
