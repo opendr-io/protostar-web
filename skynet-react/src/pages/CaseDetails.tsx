@@ -92,17 +92,14 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
     LoadCaseData();
   }, []);
 
-  function SubmitComment(event: any)
+  async function SubmitComment(event: any)
   {
     event.preventDefault();
     let assginedUser:any = localStorage.getItem('username');
-    appService.PostComment(assginedUser, comment, selected.case_id);
+    await appService.PostComment(assginedUser, comment, selected.case_id);
+    LoadComments();
     ClearData();
     document.getElementById('txtCommentField').value = '';
-    for(let i = 0; i < 2; i++)
-    {
-      LoadComments();
-    }
   }
 
   return (
