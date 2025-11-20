@@ -154,7 +154,10 @@ export function Cases()
             <form onSubmit={handleSubmit}>
               <label className="block mb-2">
                 <span>Case Name</span>
-                <input id='txtCaseName' type="text" autoComplete="off" onChange={(e) => setCaseName(e.target.value)} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" required onInvalid={(e) => e.target.setCustomValidity('Please enter the name for this case')} />
+                <input id='txtCaseName' type="text" autoComplete="off" onChange={(e) => {
+                      e.target.setCustomValidity('');
+                      setCaseName(e.target.value);
+                    }} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" required onInvalid={(e) => e.target.setCustomValidity('Please enter the name for this case')} />
               </label>
               <label className="block mb-4">
                 <span>Entity</span>
@@ -169,11 +172,11 @@ export function Cases()
               </label>
               <label className="block mb-2">
                 <span>Priority</span>
-                <input id='txtPriority' autoComplete="off" type="number" onChange={(e) => setCasePriority(Number(e.target.value))} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Priority" />
+                <input id='txtPriority' autoComplete="off" type="number" onChange={(e) => {e.target.setCustomValidity(''); setCasePriority(Number(e.target.value)); }} required onInvalid={(e) => e.target.setCustomValidity('Please enter the priority for this case')} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Priority" />
               </label>
               <label className="block mb-2">
                 <span>Description</span>
-                <textarea id='txtDescription' autoComplete="off" className="block w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-black transition-colors duration-200" onChange={(e) => setCaseDescription(e.target.value)} rows={6} placeholder="Enter Case Description" />
+                <textarea id='txtDescription' autoComplete="off" className="block w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-black transition-colors duration-200" required onInvalid={(e) => e.target.setCustomValidity('Please a case description')} onChange={(e) => {e.target.setCustomValidity(''); setCaseDescription(e.target.value)}} rows={6} placeholder="Enter Case Description" />
               </label>
               <div className="flex justify-end space-x-2">
                 <button type="button" onClick={() => { ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen); setSelectedEntity(""); setUserAssigned(""); setCaseName(""); }} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
