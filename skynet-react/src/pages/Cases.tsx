@@ -161,7 +161,7 @@ export function Cases()
               </label>
               <label className="block mb-4">
                 <span>Entity</span>
-                <select id='lstEntities' onChange={(e) => { setSelectedEntity(e.target.value); }} className="w-full border border-gray-300 rounded mt-1 p-2" required onInvalid={(e) => e.target.setCustomValidity('Please select an entity from the list')}>
+                <select id='lstEntities' onChange={(e) => { e.target.setCustomValidity(''); setSelectedEntity(e.target.value); }} className="w-full border border-gray-300 rounded mt-1 p-2" required onInvalid={(e) => e.target.setCustomValidity('Please select an entity from the list')}>
                   <option disabled selected>Select Entity</option>
                   {entityList.map((entity, index) => (
                     <option key={index} value={entity}>
