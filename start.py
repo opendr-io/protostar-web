@@ -31,6 +31,18 @@ def preflight():
   if not (ROOT / 'skynet-ai-dev-flask-api' / '.venv').exists():
     problems.append('skynet-ai-dev-flask-api/.venv missing - run startup.py once to set up')
 
+  # Local config files are gitignored; each has a committed .template to copy
+  local_configs = [
+    ROOT / 'skynet-ai-dev-flask-api' / 'dbconfig.ini',
+    ROOT / 'skynet-neo' / '.env',
+    ROOT / 'skynet-react' / '.env',
+  ]
+  for cfg in local_configs:
+    if not cfg.exists():
+      problems.append(f'{cfg.relative_to(ROOT)} missing - copy {cfg.name}.template to {cfg.name} and fill in your values')
+  if problems:
+    return problems
+
   dbconfig = configparser.ConfigParser()
   dbconfig.read(ROOT / 'skynet-ai-dev-flask-api' / 'dbconfig.ini')
   pghost = dbconfig.get('Database', 'HostName', fallback='localhost')
