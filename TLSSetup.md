@@ -20,7 +20,7 @@
     - For versions 1.x: https://neo4j.com/docs/apoc/current/installation/
     - For versions 2.x: APOCSetup.md
 
-1. Navigate to the baseconfig directory under the skynet-ai-dev-flask-api directory and make the appropriate edits to the following files: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
+1. Navigate to the baseconfig directory under the protostar-ai-dev-flask-api directory and make the appropriate edits to the following files: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
 	 - pg_hba.conf
 	 	-	Parts of the file that are edited:
 
@@ -42,7 +42,7 @@
 					- ssl_key_file = 'protostar-server.key'
 					- ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL'	# allowed SSL ciphers
 
-2. Navigate to the baseconfig under the skynet-ai-dev-flask-api directory again and make the appropriate edits to the following file for Neo4j: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
+2. Navigate to the baseconfig under the protostar-ai-dev-flask-api directory again and make the appropriate edits to the following file for Neo4j: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
    - neo4j.conf
 
         **Below is on line 100. This is needed to allow for the database to communicate across the network**
@@ -72,7 +72,7 @@
 		- Linux: /home/[username]/.config/neo4j-desktop/Application/Data/dbmss/[instance_id]/conf
 		- MacOS: /Users/[username]/Library/Application Support/Neo4j Desktop/Application/relate-data/dbmss/[instance_id]/conf
 
-3. Enter database information in the dbconfig.ini file which is located under skynet-ai-dev-flask-api directory. This is needed to setup the database tables and users for Protostar.
+3. Enter database information in the dbconfig.ini file which is located under protostar-ai-dev-flask-api directory. This is needed to setup the database tables and users for Protostar.
 	- Enter the information for the variables listed in the file:
  		- [Database]
 			- HostName=[ip_of_postgres_db]
@@ -107,7 +107,7 @@
 	- [OSConfig]
 		-	shell= <-- Keep blank if using Windows.
 
-5. Navigate to cert.conf skynet-ai-dev-flask-api and alter the followwing configurations:
+5. Navigate to cert.conf protostar-ai-dev-flask-api and alter the followwing configurations:
 	- [dn]
 		- CN=[your_hostname]
 
@@ -119,21 +119,21 @@
 		- IP.2 = [your_server_ip] <--- The IP of the server
 
 6. To run the application across the network, make changes to the following files in the following directories:
-   - skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=https://[server_hostname]
-   - skynet-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="https://[server_hostname]:7473/db/neo4j"
+   - protostar-react/.env: In this file change the following line VITE_REACT_APP_API_URL=https://[server_hostname]
+   - protostar-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="https://[server_hostname]:7473/db/neo4j"
 
 7. To be able to run using hostname modify allowedHosts settings in the following paths:
-	- skynet-react/vite.config.ts
+	- protostar-react/vite.config.ts
     - https: true
 		- allowedHosts: ['your_hostname'] 
-	- skynet-neo/vite.config.ts
+	- protostar-neo/vite.config.ts
     - https: true
 		- allowedHosts: ['your_hostname']
 
-8. In skynet-ai-dev-flask-api\services\telemetryservice.py, modify the following on line 10:
+8. In protostar-ai-dev-flask-api\services\telemetryservice.py, modify the following on line 10:
   - bolt://localhost:7687 --> bolt+ssc://[your_hostname]:7687
 
-9. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-opus-4-20250514 which is shown below. This can be changed based on user preference.)
+9. For LLM support and to run agents in the application enter information in agentconfig.ini in the protostar-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-opus-4-20250514 which is shown below. This can be changed based on user preference.)
 	- [Anthropic]
 		- ModelName=claude-3-7-sonnet-20250219
 		- AnthropicKey=

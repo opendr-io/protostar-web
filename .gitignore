@@ -65,23 +65,23 @@ Thumbs.db           # Windows
 *.conf
 *.ini
 
-skynet-ai-dev-flask-api/.DS_Store
-skynet-ai-dev-flask-api/.venv
-skynet-ai-dev-flask-api/keys
-skynet-ai-dev-flask-api/neo4j.conf
-skynet-ai-dev-flask-api/postgres.conf
-skynet-ai-dev-flask-api/neo4j-tls.conf
-skynet-ai-dev-flask-api/postgres-tls.conf
-skynet-ai-dev-flask-api/__pycache__
-skynet-ai-dev-flask-api/services/__pycache__
-skynet-neo/node_modules
-skynet-react/node_modules
+protostar-ai-dev-flask-api/.DS_Store
+protostar-ai-dev-flask-api/.venv
+protostar-ai-dev-flask-api/keys
+protostar-ai-dev-flask-api/neo4j.conf
+protostar-ai-dev-flask-api/postgres.conf
+protostar-ai-dev-flask-api/neo4j-tls.conf
+protostar-ai-dev-flask-api/postgres-tls.conf
+protostar-ai-dev-flask-api/__pycache__
+protostar-ai-dev-flask-api/services/__pycache__
+protostar-neo/node_modules
+protostar-react/node_modules
 mark-1/node_modules
 mark-1/build
 
 # Build output
-skynet-neo/dist/
-skynet-react/dist/
+protostar-neo/dist/
+protostar-react/dist/
 
 # Claude Code personal settings
 .claude/settings.local.json

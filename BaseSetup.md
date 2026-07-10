@@ -18,7 +18,7 @@
 	3. Instructions for APOC Plugin installation --> https://neo4j.com/docs/apoc/current/installation/
 
 ## Setup
-1. Navigate to the baseconfig directory under the skynet-ai-dev-flask-api directory and make the appropriate edits to the following files: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
+1. Navigate to the baseconfig directory under the protostar-ai-dev-flask-api directory and make the appropriate edits to the following files: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
 	 - pg_hba.conf
 	 	-	Parts of the file that are edited:
 	 		-	host all all 0.0.0.0/0 md5 <-- Needed to allow all hosts on the network to access the databae. This should be on line 18 should the user decide to modify this.
@@ -30,7 +30,7 @@
 	 	- Windows: C:\Program Files\Postgres\\[postgres_version]\data
 		- Linux: /etc/postgresql/[postgres_version]/main
 
-2. Navigate to the baseconfig under the skynet-ai-dev-flask-api directory again and make the appropriate edits to the following file for Neo4j: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
+2. Navigate to the baseconfig under the protostar-ai-dev-flask-api directory again and make the appropriate edits to the following file for Neo4j: (Note: These files already have the needed configuration to run across a network but can be configured futher based on user needs.)
    - neo4j.conf
 	 	- Parts of the file that are edited:
 			- server.default_listen_address=0.0.0.0 <-- Needed to allow the database to allow connections from across the network. This setting should be on line 100 of the file should the user decide to modify the setting.
@@ -39,7 +39,7 @@
 		- Linux: /home/[username]/.config/neo4j-desktop/Application/Data/dbmss/[instance_id]/conf
 		- MacOS: /Users/[username]/Library/Application Support/Neo4j Desktop/Application/relate-data/dbmss/[instance_id]/conf
 
-3. Enter database information in the dbconfig.ini file which is located under skynet-ai-dev-flask-api directory. This is needed to setup the database tables and users for Protostar.
+3. Enter database information in the dbconfig.ini file which is located under protostar-ai-dev-flask-api directory. This is needed to setup the database tables and users for Protostar.
 	- Enter the information for the variables listed in the file:
  		- [Database]
 			- HostName=[ip_of_postgres_db]
@@ -71,18 +71,18 @@
 		-	shell= <-- Keep blank if using Windows.
 
 5. To run the application across the network, make changes to the following files in the following directories:
-   - skynet-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
-   - skynet-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="http://[server_hostname]:7474/db/neo4j"
+   - protostar-react/.env: In this file change the following line VITE_REACT_APP_API_URL=http://[server_hostname]
+   - protostar-neo/.env: In this file change the following lines: VITE_NEO_APP_DB_URL="http://[server_hostname]:7474/db/neo4j"
 
 6. To be able to run using hostname modify allowedHosts settings in the following paths:
-	- skynet-react/vite.config.ts
+	- protostar-react/vite.config.ts
 		- https: false
 		- allowedHosts: ['your_hostname'] 
-	- skynet-neo/vite.config.ts
+	- protostar-neo/vite.config.ts
 		- https: false
 		- allowedHosts: ['your_hostname']
 
-7. For LLM support and to run agents in the application enter information in agentconfig.ini in the skynet-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-3-7-sonnet-20250219 which is shown below. This can be changed based on user preference.)
+7. For LLM support and to run agents in the application enter information in agentconfig.ini in the protostar-ai-dev-flask-api directory: (Note: All of these don't need to be filled out. Just the ones that the user will want to use for the application. The application default is Athropic and the default model is claude-3-7-sonnet-20250219 which is shown below. This can be changed based on user preference.)
 	- [Anthropic]
 		- ModelName=claude-3-7-sonnet-20250219
 		- AnthropicKey=

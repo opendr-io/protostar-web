@@ -49,21 +49,21 @@ def run():
     flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py'
   elif(os.uname().sysname == 'Linux'):
     flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py && sudo systemctl restart postgresql'
-  subprocess.run(flask_cmd, executable=shell, shell=True, cwd='skynet-ai-dev-flask-api')
+  subprocess.run(flask_cmd, executable=shell, shell=True, cwd='protostar-ai-dev-flask-api')
 
   # Node.js setup
   print('installations')
-  subprocess.run(npm_install, shell=True, cwd='skynet-neo')
-  subprocess.run(npm_install, shell=True, cwd='skynet-react')
+  subprocess.run(npm_install, shell=True, cwd='protostar-neo')
+  subprocess.run(npm_install, shell=True, cwd='protostar-react')
 
-  subprocess.run(npm_build, shell=True, cwd='skynet-neo')
-  subprocess.run(npm_build, shell=True, cwd='skynet-react')
+  subprocess.run(npm_build, shell=True, cwd='protostar-neo')
+  subprocess.run(npm_build, shell=True, cwd='protostar-react')
 
   # Start servers
   servers = [
-    ('python -m flask --app skynet-ai-dev-flask-api run --host 0.0.0.0 --port 5002', 'skynet-ai-dev-flask-api', 'Flask'),
-    ('serve -s dist -p 3000', 'skynet-neo', 'Neo'),
-    ('serve -s dist -p 5173', 'skynet-react', 'React')
+    ('python -m flask --app protostar-ai-dev-flask-api run --host 0.0.0.0 --port 5002', 'protostar-ai-dev-flask-api', 'Flask'),
+    ('serve -s dist -p 3000', 'protostar-neo', 'Neo'),
+    ('serve -s dist -p 5173', 'protostar-react', 'React')
   ]
 
   processes = []
