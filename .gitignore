@@ -68,6 +68,7 @@ Thumbs.db           # Windows
 skynet-ai-dev-flask-api/.DS_Store
 skynet-ai-dev-flask-api/.venv
 skynet-ai-dev-flask-api/keys
+skynet-ai-dev-flask-api/.jwt_secret
 skynet-ai-dev-flask-api/neo4j.conf
 skynet-ai-dev-flask-api/postgres.conf
 skynet-ai-dev-flask-api/neo4j-tls.conf
