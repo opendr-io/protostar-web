@@ -78,3 +78,10 @@ skynet-neo/node_modules
 skynet-react/node_modules
 mark-1/node_modules
 mark-1/build
+
+# Build output
+skynet-neo/dist/
+skynet-react/dist/
+
+# Claude Code personal settings
+.claude/settings.local.json

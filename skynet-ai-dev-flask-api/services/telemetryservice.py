@@ -1,5 +1,7 @@
 import os
 import json
+import pathlib
+import configparser
 import pandas as pd
 from flask import jsonify
 from llmservice import LLMService
@@ -7,7 +9,10 @@ from py2neo import Graph, Node, Relationship
 
 class TelemetryService:
   def __init__(self):
-    self.neo4j_driver = Graph("bolt://localhost:7687", auth=("neo4j", "password"))
+    self.config = configparser.ConfigParser()
+    self.config.read(pathlib.Path(__file__).parent.absolute() / "../dbconfig.ini")
+    self.neo4j_driver = Graph(self.config.get('Neo4j', 'BoltURL', fallback='bolt://localhost:7687'),
+      auth=(self.config.get('Neo4j', 'UserName', fallback='neo4j'), self.config.get('Neo4j', 'Password')))
   
   def form_graph_relationships(self, data):
     try:
