@@ -1,9 +1,11 @@
+; Copy this file to dbconfig.ini (same directory) and fill in your values.
+; dbconfig.ini is gitignored so your credentials never get committed.
 [Database]
 HostName=localhost
 PortNumber=5432
 DatabaseName=protostar
 RootDatabaseUserName=postgres
-RootDatabasePassword=
+RootDatabasePassword=YOUR_POSTGRES_PASSWORD
 SSLMode=
 SSLRootCert=
 ApplicationUser=appuser
@@ -12,4 +14,4 @@ ApplicationUserPassword=appuser
 [Neo4j]
 BoltURL=bolt://localhost:7687
 UserName=neo4j
-Password=
+Password=YOUR_NEO4J_PASSWORD

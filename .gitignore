@@ -60,6 +60,7 @@ Thumbs.db           # Windows
 # Environment files
 .env
 .env.*
+!.env.template
 
 
 *.conf
