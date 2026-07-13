@@ -1,9 +1,9 @@
-import os
 import sys
 import secrets
 from OpenSSL import SSL
 from datetime import timedelta
 from pathlib import Path
+import configparser
 from flask import Flask, request, make_response, jsonify
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import (JWTManager, jwt_required, get_jwt_identity)
@@ -13,23 +13,11 @@ from llmservice import LLMService
 from telemetryservice import TelemetryService
 from authservice import AuthService
 
-def load_jwt_secret():
-  """Stable JWT secret so tokens survive restarts and work across workers.
-  Uses JWT_SECRET_KEY from the environment if set, otherwise reads (or creates)
-  a persisted secret file that is gitignored."""
-  env_secret = os.environ.get('JWT_SECRET_KEY')
-  if env_secret:
-    return env_secret
-  secret_file = Path(__file__).parent.absolute() / ".jwt_secret"
-  if secret_file.exists():
-    return secret_file.read_text().strip()
-  secret = secrets.token_hex(32)
-  secret_file.write_text(secret)
-  return secret
-
+config = configparser.ConfigParser()
+config.read(Path(__file__).parent.absolute() / "appconfig.ini")
 app = Flask(__name__)
 app.config["JWT_ALGORITHM"] = "HS512"
-app.config['JWT_SECRET_KEY'] = load_jwt_secret()
+app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=2)
 app.config['JWT_ERROR_MESSAGE_KEY'] = 'message'
