@@ -75,14 +75,11 @@ protostar-ai-dev-flask-api/neo4j-tls.conf
 protostar-ai-dev-flask-api/postgres-tls.conf
 protostar-ai-dev-flask-api/__pycache__
 protostar-ai-dev-flask-api/services/__pycache__
-protostar-neo/node_modules
-protostar-react/node_modules
-mark-1/node_modules
+node_modules/
 mark-1/build
 
 # Build output
-protostar-neo/dist/
-protostar-react/dist/
+dist/
 
 # Claude Code personal settings
 .claude/settings.local.json
