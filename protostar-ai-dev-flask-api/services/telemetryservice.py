@@ -146,13 +146,16 @@ class TelemetryService:
     try:
       neo4j = self.neo4j_driver
       result_df = neo4j.query("""
-        MATCH (n:ENTITY)-[r]->(m) WHERE n.view = 1 
-        AND m.view = 1 WITH n, collect(DISTINCT type(r)) 
-        AS relTypes, collect(r) AS relationships, collect(m) 
-        AS relatedNodes, elementId(n) as elementId WHERE size(relTypes) >= 2 
-        UNWIND relationships AS rel 
-        UNWIND relatedNodes AS relatedNode 
-        RETURN n, rel, relatedNode, relTypes, elementId
+        MATCH (n:ENTITY)-[r]->(m) WHERE n.view = 1
+        AND m.view = 1 WITH n, collect(DISTINCT type(r))
+        AS relTypes, collect(r) AS relationships, collect(m)
+        AS relatedNodes, elementId(n) as elementId WHERE size(relTypes) >= 2
+        OPTIONAL MATCH (n2:ENTITY {view: 2, entity: n.entity})-[*]->(a:ALERT)
+        WITH n, relTypes, relationships, relatedNodes, elementId,
+        count(DISTINCT a.detection_type) AS atomicWeight
+        UNWIND relationships AS rel
+        UNWIND relatedNodes AS relatedNode
+        RETURN n{.*, atomic_weight: atomicWeight} AS n, rel, relatedNode, relTypes, elementId
         """).to_data_frame()
       data = result_df.to_json()
     except Exception as e:

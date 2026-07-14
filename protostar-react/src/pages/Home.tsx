@@ -18,50 +18,31 @@ export function Home()
   }
   useEffect(() =>
   {
-    function ManipulateDataEntry(data: string)
+    function ManipulateDataEntry(node: any)
     {
-      let splitData = data.split(',');
-      let furtherSplit = splitData[splitData.length - 2].split(/-(.*)/, 2);
+      // Entity names may still be packed as "<label>: <value> - <name>" by older ingestion data
+      let furtherSplit = String(node.entity).trim().split(/- (.*)/, 2);
       let entity = furtherSplit[furtherSplit.length - 1].trim();
-      let atomicWeightField = furtherSplit[0].split(':')[0].trim().replace(/\b\w/g, letter => letter.toUpperCase());
-      let atomicWeight = furtherSplit[0].split(':')[1];
-      let updatedEntry = [entity, splitData[1], splitData[2], atomicWeight, splitData[3]];
-      return { updatedEntry, atomicWeightField };
-    }
-
-    function ManipulateDataFields(fields: string, atomicField: string)
-    {
-      let splitData = fields.split(',');
-      let updatedEntry = [splitData[3], splitData[0], splitData[1], atomicField, 'Atomic Mass'];
+      let entityType = String(node.entity_type).trim();
+      let ip = (String(node.ip).trim() == "" ? "-" : String(node.ip).trim());
+      let atomicWeight = (node.atomic_weight === null || node.atomic_weight === undefined ? "-" : String(node.atomic_weight));
+      let atomicMass = (node.count === null || node.count === undefined ? "-" : String(node.count));
+      let updatedEntry = [entity, entityType, ip, atomicWeight, atomicMass];
       return updatedEntry;
     }
-    
+
     async function FetchData()
     {
       let pgd = await ts.RetrieveGraphData('view2');
-      let highLevelDataFields = new Set();
-      let highLevel = new Set();
-      let midLevelData:any = []; 
-      Object.entries(pgd.n).forEach(([key, value]) => 
+      let highLevel = new Set<string>();
+      let midLevelData:any = [];
+      Object.entries(pgd.n).forEach(([key, value]) =>
       {
-        let str = '';
-        let str2 = '';
-        Object.entries(value).forEach(([k, v], i) =>
-        {
-          str += `${v},`;
-          if(i > 0)
-          {
-            str2 += `${k.toLocaleLowerCase().replace(/_/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase())},`;
-          }
-        });
-        str = str.trim();
-        let d = ManipulateDataEntry(str);
-        let f = ManipulateDataFields(str2, d.atomicWeightField);
-        highLevel.add(d.updatedEntry.toString());
-        highLevelDataFields.add(f.toString());
-        midLevelData.push(d.updatedEntry);
+        let updatedEntry = ManipulateDataEntry(value);
+        highLevel.add(updatedEntry.toString());
+        midLevelData.push(updatedEntry);
       });
-      let highLevelDataFieldsList = (Array.from(highLevelDataFields)[0] as string).split(',');
+      let highLevelDataFieldsList = ['Entity', 'Entity Type', 'Ip', 'Atomic Weight', 'Atomic Mass'];
       let highLevelDataList = Array.from(highLevel, h => h.split(','));
       let visibility = [];
 
