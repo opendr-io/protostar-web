@@ -28,14 +28,14 @@ def port_open(host, port):
 def preflight():
   """Verify setup has been done and databases are reachable; return a list of problems"""
   problems = []
-  if not (ROOT / 'skynet-ai-dev-flask-api' / '.venv').exists():
-    problems.append('skynet-ai-dev-flask-api/.venv missing - run startup.py once to set up')
+  if not (ROOT / 'protostar-ai-dev-flask-api' / '.venv').exists():
+    problems.append('protostar-ai-dev-flask-api/.venv missing - run startup.py once to set up')
 
   # Local config files are gitignored; each has a committed .template to copy
   local_configs = [
-    ROOT / 'skynet-ai-dev-flask-api' / 'dbconfig.ini',
-    ROOT / 'skynet-neo' / '.env',
-    ROOT / 'skynet-react' / '.env',
+    ROOT / 'protostar-ai-dev-flask-api' / 'dbconfig.ini',
+    ROOT / 'protostar-neo' / '.env',
+    ROOT / 'protostar-react' / '.env',
   ]
   for cfg in local_configs:
     if not cfg.exists():
@@ -44,7 +44,7 @@ def preflight():
     return problems
 
   dbconfig = configparser.ConfigParser()
-  dbconfig.read(ROOT / 'skynet-ai-dev-flask-api' / 'dbconfig.ini')
+  dbconfig.read(ROOT / 'protostar-ai-dev-flask-api' / 'dbconfig.ini')
   pghost = dbconfig.get('Database', 'HostName', fallback='localhost')
   pgport = dbconfig.get('Database', 'PortNumber', fallback='5432')
   if not port_open(pghost, pgport):
@@ -53,13 +53,13 @@ def preflight():
   if not port_open(bolt.hostname or 'localhost', bolt.port or 7687):
     problems.append(f'Neo4j not reachable at {bolt.hostname}:{bolt.port} - start it (e.g. in Neo4j Desktop) first')
   if tls:
-    if not (ROOT / 'skynet-ai-dev-flask-api' / 'keys').exists():
-      problems.append('skynet-ai-dev-flask-api/keys missing - run startup.py once to generate TLS certificates')
-    for app in ('skynet-neo', 'skynet-react'):
+    if not (ROOT / 'protostar-ai-dev-flask-api' / 'keys').exists():
+      problems.append('protostar-ai-dev-flask-api/keys missing - run startup.py once to generate TLS certificates')
+    for app in ('protostar-neo', 'protostar-react'):
       if not (ROOT / app / 'node_modules').exists():
         problems.append(f'{app}/node_modules missing - run startup.py once to install dependencies')
   else:
-    for app in ('skynet-neo', 'skynet-react'):
+    for app in ('protostar-neo', 'protostar-react'):
       if not (ROOT / app / 'dist').exists():
         problems.append(f'{app}/dist missing - run startup.py once to build')
   return problems
@@ -121,15 +121,15 @@ def run():
 
   if tls:
     servers = [
-      (venv_python + ' -m flask --app skynet-ai-dev-flask-api run --cert=keys/protostar-cert.pem --key=keys/protostar-key.pem --host 0.0.0.0 --port 5002', 'skynet-ai-dev-flask-api', 'Flask', 5002),
-      ('npm run dev', 'skynet-neo', 'Neo', 3000),
-      ('npm run dev', 'skynet-react', 'React', 5173)
+      (venv_python + ' -m flask --app protostar-ai-dev-flask-api run --cert=keys/protostar-cert.pem --key=keys/protostar-key.pem --host 0.0.0.0 --port 5002', 'protostar-ai-dev-flask-api', 'Flask', 5002),
+      ('npm run dev', 'protostar-neo', 'Neo', 3000),
+      ('npm run dev', 'protostar-react', 'React', 5173)
     ]
   else:
     servers = [
-      (venv_python + ' -m flask --app skynet-ai-dev-flask-api run --host 0.0.0.0 --port 5002', 'skynet-ai-dev-flask-api', 'Flask', 5002),
-      ('serve -s dist -p 3000 --no-clipboard', 'skynet-neo', 'Neo', 3000),
-      ('serve -s dist -p 5173 --no-clipboard', 'skynet-react', 'React', 5173)
+      (venv_python + ' -m flask --app protostar-ai-dev-flask-api run --host 0.0.0.0 --port 5002', 'protostar-ai-dev-flask-api', 'Flask', 5002),
+      ('serve -s dist -p 3000 --no-clipboard', 'protostar-neo', 'Neo', 3000),
+      ('serve -s dist -p 5173 --no-clipboard', 'protostar-react', 'React', 5173)
     ]
 
   # Start servers one at a time; verify each is serving before starting the next

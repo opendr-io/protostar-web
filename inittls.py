@@ -50,18 +50,18 @@ def run():
     flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py && mkdir keys && cp cert.conf keys/cert.conf && cd keys && openssl req -x509 -newkey rsa:4096 -keyout protostar-key.pem -out protostar-cert.pem -days 365 -nodes -config cert.conf -extensions v3_req && sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain protostar-cert.pem && cp protostar-cert.pem ' + neo4jkeypath + '&& cp protostar-key.pem ' + neo4jkeypath + ' && rm cert.conf && cd ..'
   elif(os.uname().sysname == 'Linux'):
     flask_cmd += ' && source .venv/bin/activate && pip install -r requirements.txt && python dbcreation.py && mkdir keys && cp cert.conf keys/cert.conf && cd keys && openssl req -x509 -newkey rsa:4096 -keyout protostar-key.pem -out protostar-cert.pem -days 365 -nodes -config cert.conf -extensions v3_req && sudo cp protostar-cert.pem /usr/local/share/ca-certificates/protostar-cert.crt && sudo update-ca-certificates && cp protostar-cert.pem ' + neo4jkeypath + '&& cp protostar-key.pem ' + neo4jkeypath + ' && cp protostar-cert.pem ' + postgreskeypath + ' && cp protostar-cert.pem ' + postgreskeypath + ' && rm cert.conf && cd .. && sudo service postgresql restart && ' + neo4jpath + 'neo4j restart'
-  subprocess.run(flask_cmd, executable=shell, shell=True, cwd='skynet-ai-dev-flask-api')
+  subprocess.run(flask_cmd, executable=shell, shell=True, cwd='protostar-ai-dev-flask-api')
 
   # Node.js setup
   print('installations')
-  subprocess.run(npm_install, shell=True, cwd='skynet-neo')
-  subprocess.run(npm_install, shell=True, cwd='skynet-react')
+  subprocess.run(npm_install, shell=True, cwd='protostar-neo')
+  subprocess.run(npm_install, shell=True, cwd='protostar-react')
 
   # Start servers
   servers = [
-    ('python -m flask --app skynet-ai-dev-flask-api run --cert=keys/protostar-cert.pem --key=keys/protostar-key.pem --host 0.0.0.0 --port 5002', 'skynet-ai-dev-flask-api', 'Flask'),
-    ('npm run dev', 'skynet-neo', 'Neo'),
-    ('npm run dev', 'skynet-react', 'React')
+    ('python -m flask --app protostar-ai-dev-flask-api run --cert=keys/protostar-cert.pem --key=keys/protostar-key.pem --host 0.0.0.0 --port 5002', 'protostar-ai-dev-flask-api', 'Flask'),
+    ('npm run dev', 'protostar-neo', 'Neo'),
+    ('npm run dev', 'protostar-react', 'React')
   ]
 
   processes = []
