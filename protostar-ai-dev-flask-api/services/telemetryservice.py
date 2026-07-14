@@ -50,8 +50,8 @@ class TelemetryService:
   def get_view1(self):
     try:
       with(self.neo4j_driver.session()) as session:
-        result = session.run("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
-        MATCH path = (n)-[*]->(:ALERT)
+        result = session.run("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n
+        MATCH path = (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(:ALERT)
         where not n.entity = "172.16.200.110" RETURN path""")
         data = result.data()
         # print(data.pop().pop())
@@ -69,7 +69,7 @@ class TelemetryService:
       result_df = neo4j.query(f"""
         MATCH (n:ENTITY)
           WHERE n.view = 2
-          MATCH (n)-[*]->(m:ALERT)
+          MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
         RETURN DISTINCT
           substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity
         ORDER BY entity ASC
@@ -87,7 +87,7 @@ class TelemetryService:
       result_df = neo4j.query(f"""
         MATCH (n:ENTITY)
           WHERE n.view = 2
-          MATCH (n)-[*]->(m:ALERT)
+          MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
           where n.entity contains '{entity}'
           RETURN
               m.detection_type AS detection_type,
@@ -109,7 +109,7 @@ class TelemetryService:
       query = f"""
       MATCH (n:ENTITY)
         WHERE n.view = 2
-        MATCH (n)-[*]->(m:ALERT)
+        MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
         where m.detection_type contains '{detection_type}'
       RETURN
         m.detection_type AS detection_type,
@@ -134,7 +134,7 @@ class TelemetryService:
       query = f"""
         MATCH (n:ENTITY)
           WHERE n.view = 2
-          MATCH (n)-[*]->(m:ALERT)
+          MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
           where n.entity contains '{entity}'
           RETURN
               substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity,
@@ -179,7 +179,7 @@ class TelemetryService:
         AND m.view = 1 WITH n, collect(DISTINCT type(r))
         AS relTypes, collect(r) AS relationships, collect(m)
         AS relatedNodes, elementId(n) as elementId WHERE size(relTypes) >= 2
-        OPTIONAL MATCH (n2:ENTITY {view: 2, entity: n.entity})-[*]->(a:ALERT)
+        OPTIONAL MATCH (n2:ENTITY {view: 2, entity: n.entity})-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(a:ALERT)
         WITH n, relTypes, relationships, relatedNodes, elementId,
         count(DISTINCT a.detection_type) AS atomicNumber,
         count(a) AS atomicMass,
@@ -210,10 +210,10 @@ class TelemetryService:
     data = []
     try:
       neo4j = self.neo4j_driver
-      result_df = neo4j.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
-      MATCH path = (n)-[*]->(a:ALERT) where 
-      not n.entity = "172.16.200.110" 
-      and (a.detection_type = "CLOUD_ANOMALY" 
+      result_df = neo4j.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n
+      MATCH path = (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(a:ALERT) where
+      not n.entity = "172.16.200.110"
+      and (a.detection_type = "CLOUD_ANOMALY"
       or a.detection_type = "CLOUD_ALERT") RETURN path""").to_data_frame()
       data = result_df.to_json()
     except Exception as e:
@@ -224,9 +224,9 @@ class TelemetryService:
     data = []
     try:
       neo4j = self.neo4j_driver
-      result_df = neo4j.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n 
-      MATCH path = (n)-[*]->(a:ALERT) 
-      where not n.entity = "172.16.200.110" 
+      result_df = neo4j.query("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n
+      MATCH path = (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(a:ALERT)
+      where not n.entity = "172.16.200.110"
       and not (a.detection_type = "CLOUD_ANOMALY" 
       or a.detection_type = "CLOUD_ALERT") RETURN path""").to_data_frame()
       data = result_df.to_json()
