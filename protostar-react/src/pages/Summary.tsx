@@ -59,6 +59,10 @@ export function Summary()
       });
       let highLevelDataFieldsList = ['Entity', 'Entity Type', 'Ip', 'Atomic Weight', 'Atomic Mass'];
       let highLevelDataList = Array.from(highLevel, h => h.split(','));
+      // Sort by score: atomic weight (element number) descending, atomic mass as tiebreaker
+      highLevelDataList.sort((a, b) =>
+        ((parseInt(String(b[3]).replace(/[^0-9]/g, ''), 10) || 0) - (parseInt(String(a[3]).replace(/[^0-9]/g, ''), 10) || 0))
+        || ((parseInt(b[4], 10) || 0) - (parseInt(a[4], 10) || 0)));
       let visibility = [];
 
       for(let i = 0; i < highLevelDataList.length; i++)
@@ -208,9 +212,9 @@ export function Summary()
                           textColor = 'text-blue-400';
                         }
                         
-                        // Check for red coloring logic
+                        // Check for red coloring logic: atomic weight cells look like "Helium (2)", extract the number
                         for(let i = 0; i <= 4; i++) {
-                          if((originalIndex - i > 4) && ((originalIndex - i) % 5 === 0) && (highLevelDataFields[originalIndex - i + 3] > 5)) {
+                          if((originalIndex - i > 4) && ((originalIndex - i) % 5 === 0) && (parseInt(String(highLevelDataFields[originalIndex - i + 3]).replace(/[^0-9]/g, ''), 10) > 100)) {
                             textColor = 'text-red-400';
                           }
                         }
@@ -242,7 +246,9 @@ export function Summary()
                               let entity = item.value;
                               let entityType = highLevelDataFields[originalIndex+1];
                               let ip = highLevelDataFields[originalIndex+2];
-                              let displayFields = [entity, entityType, ip];
+                              let atomicWeight = highLevelDataFields[originalIndex+3];
+                              let atomicMass = highLevelDataFields[originalIndex+4];
+                              let displayFields = [entity, entityType, ip, atomicWeight, atomicMass];
                               dispatch(setData(displayFields));
                               navigate('/details');
                             } : undefined}>
