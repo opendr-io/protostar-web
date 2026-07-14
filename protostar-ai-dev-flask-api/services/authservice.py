@@ -22,8 +22,7 @@ class AuthService:
       with connection.cursor() as cursor:
         username = data.get('username')
         password = data.get('password').encode('utf-8')
-        sqlStatement = f"select hashed_password from appusers where username='{username}'"
-        cursor.execute(sqlStatement)
+        cursor.execute("select hashed_password from appusers where username = %s", (username,))
         exists = cursor.fetchone()
         if(exists):
           hash_pass = exists[0]
@@ -41,8 +40,7 @@ class AuthService:
         username = data.get('username')
         password = data.get('password').encode('utf-8')
         hashed_password = bcrypt.hashpw(password, salt)
-        sqlStatement = f"select username from appusers where username='{username}'"
-        cursor.execute(sqlStatement)
+        cursor.execute("select username from appusers where username = %s", (username,))
         exists = cursor.fetchone()
         if(exists is None):
           fillers = ("%s," * 2)[:-1]
