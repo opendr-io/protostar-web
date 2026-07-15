@@ -32,52 +32,37 @@ export function Summary()
 
   useEffect(() =>
   {
-    function ManipulateDataEntry(data: string)
+    function ManipulateDataEntry(node: any)
     {
-      let splitData = data.split(',');
-      let furtherSplit = splitData[splitData.length - 2].split(/- (.*)/, 2);
+      // Entity names may still be packed as "<label>: <value> - <name>" by older ingestion data
+      let furtherSplit = String(node.entity).trim().split(/- (.*)/, 2);
       let entity = furtherSplit[furtherSplit.length - 1].trim();
-      let atomicWeightField = 'Atomic Weight';
-      let atomicWeight = furtherSplit[0].split(/:\s/)[1];
-      let updatedEntry = [String(entity).trim(), String(splitData[1]).trim(), (String(splitData[2]).trim() == "" ? "-" : String(splitData[2]).trim()) , (String(atomicWeight).trim() == "undefined" ? "-" : String(atomicWeight).trim()), (splitData[3]).trim()];
-      return { updatedEntry, atomicWeightField };
-    }
-
-    function ManipulateDataFields(fields: string, atomicField: string)
-    {
-      let splitData = fields.split(',');
-      let updatedEntry = [splitData[3], splitData[0], splitData[1], atomicField, 'Atomic Mass'];
+      let entityType = String(node.entity_type).trim();
+      let ip = (String(node.ip).trim() == "" ? "-" : String(node.ip).trim());
+      let atomicWeight = (node.atomic_weight === null || node.atomic_weight === undefined ? "-" : String(node.atomic_weight));
+      let atomicMass = (node.count === null || node.count === undefined ? "-" : String(node.count));
+      let updatedEntry = [entity, entityType, ip, atomicWeight, atomicMass];
       return updatedEntry;
     }
-    
+
     async function FetchData()
     {
       let pgd = await ts.RetrieveGraphData('view2');
       console.log(pgd);
-      let highLevelDataFields = new Set();
-      let highLevel = new Set();
-      let midLevelData:any = []; 
-      Object.entries(pgd.n).forEach(([key, value]) => 
+      let highLevel = new Set<string>();
+      let midLevelData:any = [];
+      Object.entries(pgd.n).forEach(([key, value]) =>
       {
-        let str = '';
-        let str2 = '';
-        Object.entries(value).forEach(([k, v], i) =>
-        {
-          str += `${v},`;
-          if(i > 0)
-          {
-            str2 += `${k.toLocaleLowerCase().replace(/_/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase())},`;
-          }
-        });
-        str = str.trim();
-        let d = ManipulateDataEntry(str);
-        let f = ManipulateDataFields(str2, d.atomicWeightField);
-        highLevel.add(d.updatedEntry.toString());
-        highLevelDataFields.add(f.toString());
-        midLevelData.push(d.updatedEntry);
+        let updatedEntry = ManipulateDataEntry(value);
+        highLevel.add(updatedEntry.toString());
+        midLevelData.push(updatedEntry);
       });
-      let highLevelDataFieldsList = (Array.from(highLevelDataFields)[0] as string).split(',');
+      let highLevelDataFieldsList = ['Entity', 'Entity Type', 'Ip', 'Atomic Weight', 'Atomic Mass'];
       let highLevelDataList = Array.from(highLevel, h => h.split(','));
+      // Sort by score: atomic weight (element number) descending, atomic mass as tiebreaker
+      highLevelDataList.sort((a, b) =>
+        ((parseInt(String(b[3]).replace(/[^0-9]/g, ''), 10) || 0) - (parseInt(String(a[3]).replace(/[^0-9]/g, ''), 10) || 0))
+        || ((parseInt(b[4], 10) || 0) - (parseInt(a[4], 10) || 0)));
       let visibility = [];
 
       for(let i = 0; i < highLevelDataList.length; i++)
@@ -227,9 +212,9 @@ export function Summary()
                           textColor = 'text-blue-400';
                         }
                         
-                        // Check for red coloring logic
+                        // Check for red coloring logic: atomic weight cells look like "Helium (2)", extract the number
                         for(let i = 0; i <= 4; i++) {
-                          if((originalIndex - i > 4) && ((originalIndex - i) % 5 === 0) && (highLevelDataFields[originalIndex - i + 3] > 5)) {
+                          if((originalIndex - i > 4) && ((originalIndex - i) % 5 === 0) && (parseInt(String(highLevelDataFields[originalIndex - i + 3]).replace(/[^0-9]/g, ''), 10) > 100)) {
                             textColor = 'text-red-400';
                           }
                         }
@@ -261,7 +246,9 @@ export function Summary()
                               let entity = item.value;
                               let entityType = highLevelDataFields[originalIndex+1];
                               let ip = highLevelDataFields[originalIndex+2];
-                              let displayFields = [entity, entityType, ip];
+                              let atomicWeight = highLevelDataFields[originalIndex+3];
+                              let atomicMass = highLevelDataFields[originalIndex+4];
+                              let displayFields = [entity, entityType, ip, atomicWeight, atomicMass];
                               dispatch(setData(displayFields));
                               navigate('/details');
                             } : undefined}>

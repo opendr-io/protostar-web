@@ -1,11 +1,30 @@
 import os
 import json
+import math
 import pathlib
 import configparser
 import pandas as pd
 from flask import jsonify
 from llmservice import LLMService
 from py2neo import Graph, Node, Relationship
+
+ELEMENT_NAMES = [
+  'Hydrogen', 'Helium', 'Lithium', 'Beryllium', 'Boron', 'Carbon', 'Nitrogen', 'Oxygen',
+  'Fluorine', 'Neon', 'Sodium', 'Magnesium', 'Aluminum', 'Silicon', 'Phosphorus', 'Sulfur',
+  'Chlorine', 'Argon', 'Potassium', 'Calcium', 'Scandium', 'Titanium', 'Vanadium', 'Chromium',
+  'Manganese', 'Iron', 'Cobalt', 'Nickel', 'Copper', 'Zinc', 'Gallium', 'Germanium',
+  'Arsenic', 'Selenium', 'Bromine', 'Krypton', 'Rubidium', 'Strontium', 'Yttrium', 'Zirconium',
+  'Niobium', 'Molybdenum', 'Technetium', 'Ruthenium', 'Rhodium', 'Palladium', 'Silver', 'Cadmium',
+  'Indium', 'Tin', 'Antimony', 'Tellurium', 'Iodine', 'Xenon', 'Cesium', 'Barium',
+  'Lanthanum', 'Cerium', 'Praseodymium', 'Neodymium', 'Promethium', 'Samarium', 'Europium', 'Gadolinium',
+  'Terbium', 'Dysprosium', 'Holmium', 'Erbium', 'Thulium', 'Ytterbium', 'Lutetium', 'Hafnium',
+  'Tantalum', 'Tungsten', 'Rhenium', 'Osmium', 'Iridium', 'Platinum', 'Gold', 'Mercury',
+  'Thallium', 'Lead', 'Bismuth', 'Polonium', 'Astatine', 'Radon', 'Francium', 'Radium',
+  'Actinium', 'Thorium', 'Protactinium', 'Uranium', 'Neptunium', 'Plutonium', 'Americium', 'Curium',
+  'Berkelium', 'Californium', 'Einsteinium', 'Fermium', 'Mendelevium', 'Nobelium', 'Lawrencium', 'Rutherfordium',
+  'Dubnium', 'Seaborgium', 'Bohrium', 'Hassium', 'Meitnerium', 'Darmstadtium', 'Roentgenium', 'Copernicium',
+  'Nihonium', 'Flerovium', 'Moscovium', 'Livermorium', 'Tennessine', 'Oganesson'
+]
 
 class TelemetryService:
   def __init__(self):
@@ -141,19 +160,47 @@ class TelemetryService:
       print(e)
     return data
   
+  def raw_atomic_weight(self, atomic_number, atomic_mass, signal_unique, signal_mass):
+    non_signal_mass = max(atomic_mass - signal_mass, 0)
+    return (((float(atomic_number) ** atomic_number) ** (1 + min(signal_unique, 3)))
+      * ((1 + signal_mass) ** 0.75)
+      * ((1 + non_signal_mass) ** 0.25))
+
+  def compressed_atomic_weight(self, raw_weight, maximum_expected_weight):
+    compressed = round(1 + 117 * math.log(1 + raw_weight) / math.log(1 + maximum_expected_weight))
+    return max(1, min(118, compressed))
+
   def get_view2(self):
     data = []
     try:
       neo4j = self.neo4j_driver
       result_df = neo4j.query("""
-        MATCH (n:ENTITY)-[r]->(m) WHERE n.view = 1 
-        AND m.view = 1 WITH n, collect(DISTINCT type(r)) 
-        AS relTypes, collect(r) AS relationships, collect(m) 
-        AS relatedNodes, elementId(n) as elementId WHERE size(relTypes) >= 2 
-        UNWIND relationships AS rel 
-        UNWIND relatedNodes AS relatedNode 
-        RETURN n, rel, relatedNode, relTypes, elementId
+        MATCH (n:ENTITY)-[r]->(m) WHERE n.view = 1
+        AND m.view = 1 WITH n, collect(DISTINCT type(r))
+        AS relTypes, collect(r) AS relationships, collect(m)
+        AS relatedNodes, elementId(n) as elementId WHERE size(relTypes) >= 2
+        OPTIONAL MATCH (n2:ENTITY {view: 2, entity: n.entity})-[*]->(a:ALERT)
+        WITH n, relTypes, relationships, relatedNodes, elementId,
+        count(DISTINCT a.detection_type) AS atomicNumber,
+        count(a) AS atomicMass,
+        count(DISTINCT CASE WHEN toLower(a.detection_type) CONTAINS 'signal' THEN a.detection_type END) AS signalUnique,
+        count(CASE WHEN toLower(a.detection_type) CONTAINS 'signal' THEN a END) AS signalMass
+        UNWIND relationships AS rel
+        UNWIND relatedNodes AS relatedNode
+        RETURN n{.*, atomic_number: atomicNumber, atomic_mass: atomicMass,
+        signal_unique: signalUnique, signal_mass: signalMass} AS n,
+        rel, relatedNode, relTypes, elementId
         """).to_data_frame()
+      raw_weights = {}
+      for node in result_df['n']:
+        if node['entity'] not in raw_weights:
+          raw_weights[node['entity']] = self.raw_atomic_weight(node['atomic_number'],
+            node['atomic_mass'], node['signal_unique'], node['signal_mass'])
+      # maximum expected weight is dynamic: the highest raw weight in the dataset maps to element 118
+      maximum_expected_weight = max(raw_weights.values())
+      for node in result_df['n']:
+        compressed = self.compressed_atomic_weight(raw_weights[node['entity']], maximum_expected_weight)
+        node['atomic_weight'] = f"{ELEMENT_NAMES[compressed - 1]} ({compressed})"
       data = result_df.to_json()
     except Exception as e:
       print(e)

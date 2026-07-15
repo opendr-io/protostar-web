@@ -77,7 +77,8 @@ export function Details()
         <div className="mt-4">
           <h2 className="font-semibold text-xl mb-2">Entity: <span className="">{entity[0]}</span></h2>
           <h2 className="font-semibold text-xl mb-2">Entity Type: <span className="">{entity[1]}</span></h2>
-          <h2 className="font-semibold text-xl mb-4">IP: <span className="">{entity[2]}</span></h2>
+          <h2 className="font-semibold text-xl mb-2">IP: <span className="">{entity[2]}</span></h2>
+          <h2 className="font-semibold text-xl mb-4">Atomic Weight: <span className="">{entity[3]}</span></h2>
         </div>
         <div className="mt-4 flex flex-col">
           <div className="flex">
