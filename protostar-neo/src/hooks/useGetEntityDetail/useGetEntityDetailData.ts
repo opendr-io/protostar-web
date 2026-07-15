@@ -10,7 +10,7 @@ export function useGetEntityDetailData()
     const entityDetailResponse = await axios.post<DataGraphResponse<NodeData>>(`${dbURL}/tx/commit`, JSON.stringify({
       statements: [
         {
-          statement: `MATCH path = (n:ENTITY)-[r*]->(m) where n.view = 1 and m.view = 1 and n.entity = "${entityName}" return path`,
+          statement: `MATCH path = (n:ENTITY)-[r*..2]->(m) where n.view = 1 and m.view = 1 and n.entity = "${entityName}" return path`,
         },
       ],
     }), {

@@ -24,7 +24,7 @@ export function View5()
             statement: `MATCH (n:ENTITY {view: 1})-[r]->(m {view: 1})
                         WITH n, count(r) AS count_of_first_layer_nodes
                         WHERE count_of_first_layer_nodes = 1
-                        MATCH p=(n)-[r*]->(m)
+                        MATCH p=(n)-[r*..2]->(m)
                         RETURN p`,
           },
         ],
