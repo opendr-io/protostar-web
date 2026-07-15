@@ -77,7 +77,7 @@ export function Home()
   return (
     <div className='bg-black text-white min-h-screen mt-20 px-4'>
       <div className='max-w-6xl mx-auto'>
-        <h1 className="text-3xl font-bold mt-4">Protostar: AI Powered Detection Management</h1>
+        <h1 className="text-3xl font-bold mt-4">Protostar: AI Powered Detection Lattices</h1>
         <h1 className="mt-4 flex-1">
         
           Tactical: An AI interface into detection elements by entity. From here, you can drilldown into the details of a detection element and ask questions of the AI interface<br></br><br></br>

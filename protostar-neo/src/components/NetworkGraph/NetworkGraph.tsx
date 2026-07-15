@@ -12,6 +12,8 @@ export enum NodeGroup {
   LOW_SEVERITY = 5,
   MEDIUM_SEVERITY = 6,
   HIGH_SEVERITY = 7,
+  HOST = 8,
+  CONNECTED_ENTITY = 9, // entity that connects to another entity (view 6 highlight)
 }
 
 export enum NodeType {
@@ -19,6 +21,7 @@ export enum NodeType {
   SEVERITY_CLUSTER = 'SEVERITY_CLUSTER',
   NAME_CLUSTER = 'NAME_CLUSTER',
   ALERT = 'ALERT',
+  HOST = 'HOST',
 }
 
 export interface Node extends d3.SimulationNodeDatum {
@@ -41,6 +44,7 @@ type Props = {
   height: number | string;
   strength: number;
   labelNodeTypes?: NodeType[keyof NodeType][]
+  directed?: boolean // draw arrowheads to indicate edge direction (source -> target)
 };
 
 const ForceGraph: React.FC<Props> = ({
@@ -50,6 +54,7 @@ const ForceGraph: React.FC<Props> = ({
   height,
   strength,
   labelNodeTypes = ['ENTITY', 'SEVERITY_CLUSTER', 'NAME_CLUSTER'], // default nodes to be labelled, override this prop to label other node types
+  directed = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -62,6 +67,7 @@ const ForceGraph: React.FC<Props> = ({
         nodes,
         strength,
         labelNodeTypes,
+        directed,
       );
       destroyFn = destroy;
     }

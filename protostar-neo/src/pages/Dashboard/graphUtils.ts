@@ -10,6 +10,10 @@ export type ElementID = string;
 export function getTypeFromNodeInfo(nodeMeta: NodeMeta, nodeData: NodeData) {
     const isView2 = nodeData.view === 2;
     switch (true) {
+        // case for Host node (view 6 network-connections overlay: has ip, no entity)
+        case nodeData.view === 6:
+            return NodeType.HOST;
+
         // case for Alert node
         case isView2 && nodeMeta.type === "node" && nodeData.detection_type !== undefined:
             return NodeType.ALERT;
@@ -37,6 +41,14 @@ export function getTypeFromNodeInfo(nodeMeta: NodeMeta, nodeData: NodeData) {
 export function getGroupFromNodeInfo(nodeMeta: NodeMeta, nodeData: NodeData) {
     const isView2 = nodeData.view === 2;
     switch (true) {
+        // case for Host node (view 6 network-connections overlay)
+        case nodeData.view === 6:
+            return NodeGroup.HOST;
+
+        // view 6 highlight: entity that connects to another entity (e.g. LP-42 <-> lp-sre-42)
+        case (nodeData.entity_links ?? 0) > 0:
+            return NodeGroup.CONNECTED_ENTITY;
+
         // case for Alert node
         case isView2 && nodeMeta.type === "node" &&
             nodeData.detection_type !== undefined:

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { IGraphData, processNodesAndEdges } from './graphUtils';
-import ForceGraph from "../../components/NetworkGraph/NetworkGraph";
+import ForceGraph, { NodeType, NodeGroup } from "../../components/NetworkGraph/NetworkGraph";
 
 
 export function View2() 
@@ -22,7 +22,7 @@ export function View2()
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (h:ENTITY)-[r]->() WHERE NOT type(r) IN ['AS_SOURCE', 'AS_DEST'] WITH h, collect(DISTINCT type(r)) AS relationshipTypes WHERE size(relationshipTypes) >= 3 and h.view = 1 MATCH p=(h)-[r*]->() RETURN p`,
+            statement: `MATCH (h:ENTITY)-[r]->() WHERE NOT type(r) IN ['AS_SOURCE', 'AS_DEST'] WITH h, collect(DISTINCT type(r)) AS relationshipTypes WHERE size(relationshipTypes) >= 3 and h.view = 1 MATCH p=(h)-[r*..2]->() RETURN p`,
           },
         ],
       }),
@@ -35,7 +35,18 @@ export function View2()
   }, []);
 
   useEffect(() => {
-    setNetwork(processNodesAndEdges(graphData));
+    const net = processNodesAndEdges(graphData);
+    // View2-only highlight: red any entity that has a 'signal' or 'correlation'
+    // relationship (its neighbouring _SET node's detection_type matches). The
+    // relationship type itself isn't visible to the frontend, but the _SET node's
+    // detection_type is. Scoped here so it does not affect other pages.
+    const signalRe = /signal|correlation/i;
+    (net.links ?? []).forEach((l: any) => {
+      if (l.source?.type === NodeType.ENTITY && signalRe.test(l.target?.detection_type ?? '')) {
+        l.source.group = NodeGroup.HIGH_SEVERITY; // red
+      }
+    });
+    setNetwork(net);
   }, [graphData]);
 
   return (

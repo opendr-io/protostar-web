@@ -22,7 +22,7 @@ export function View1()
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[*]->(:ALERT) where not n.entity = "172.16.200.110" RETURN path`
+            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(:ALERT) where not n.entity = "172.16.200.110" RETURN path`
           },
         ],
       }),
