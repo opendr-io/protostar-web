@@ -9,6 +9,8 @@ const COLOR_MAP = {
   5: '#ffbaac',   // LOW    severity ALERT
   6: '#ff9585',   // MEDIUM severity ALERT
   7: '#ff584d',   // HIGH   severity ALERT
+  8: 'white',     // host node (view 6)
+  9: '#ff584d',   // entity connected to another entity (view 6 highlight)
 };
 
 function wrap() {
@@ -23,6 +25,9 @@ function wrap() {
 }
 
 function getDynamicLabel(node) {
+  if (node.type === 'HOST') {
+    return node.ip ?? '';
+  }
   if (node.view === 2 && node.type === 'SEVERITY_CLUSTER') {
     return `[${node.entity_type}] ${node.entity} (${node.severity})`
   }
@@ -35,6 +40,7 @@ export function runForceGraph(
   nodesData,
   strength,
   labelNodeTypes, // list of nodetypes to attach a label to
+  directed = false, // draw arrowheads indicating edge direction (source -> target)
 ) {
   const nodes = nodesData;
   const hostNodes = nodesData.filter(node => node.type === 'ENTITY');
@@ -129,6 +135,22 @@ export function runForceGraph(
         ]),
     );
 
+  if (directed) {
+    svg
+      .append('defs')
+      .append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 10)
+      .attr('refY', 0)
+      .attr('markerWidth', 7)
+      .attr('markerHeight', 7)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('fill', '#999');
+  }
+
   const link = svg
     .append('g')
     .selectAll('line')
@@ -137,6 +159,7 @@ export function runForceGraph(
     .append('line')
     .attr('stroke', '#999')
     .attr('stroke-opacity', 0.6)
+    .attr('marker-end', directed ? 'url(#arrowhead)' : null)
 
   const node = svg
     .append('g')
@@ -144,8 +167,9 @@ export function runForceGraph(
     .data(alertNodes)
     .join('circle')
     .attr('r', (d) =>
-      Math.sqrt(2) *
-      Math.max(1, Math.log(isNaN(d.count) ? 1 : d.count * 20)),
+      d.type === 'HOST'
+        ? 6
+        : Math.sqrt(2) * Math.max(1, Math.log(isNaN(d.count) ? 1 : d.count * 20)),
     )
     .attr('fill', (d) => COLOR_MAP[d.group])
     .on('click', (event, d) => {
@@ -184,7 +208,7 @@ export function runForceGraph(
     // .each(wrap) // this truncates the host label
     .attr('stroke', '#000')
     .attr('stroke-width', 1)
-    .attr('fill', '#ff9585')
+    .attr('fill', (d) => COLOR_MAP[d.group]) // match the node color (white, or red when entity-linked)
     .attr('font-size', '20')
     .attr('font-weight', '900')
     .attr('text-anchor', 'middle')
@@ -209,8 +233,20 @@ export function runForceGraph(
     link
       .attr('x1', (d) => d.source.x)
       .attr('y1', (d) => d.source.y)
-      .attr('x2', (d) => d.target.x)
-      .attr('y2', (d) => d.target.y);
+      .attr('x2', (d) => {
+        if (!directed) return d.target.x;
+        const dx = d.target.x - d.source.x, dy = d.target.y - d.source.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const pad = d.target.type === 'HOST' ? 12 : 16; // node radius + arrow
+        return d.target.x - (dx / len) * pad;
+      })
+      .attr('y2', (d) => {
+        if (!directed) return d.target.y;
+        const dx = d.target.x - d.source.x, dy = d.target.y - d.source.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const pad = d.target.type === 'HOST' ? 12 : 16;
+        return d.target.y - (dy / len) * pad;
+      });
 
     // update node positions
     node.attr('cx', (d) => d.x).attr('cy', (d) => d.y).transition()

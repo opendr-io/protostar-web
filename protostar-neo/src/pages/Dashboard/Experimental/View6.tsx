@@ -21,7 +21,7 @@ export function View6()
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[*]->(a:ALERT) where (a.detection_type = "SIGNAL" or a.detection_type = "ML_CORRELATION") RETURN path`
+            statement: `MATCH path = ()-[:CONNECTS_HOST {view: 6}]->() RETURN path UNION MATCH path = (:ENTITY {view: 2})-[:CONNECTS_TO {view: 6}]->(:ENTITY {view: 2}) RETURN path`
           },
         ],
       }),
@@ -45,7 +45,8 @@ export function View6()
         width={"100%"}
         height={"90vh"}
         strength={-500}
-        labelNodeTypes={['SEVERITY_CLUSTER']}
+        labelNodeTypes={['ENTITY', 'HOST']}
+        directed
       />
     </div>
   );

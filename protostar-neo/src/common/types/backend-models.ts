@@ -6,6 +6,8 @@ export interface EntityNodeData {
   source_ip: string,
   dest_ip: string,
   count: number,
+  connection_count?: number, // view 6: distinct peer hosts
+  entity_links?: number,     // view 6: entity-to-entity connection count (highlight when > 0)
 };
 
 export interface SeverityClusterNodeData {
