@@ -44,7 +44,7 @@ export function View6()
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-500}
+        strength={-5000}
         labelNodeTypes={['ENTITY', 'HOST']}
         directed
       />
