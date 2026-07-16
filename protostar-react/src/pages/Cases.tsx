@@ -1,92 +1,116 @@
-import { createBrowserRouter, data, RouterProvider, useNavigate, useLocation } from "react-router-dom";
-import React, { useState, useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from "react-redux";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useCallback, type Dispatch, type FormEvent, type SetStateAction } from 'react';
+import { useDispatch } from "react-redux";
 import { setData } from "../other/DataManagement.ts";
-import LLMService from '../services/LLMService.ts';
-import PromptService from "../services/PromptService.ts";
 import TelemetryService from "../services/TelemetryService.ts";
-import HelpTextService from "../services/HelpTextService.ts";
 import AppService from "../services/AppService.ts";
 import { CasesOverview } from "./CasesOverview.tsx";
 import { CaseDetails } from "./CaseDetails.tsx";
+
+interface CaseRecord
+{
+  case_id: number;
+  assigned_user: string;
+  casename: string;
+  description: string;
+  priority: number;
+  investigated_entity: string;
+  resolved_at?: string | null;
+}
+
+interface CreateCaseResponse
+{
+  Exists?: string;
+  Success?: number;
+}
+
+const telemetryService = new TelemetryService();
+const appService = new AppService();
 
 export function Cases()
 {
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const [isCaseWizardOpen, setIsCaseWizardOpenOpen] = useState(false);
-  const [isEntityListOpen, setIsEntityListOpen] = useState(false);
   const [isUserListOpen, setIsUserListOpen] = useState(false);
   const [isEntitySelected, setIsEntitySelected] = useState(false);  
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState<CaseRecord | null>(null);
   const [selectedEntity, setSelectedEntity] = useState("");
-  const [userAssigned, setUserAssigned] = useState("");
-  const [casePriority, setCasePriority] = useState(0);
+  const [casePriority, setCasePriority] = useState("");
   const [caseName, setCaseName] = useState("");
   const [caseDescription, setCaseDescription] = useState("");
-  const [caseList, setCaseList] = useState([]);
-  const [userList, setUserList] = useState([]);
-  const [entityList, setEntityList] = useState([]);
-  const [entityTypes, setEntityTypes] = useState<any>({});
+  const [caseList, setCaseList] = useState<CaseRecord[]>([]);
+  const [userList, setUserList] = useState<unknown[]>([]);
+  const [entityList, setEntityList] = useState<string[]>([]);
+  const [entityTypes, setEntityTypes] = useState<Record<string, string>>({});
   const [aiCommenting, setAICommenting] = useState(false);
 
-  let ts = new TelemetryService();
-  let llm = new LLMService();
-  let hts = new HelpTextService();
-  let ps = new PromptService();
-  let as = new AppService();
-  const navigatedEntity = useLocation().state;
+  const navigatedEntity = useLocation().state as string | null;
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   function NavigateToCaseAlertsPage()
   {
-    navigate('/alerts', { state: selected.investigated_entity });
+    if(selected)
+    {
+      navigate('/alerts', { state: selected.investigated_entity });
+    }
   }
 
   async function NavigateToCaseDetailsPage()
   {
-    let dataset = await ts.RetrieveRawEntityDetailsNeo(selected.investigated_entity);
-    const ed = Object.entries(dataset).map(([key, value]) => ({ key, value }));
-    let displayFields = [ed[0].value[0], ed[6].value[0], ed[10].value[0]];
+    if(!selected) return;
+    const dataset = await telemetryService.RetrieveRawEntityDetailsNeo(selected.investigated_entity) as Record<string, unknown[]>;
+    const displayFields = [dataset.entity?.[0], dataset.entity_type?.[0], dataset.ip?.[0]];
     dispatch(setData(displayFields));
     navigate('/details');
   }
 
-  async function RetrieveEntities()
+  const RetrieveEntities = useCallback(async () =>
   {
-    let e = await ts.GetAllEntitiesNeo();
-    setEntityList(e);
-  }
+    const entities = await telemetryService.GetAllEntitiesNeo();
+    setEntityList(Array.isArray(entities) ? entities : []);
+  }, []);
 
-  async function RetrieveUsers()
+  const RetrieveUsers = useCallback(async () =>
   {
-    let u = await as.GetUsers();
-    setUserList(u);
-  }
+    const users = await appService.GetUsers();
+    setUserList(Array.isArray(users) ? users : []);
+  }, []);
 
-  async function RetrieveCases() 
+  const RetrieveCases = useCallback(async () =>
   {
-    let c = await as.GetAllCases();
-    setCaseList(c.flat());
-  }
+    const cases = await appService.GetAllCases();
+    setCaseList(Array.isArray(cases) ? cases.flat() as CaseRecord[] : []);
+  }, []);
 
-  async function RetrieveEntityTypes()
+  const RetrieveEntityTypes = useCallback(async () =>
   {
-    let t = await ts.GetEntityTypes();
-    setEntityTypes(t);
-  }
+    const types = await telemetryService.GetEntityTypes();
+    setEntityTypes(types && typeof types === 'object' ? types : {});
+  }, []);
 
-  async function RetrieveAICommenting()
+  const RetrieveAICommenting = useCallback(async () =>
   {
-    let enabled = await as.GetAICommenting();
-    setAICommenting(enabled);
-  }
+    const enabled = await appService.GetAICommenting();
+    setAICommenting(Boolean(enabled));
+  }, []);
+
+  const LoadData = useCallback(async () =>
+  {
+    await Promise.all([
+      RetrieveCases(),
+      RetrieveUsers(),
+      RetrieveEntities(),
+      RetrieveEntityTypes(),
+      RetrieveAICommenting()
+    ]);
+  }, [RetrieveAICommenting, RetrieveCases, RetrieveEntities, RetrieveEntityTypes, RetrieveUsers]);
 
   async function ToggleAICommenting()
   {
-    let enabled = await as.SetAICommenting(!aiCommenting);
-    setAICommenting(enabled);
+    const enabled = await appService.SetAICommenting(!aiCommenting);
+    setAICommenting(Boolean(enabled));
     if(enabled)
     {
       // turning AI on backfills comments onto unprocessed cases; refresh so the badges track it
@@ -99,18 +123,19 @@ export function Cases()
 
   async function CloseCase()
   {
-    await as.CloseCase(selected.case_id);
+    if(!selected) return;
+    await appService.CloseCase(selected.case_id);
     setSelected({ ...selected, resolved_at: new Date().toISOString() });
-    RetrieveCases();
+    await RetrieveCases();
   }
 
   async function CreateCasesForAllEntities()
   {
     setPopupMessage("Creating Cases");
     setPopupOpen(true);
-    let assginedUser:any = localStorage.getItem('username');
-    let result = await as.CreateCasesForAllEntities(assginedUser);
-    LoadData();
+    const assignedUser = localStorage.getItem('username') || '';
+    const result = await appService.CreateCasesForAllEntities(assignedUser);
+    await LoadData();
     // agent comments are generated one at a time in the background; keep the badges tracking
     setTimeout(RetrieveCases, 10000);
     setTimeout(RetrieveCases, 30000);
@@ -121,51 +146,33 @@ export function Cases()
     setPopupOpen(false);
   }
 
-  async function LoadData()
-  {
-    RetrieveCases();
-    RetrieveUsers();
-    RetrieveEntities();
-    RetrieveEntityTypes();
-    RetrieveAICommenting();
-  }
-
   function ClearData()
   {
     setSelectedEntity("");
-    setUserAssigned("");
-    setUserAssigned("");
     setCaseName("");
+    setCasePriority("");
+    setCaseDescription("");
   }
 
   useEffect(() =>
   {
-    LoadData();
+    void LoadData();
     if(navigatedEntity)
     {
       setSelectedEntity(navigatedEntity);
       setCaseName(navigatedEntity);
       setIsCaseWizardOpenOpen(true);
     }
-  }, []);
+  }, [LoadData, navigatedEntity]);
 
-  useEffect(() =>
-  {
-    if(navigatedEntity && entityList.length > 0)
-    {
-      document.getElementById('lstEntities').value = navigatedEntity;
-      document.getElementById('txtCaseName').value = navigatedEntity;
-    }
-  }, [entityList]);
-
-  async function handleSubmit(event: any)
+  async function handleSubmit(event: FormEvent<HTMLFormElement>)
   {
     event.preventDefault();
     ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen);
     setPopupMessage("Creating Case");
     setPopupOpen(true);
-    let assginedUser:any = localStorage.getItem('username');
-    let createdCase = await as.CreateCase(selectedEntity, assginedUser, caseName, caseDescription, casePriority);
+    const assignedUser = localStorage.getItem('username') || '';
+    const createdCase = await appService.CreateCase(selectedEntity, assignedUser, caseName, caseDescription, Number(casePriority || 0)) as CreateCaseResponse | undefined;
     if(createdCase && createdCase.Exists)
     {
       setPopupMessage(`A case already exists for ${selectedEntity}`);
@@ -173,15 +180,7 @@ export function Cases()
       setPopupOpen(false);
       return;
     }
-    let dataset = await ts.RetrieveRawEntityDetailsNeo(selectedEntity);
-    let caseId = Number(Object.entries(createdCase).map(([key, value]) => ({ key, value }))[0].value);
-    let jsonDataset = JSON.stringify(dataset);
-    // let prompt = await ps.AgentCaseCommentPrompt(jsonDataset);
-    // let agentComment = await llm.AskLocalLLM(prompt);
-    // as.PostComment('agent', agentComment, caseId);
     ClearData();
-    document.getElementById('lstEntities').value = 'Select Entity';
-    document.getElementById('txtPriority').value = document.getElementById('txtCaseName').value = document.getElementById('txtDescription').value = '';
     for(let i = 0; i < 2; i++)
     {
       LoadData();
@@ -199,7 +198,7 @@ export function Cases()
     return new Promise(resolve => setTimeout(resolve, milliseconds));
   }
 
-  function ToggleWindow(isOpen: boolean, setVar: React.Dispatch<React.SetStateAction<boolean>>)
+  function ToggleWindow(isOpen: boolean, setVar: Dispatch<SetStateAction<boolean>>)
   {
     setVar(!isOpen);
   }
@@ -211,7 +210,7 @@ export function Cases()
         <div className={`flex flex-row flex-wrap min-h-screen max-w-full overflow-x-hidden`}>
           {/* Left Portion */}
           <main className="w-5/6 p-6">
-            {(selected != null) ? <CaseDetails selected={selected} setSelected={setSelected} appService={as} telemetryService={ts} entityTypes={entityTypes} /> : <CasesOverview users={userList} contentSections={caseList} ToggleWindow={ToggleWindow} isUserListOpen={isUserListOpen} setIsUserListOpen={setIsUserListOpen}
+            {(selected != null) ? <CaseDetails selected={selected} setSelected={setSelected} appService={appService} telemetryService={telemetryService} entityTypes={entityTypes} /> : <CasesOverview users={userList} contentSections={caseList} ToggleWindow={ToggleWindow} isUserListOpen={isUserListOpen} setIsUserListOpen={setIsUserListOpen}
             isEntitySelected={isEntitySelected} setIsEntitySelected={setIsEntitySelected} setSelected={setSelected} entityTypes={entityTypes} />}
           </main>
           {/* Right Portion */}
@@ -274,16 +273,16 @@ export function Cases()
             <form onSubmit={handleSubmit}>
               <label className="block mb-2">
                 <span>Case Name</span>
-                <input id='txtCaseName' type="text" autoComplete="off" onChange={(e) => {
-                      e.target.setCustomValidity('');
-                      setCaseName(e.target.value);
-                    }} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" required onInvalid={(e) => e.target.setCustomValidity('Please enter the name for this case')} />
+                <input id='txtCaseName' type="text" autoComplete="off" value={caseName} onChange={(e) => {
+                      e.currentTarget.setCustomValidity('');
+                      setCaseName(e.currentTarget.value);
+                    }} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Name" required onInvalid={(e) => e.currentTarget.setCustomValidity('Please enter the name for this case')} />
               </label>
               <label className="block mb-4">
                 <span>Entity</span>
-                <select id='lstEntities' onChange={(e) => { e.target.setCustomValidity(''); setSelectedEntity(e.target.value); setCaseName(e.target.value); document.getElementById('txtCaseName').value = e.target.value; }} className="w-full border border-gray-300 rounded mt-1 p-2" required onInvalid={(e) => e.target.setCustomValidity('Please select an entity from the list')}>
-                  <option disabled selected>Select Entity</option>
-                  {entityList.filter((entity) => !caseList.some((c: any) => c.investigated_entity === entity)).map((entity, index) => (
+                <select id='lstEntities' value={selectedEntity} onChange={(e) => { e.currentTarget.setCustomValidity(''); setSelectedEntity(e.currentTarget.value); setCaseName(e.currentTarget.value); }} className="w-full border border-gray-300 rounded mt-1 p-2" required onInvalid={(e) => e.currentTarget.setCustomValidity('Please select an entity from the list')}>
+                  <option value="" disabled>Select Entity</option>
+                  {entityList.filter((entity) => !caseList.some((caseItem) => caseItem.investigated_entity === entity)).map((entity, index) => (
                     <option key={index} value={entity}>
                       {entity}
                     </option>
@@ -292,14 +291,14 @@ export function Cases()
               </label>
               <label className="block mb-2">
                 <span>Priority</span>
-                <input id='txtPriority' autoComplete="off" type="number" onChange={(e) => setCasePriority(Number(e.target.value))} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Priority" />
+                <input id='txtPriority' autoComplete="off" type="number" value={casePriority} onChange={(e) => setCasePriority(e.currentTarget.value)} className="w-full focus:ring-black border border-gray-300 rounded mt-1 p-2" placeholder="Enter Case Priority" />
               </label>
               <label className="block mb-2">
                 <span>Description</span>
-                <textarea id='txtDescription' autoComplete="off" className="block w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-black transition-colors duration-200" onChange={(e) => setCaseDescription(e.target.value)} rows={6} placeholder="Enter Case Description" />
+                <textarea id='txtDescription' autoComplete="off" value={caseDescription} className="block w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-black transition-colors duration-200" onChange={(e) => setCaseDescription(e.currentTarget.value)} rows={6} placeholder="Enter Case Description" />
               </label>
               <div className="flex justify-end space-x-2">
-                <button type="button" onClick={() => { ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen); setSelectedEntity(""); setUserAssigned(""); setCaseName(""); }} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
+                <button type="button" onClick={() => { ToggleWindow(isCaseWizardOpen, setIsCaseWizardOpenOpen); ClearData(); }} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
                 <button type="submit" className="px-4 py-2 bg-black text-white rounded hover:bg-black">Create Case</button>
               </div>
             </form>
