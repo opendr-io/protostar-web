@@ -9,7 +9,7 @@ import HelpTextService from "../services/HelpTextService.ts";
 function MergeData(entityDetails: any, index: any)
 {
   let mergedData = []
-  for(let i = 0; i < 14; i++)
+  for(let i = 0; i < entityDetails.length; i++)
   {
     mergedData.push(entityDetails[i][index]);
   }
@@ -38,7 +38,7 @@ export function Alerts()
       let neoEArr = Object.values(neoEntities['entity']);
       let neoDetails = (navigatedEntity) ? await ts.RetrieveRawEntityDetailsNeo(navigatedEntity) : await ts.RetrieveRawEntityDetailsNeo(neoEArr[0]);
       let neoDArr = Object.values(neoDetails);
-      setEntityCounter(neoEArr.length)
+      setEntityCounter(Object.values(neoDetails['name']).length)
       setEntities(neoEArr);
       setEntityDetails(neoDArr);
     }
@@ -91,9 +91,9 @@ export function Alerts()
         </div>
   
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-10 pb-24 text-wrap">
-          {entityDetails && entityDetails.map((card: any, index: any) => (
-          <div className={`transition-all duration-300 ease-in-out ${expandedCardIndex === index ? 
-            'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[81%] h-[81%] z-50 origin-top' : 'w-full'} ${index < entityCounter ? 'block' : 'hidden'} rounded overflow-hidden shadow-lg bg-white`}>
+          {entityDetails && Array.from({ length: entityCounter }, (_, index) => (
+          <div key={entityDetails[7]?.[index] ?? index} className={`transition-all duration-300 ease-in-out ${expandedCardIndex === index ? 
+            'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[81%] h-[81%] z-50 origin-top' : 'w-full'} rounded overflow-hidden shadow-lg bg-white`}>
             <div className={`${(expandedCardIndex === index) ? 'bg-[#080808]' : 'bg-[#1B1B1B]'} flex flex-row text-white h-full`}>
               <div className="px-10 py-6 w-fit">
                 <div className="font-bold text-xl mb-2">Entity: {entityDetails[0][index]}</div>

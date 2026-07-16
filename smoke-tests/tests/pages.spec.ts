@@ -106,8 +106,12 @@ test('Alerts renders entity alert data', async ({ page }) => {
   expect(entitiesPayload).toHaveProperty('entity');
   expect(Object.values(entitiesPayload.entity)).not.toHaveLength(0);
   expect(details.ok(), `/rawentitydetailsneo returned ${details.status()}`).toBeTruthy();
+  const detailsPayload = await details.json();
+  const alertCount = Object.values(detailsPayload.name).length;
+  expect(alertCount).toBeGreaterThan(0);
   await expect(page.getByText(/^Entity: /).first()).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Alert Details' }).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Alert Details' })).toHaveCount(alertCount);
+  console.log(`Alerts rendered ${alertCount} alert card(s)`);
 });
 
 test('Cases loads its supporting API data', async ({ page }) => {
@@ -137,10 +141,38 @@ test('Cases loads its supporting API data', async ({ page }) => {
 
   if (casesPayload.length > 0) {
     expect(casesPayload[0]).toHaveProperty('casename');
+    await page.getByText('Status: Open', { exact: true }).click();
+    await page.getByRole('listitem').filter({ hasText: /^All$/ }).click();
+    await expect(page.getByText('Status: All', { exact: true })).toBeVisible();
     await expect(page.getByText(casesPayload[0].casename, { exact: true }).first()).toBeVisible();
   }
   await expect(page.getByRole('complementary').getByRole('button', { name: 'Create Case' })).toBeVisible();
   await expect(page.getByRole('button', { name: /AI Comments:/ })).toBeVisible();
+});
+
+test('Settings displays the API log', async ({ page }) => {
+  const logResponse = page.waitForResponse(
+    response => response.url().includes('/apilog?') && response.request().method() === 'GET',
+  );
+  const statusResponse = page.waitForResponse(
+    response => response.url().endsWith('/connectionstatus') && response.request().method() === 'GET',
+  );
+  await page.goto('/settings');
+  const [response, connectionResponse] = await Promise.all([logResponse, statusResponse]);
+  expect(response.ok(), `/apilog returned ${response.status()}`).toBeTruthy();
+  expect(connectionResponse.ok(), `/connectionstatus returned ${connectionResponse.status()}`).toBeTruthy();
+  const payload = await response.json();
+  const connectionPayload = await connectionResponse.json();
+  expect(Array.isArray(payload.lines)).toBeTruthy();
+  expect(payload.line_count).toBe(payload.lines.length);
+  expect(connectionPayload).toEqual({ flask: true, neo4j: true, postgresql: true });
+
+  await expect(page.getByRole('heading', { name: 'Connection Status' })).toBeVisible();
+  await expect(page.getByText('Connected', { exact: true })).toHaveCount(3);
+  await expect(page.getByRole('heading', { name: 'API Log' })).toBeVisible();
+  await expect(page.getByLabel('API log contents')).toContainText(payload.lines.at(-1) || 'The API log is empty.');
+  await expect(page.getByRole('button', { name: 'Refresh' })).toBeVisible();
+  console.log(`Settings displayed ${payload.line_count} API log line(s)`);
 });
 
 const graphDashboards = [

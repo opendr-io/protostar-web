@@ -76,7 +76,7 @@ export function Menu()
               <span>Cases</span>
             </Link>
             <Link to="/settings" className="inline-flex flex-col items-center justify-center hover:bg-gray-600 px-3">
-              <span>Settings</span>
+              <span>Status</span>
             </Link>
             <Link to="/login" onClick={async () => 
               {

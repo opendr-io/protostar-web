@@ -45,6 +45,16 @@ export default class Config
     return this.baseUrl + '/showgraph';
   }
 
+  public ApiLogURL()
+  {
+    return this.baseUrl + '/apilog';
+  }
+
+  public ConnectionStatusURL()
+  {
+    return this.baseUrl + '/connectionstatus';
+  }
+
   public EntitiesNeoURL()
   {
     return this.baseUrl + '/getentitiesneo';

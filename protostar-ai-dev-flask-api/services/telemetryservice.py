@@ -1,12 +1,15 @@
 import os
 import json
 import math
+import logging
 import pathlib
 import configparser
 import pandas as pd
 from flask import jsonify
 from llmservice import LLMService
 from py2neo import Graph, Node, Relationship
+
+logger = logging.getLogger('telemetry')
 
 ELEMENT_NAMES = [
   'Hydrogen', 'Helium', 'Lithium', 'Beryllium', 'Boron', 'Carbon', 'Nitrogen', 'Oxygen',
@@ -32,6 +35,13 @@ class TelemetryService:
     self.config.read(pathlib.Path(__file__).parent.absolute() / "../dbconfig.ini")
     self.neo4j_driver = Graph(self.config.get('Neo4j', 'BoltURL', fallback='bolt://localhost:7687'),
       auth=(self.config.get('Neo4j', 'UserName', fallback='neo4j'), self.config.get('Neo4j', 'Password')))
+
+  def check_connection(self):
+    try:
+      return self.neo4j_driver.run('RETURN 1 AS ok').evaluate() == 1
+    except Exception as exc:
+      logger.warning('Neo4j connection check failed: %s', exc)
+      return False
   
   def form_graph_relationships(self, data):
     try:

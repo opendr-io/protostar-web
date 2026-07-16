@@ -13,6 +13,17 @@ class AppService:
     self.config.read(Path(__file__).parent.absolute() / "../dbconfig.ini")
     self.aicommenting = False
 
+  def check_connection(self):
+    try:
+      with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),
+      user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword'), connect_timeout=3) as connection:
+        with connection.cursor() as cursor:
+          cursor.execute('select 1')
+          return cursor.fetchone()[0] == 1
+    except Exception as exc:
+      logger.warning('PostgreSQL connection check failed: %s', exc)
+      return False
+
   def get_users(self):
     try:
       with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),

@@ -1,6 +1,7 @@
 import sys
 import logging
 from logging.handlers import RotatingFileHandler
+from collections import deque
 import secrets
 from OpenSSL import SSL
 from datetime import timedelta
@@ -226,6 +227,33 @@ def display_graph_view():
     case "view7":
       details = telemetryservice.get_view7()
   return details
+
+@app.route('/apilog', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_api_log():
+  try:
+    requested_lines = request.args.get('lines', default=500, type=int)
+    line_limit = min(max(requested_lines or 500, 1), 2000)
+    log_file = logdir / 'api.log'
+    if not log_file.exists():
+      return jsonify({'lines': [], 'line_count': 0})
+    with log_file.open('r', encoding='utf-8', errors='replace') as stream:
+      lines = [line.rstrip('\r\n') for line in deque(stream, maxlen=line_limit)]
+    return jsonify({'lines': lines, 'line_count': len(lines)})
+  except Exception:
+    logging.getLogger(__name__).exception('Unable to read API log')
+    return make_response(jsonify({'error': 'Unable to read API log'}), 500)
+
+@app.route('/connectionstatus', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_connection_status():
+  return jsonify({
+    'flask': True,
+    'neo4j': telemetryservice.check_connection(),
+    'postgresql': appservice.check_connection()
+  })
 
 @app.route('/getusers', methods=['POST'])
 @jwt_required()
