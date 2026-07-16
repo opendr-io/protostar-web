@@ -150,9 +150,9 @@ export function Summary()
   {
     return (
       <div className="relative min-h-screen mt-20">
-        <h1 className="text-3xl font-bold pt-4 mx-10">Tactical</h1>
+        {/* <h1 className="text-3xl font-bold pt-4 mx-10">Tactical</h1> */}
         <div className="text-sm text-gray-400 dark:text-gray-300 mx-12 mt-2">
-          Summary dashboard of assembled detection elements for entities (endpoints, hosts, users) scored and prioritized.
+          Tactical View: Summary of scored detection lattices for entities
         </div>
         <div className="mx-10 flex">
            <div className="flex-row mr-4 relative">

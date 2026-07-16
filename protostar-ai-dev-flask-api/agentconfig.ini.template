@@ -1,0 +1,17 @@
+; Copy this file to agentconfig.ini (same directory) and fill in your keys.
+; agentconfig.ini is gitignored so your API keys never get committed.
+[Anthropic]
+ModelName=claude-sonnet-5
+AnthropicKey=
+
+[OpenAI]
+ModelName=
+OpenAIKey=
+
+[LMStudio]
+ModelName=
+LMStudio=NotRequired
+
+[Perplexity]
+ModelName=
+PerplexityKey=

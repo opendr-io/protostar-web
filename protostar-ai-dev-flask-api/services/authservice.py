@@ -21,6 +21,8 @@ class AuthService:
     user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
       with connection.cursor() as cursor:
         username = data.get('username')
+        if(username == 'agent'):
+          return (jsonify({"msg": "Incorrect username or password"}), 401)
         password = data.get('password').encode('utf-8')
         cursor.execute("select hashed_password from appusers where username = %s", (username,))
         exists = cursor.fetchone()

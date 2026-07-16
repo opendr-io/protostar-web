@@ -1,4 +1,4 @@
-import { createBrowserRouter, data, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, data, RouterProvider, useLocation } from "react-router-dom";
 import React, { useState, useEffect, useRef } from 'react';
 // import Papa, { parse } from 'papaparse';
 import LLMService from '../services/LLMService.ts';
@@ -9,7 +9,7 @@ import HelpTextService from "../services/HelpTextService.ts";
 function MergeData(entityDetails: any, index: any)
 {
   let mergedData = []
-  for(let i = 0; i < 12; i++)
+  for(let i = 0; i < 14; i++)
   {
     mergedData.push(entityDetails[i][index]);
   }
@@ -29,13 +29,14 @@ export function Alerts()
   const ts = new TelemetryService();
   const ps = new PromptService();
   let hts = new HelpTextService();
+  const navigatedEntity = useLocation().state;
   useEffect(() =>
   {
     async function FetchEntities()
     {
       let neoEntities = await ts.GetEntitiesNeo();
       let neoEArr = Object.values(neoEntities['entity']);
-      let neoDetails = await ts.RetrieveRawEntityDetailsNeo(neoEArr[0]);
+      let neoDetails = (navigatedEntity) ? await ts.RetrieveRawEntityDetailsNeo(navigatedEntity) : await ts.RetrieveRawEntityDetailsNeo(neoEArr[0]);
       let neoDArr = Object.values(neoDetails);
       setEntityCounter(neoEArr.length)
       setEntities(neoEArr);
@@ -65,7 +66,7 @@ export function Alerts()
   {
     return (
       <div className="relative min-h-screen mt-20">
-        <h1 className="pl-10 text-3xl font-bold pt-4">Alerts</h1>
+        {/* <h1 className="pl-10 text-3xl font-bold pt-4">Alerts</h1> */}
         <div className="mx-10">
           <button title={`${hts.EntityDropdownHelpText()}`}
             onClick={() => setIsOpen(!isOpen)}
@@ -115,7 +116,7 @@ export function Alerts()
                         <p><span className="font-semibold">Mitre Tactic: </span>{ entityDetails[2][index] }</p>
                         <p><span className="font-semibold">Entity Type: </span>{ entityDetails[6][index] }</p>
                         <br />
-                        <p>Can include more detailed information about the alert</p>
+                        {/* <p>Can include more detailed information about the alert</p> */}
                       </div>
                     )}
                   </div>

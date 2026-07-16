@@ -52,7 +52,7 @@ class TelemetryService:
       with(self.neo4j_driver.session()) as session:
         result = session.run("""MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n
         MATCH path = (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(:ALERT)
-        where not n.entity = "172.16.200.110" RETURN path""")
+        RETURN path""")
         data = result.data()
         # print(data.pop().pop())
         self.form_graph_relationships(data)
@@ -233,7 +233,28 @@ class TelemetryService:
     except Exception as e:
       print(e)
     return data
-  
+
+  def get_entity_types(self):
+    data = {}
+    try:
+      result_df = self.neo4j_driver.query("""MATCH (n:ENTITY)
+      MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
+      RETURN n.entity AS entity, collect(DISTINCT m.entity_type)[0] AS entity_type""").to_data_frame()
+      data = jsonify(dict(zip(result_df['entity'], result_df['entity_type'])))
+    except Exception as e:
+      print(e)
+    return data
+
+  def get_all_entities(self):
+    data = []
+    try:
+      result_df = self.neo4j_driver.query("""MATCH (n:ENTITY)
+      RETURN collect(DISTINCT n.entity) AS entities""").to_data_frame()
+      data = jsonify(result_df.iloc[0,0])
+    except Exception as e:
+      print(e)
+    return data
+
   def form_data(self, result):
     nodes = {}
     links = []

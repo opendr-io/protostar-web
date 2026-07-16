@@ -10,6 +10,8 @@ SSLMode=
 SSLRootCert=
 ApplicationUser=appuser
 ApplicationUserPassword=appuser
+AgentUser=agent
+AgentPassword=agent
 
 [Neo4j]
 BoltURL=bolt://localhost:7687

@@ -2,6 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { Home } from '../pages/Home';
 import { Alerts } from "../pages/Alerts";
+import { Cases } from "../pages/Cases";
 import { Summary } from '../pages/Summary';
 import { EverythingDash } from "../dashboards/EverythingDash";
 import { PrimaryDash } from "../dashboards/PrimaryDash";
@@ -71,6 +72,9 @@ export function Menu()
             <Link to="/alerts" className="inline-flex flex-col items-center justify-center hover:bg-gray-600 px-3">
               <span>Alerts</span>
             </Link>
+            <Link to="/cases" className="inline-flex flex-col items-center justify-center hover:bg-gray-600 px-3">
+              <span>Cases</span>
+            </Link>
             <Link to="/settings" className="inline-flex flex-col items-center justify-center hover:bg-gray-600 px-3">
               <span>Settings</span>
             </Link>
@@ -95,6 +99,7 @@ export function Menu()
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/summary" element={<Summary />} />
           <Route path="/details" element={<Details />} />
+          <Route path="/cases" element={<Cases />} />
           <Route path="/summary" element={<Summary />} />
           <Route path="/settings" element={<Settings />} />
           {subMenuItems.map(item => (

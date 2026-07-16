@@ -17,6 +17,7 @@ export default class SessionManagementService
     {
       localStorage.setItem('token', r.data.access_token);
       localStorage.setItem('refresh_token', r.data.refresh_token);
+      localStorage.setItem('username', username);
     });
   }
 

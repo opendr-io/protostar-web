@@ -1,4 +1,6 @@
 import sys
+import logging
+from logging.handlers import RotatingFileHandler
 import secrets
 from OpenSSL import SSL
 from datetime import timedelta
@@ -12,9 +14,19 @@ sys.path.append('services')
 from llmservice import LLMService
 from telemetryservice import TelemetryService
 from authservice import AuthService
+from appservice import AppService
+from promptservice import PromptService
 
 config = configparser.ConfigParser()
 config.read(Path(__file__).parent.absolute() / "appconfig.ini")
+
+logdir = Path(__file__).parent.absolute() / "logs"
+logdir.mkdir(exist_ok=True)
+filehandler = RotatingFileHandler(logdir / "api.log", maxBytes=5 * 1024 * 1024, backupCount=3, encoding='utf-8')
+filehandler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(name)s: %(message)s'))
+logging.getLogger().addHandler(filehandler)
+logging.getLogger().setLevel(logging.INFO)
+
 app = Flask(__name__)
 app.config["JWT_ALGORITHM"] = "HS512"
 app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)
@@ -35,6 +47,9 @@ jwt = JWTManager(app)
 llmservice = LLMService()
 telemetryservice = TelemetryService()
 authservice = AuthService()
+appservice = AppService()
+promptservice = PromptService()
+appservice.reset_stale_agent_statuses()
 
 @app.route('/login', methods=['POST'])
 @cross_origin()
@@ -211,6 +226,172 @@ def display_graph_view():
     case "view7":
       details = telemetryservice.get_view7()
   return details
+
+@app.route('/getusers', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def get_users():
+  try:
+    users = appservice.get_users()
+    return users
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/getallentities', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def get_all_entiies():
+  try:
+    users = telemetryservice.get_all_entities()
+    return users
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/createcase', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def create_case():
+  try:
+    data = request.get_json()
+    assigned_user = data.get('username')
+    investigated_entity = data.get('entity')
+    case_name = data.get('casename')
+    case_description = data.get('description')
+    case_priority = data.get('priority')
+    if investigated_entity in appservice.get_entities_with_cases():
+      return make_response(jsonify({"Exists": investigated_entity}), 200)
+    created_case = appservice.create_case(investigated_entity, assigned_user, case_name, case_description, case_priority)
+    if appservice.aicommenting:
+      details = telemetryservice.get_raw_entity_details_neo(investigated_entity)
+      prompt = promptservice.agent_case_comment_prompt(details)
+      appservice.add_to_case_queue(created_case, prompt, llmservice)
+    return make_response(jsonify({"Success": created_case}), 200)
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/postcasecomment', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def post_case_comment():
+  try:
+    data = request.get_json()
+    user = data.get('user')
+    comment = data.get('comment')
+    case = data.get('case')
+    status = appservice.post_case_comment(case, user, comment)
+    if appservice.aicommenting and comment and comment.strip().lower().startswith('@agent'):
+      question = comment.strip()[len('@agent'):].strip()
+      if not question:
+        question = 'Provide your current assessment of this case.'
+      case_details = appservice.get_case(case)
+      if case_details:
+        telemetry = telemetryservice.get_raw_entity_details_neo(case_details.get('investigated_entity'))
+        thread = appservice.load_case_comments(case)
+        prompt = promptservice.agent_case_question_prompt(question, case_details, thread, telemetry)
+        appservice.add_to_case_queue(case, prompt, llmservice)
+    return make_response(jsonify({"Success": "Submitted"}), 200)
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/loadcasecomments', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def load_case_comments():
+  try:
+    data = request.get_json()
+    case = data.get('case')
+    comments = appservice.load_case_comments(case)
+    return make_response(comments, 200)
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/closecase', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def close_case():
+  try:
+    data = request.get_json()
+    case = data.get('case')
+    status = appservice.close_case(case)
+    return make_response(jsonify({"Success": status}), 200)
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/getentitytypes', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def get_entity_types():
+  try:
+    types = telemetryservice.get_entity_types()
+    return types
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/createcasesforallentities', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def create_cases_for_all_entities():
+  try:
+    data = request.get_json()
+    assigned_user = data.get('username')
+    response = telemetryservice.get_all_entities()
+    entities = response.get_json() if hasattr(response, 'get_json') else []
+    existing = appservice.get_entities_with_cases()
+    created = 0
+    for entity in entities:
+      if entity not in existing:
+        appservice.create_case(entity, assigned_user, entity, '', 0)
+        created += 1
+    queued = 0
+    if appservice.aicommenting and created:
+      queued = appservice.backfill_agent_comments(telemetryservice, promptservice, llmservice)
+    return make_response(jsonify({"created": created, "queued": queued}), 200)
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/setaicommenting', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def set_ai_commenting():
+  try:
+    data = request.get_json()
+    appservice.aicommenting = bool(data.get('enabled'))
+    queued = 0
+    if appservice.aicommenting:
+      queued = appservice.backfill_agent_comments(telemetryservice, promptservice, llmservice)
+    return make_response(jsonify({"aicommenting": appservice.aicommenting, "queued": queued}), 200)
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/getaicommenting', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def get_ai_commenting():
+  try:
+    return make_response(jsonify({"aicommenting": appservice.aicommenting}), 200)
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/getallcases', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def get_all_cases():
+  try:
+    cases = appservice.get_all_cases()
+    return cases
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
 
 if __name__ == "__main__":
   app.run(debug=True, host='0.0.0.0', port=5002)
