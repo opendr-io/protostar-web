@@ -61,7 +61,7 @@ export function Cases()
   {
     if(!selected) return;
     const dataset = await telemetryService.RetrieveRawEntityDetailsNeo(selected.investigated_entity) as Record<string, unknown[]>;
-    const displayFields = [dataset.entity?.[0], dataset.entity_type?.[0], dataset.ip?.[0]];
+    const displayFields = [dataset.entity?.[0], dataset.entity_type?.[0], dataset.host_ip?.[0]];
     dispatch(setData(displayFields));
     navigate('/details');
   }
