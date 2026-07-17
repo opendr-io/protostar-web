@@ -1,10 +1,13 @@
 import bcrypt
 import psycopg
 import pathlib
+import logging
 import configparser
 import pandas as pd
 from flask import jsonify
-from flask_jwt_extended import (create_access_token, create_refresh_token)
+from flask_jwt_extended import (create_access_token, create_refresh_token, decode_token)
+
+logger = logging.getLogger('auth')
 
 class AuthService:
   def __init__(self):
@@ -66,7 +69,14 @@ class AuthService:
         cursor.execute(sqlInsertStatement, final_params)
         final_params = [refresh]
         cursor.execute(sqlInsertStatement, final_params)
-        self.BLOCKLIST.add(access)
-        self.BLOCKLIST.add(refresh)
-        return (jsonify({"status": "You've been logged out"}), 200)
-    return jsonify('Testing')
+    # blocklist the token ids so jwt_required rejects them for the rest of this token's life.
+    # decode defensively: a malformed/expired token must not break logout (an expired one is
+    # already rejected by its own expiry, so nothing is lost by skipping it).
+    for raw in (access, refresh):
+      if not raw:
+        continue
+      try:
+        self.BLOCKLIST.add(decode_token(raw)['jti'])
+      except Exception as exc:
+        logger.error(f'logout: could not decode token to blocklist it: {exc}')
+    return (jsonify({"status": "You've been logged out"}), 200)

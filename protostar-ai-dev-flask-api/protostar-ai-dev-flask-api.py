@@ -87,6 +87,13 @@ def expired_token_callback(jwt_header, jwt_payload):
       'error': 'token_expired'
   }), 401)
 
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+  # consulted by jwt_required on every request; blocklist holds jti of logged-out tokens.
+  # in-memory is sufficient because the JWT secret rotates on restart, so any token from a
+  # previous process is already invalid and never reaches this check.
+  return jwt_payload['jti'] in authservice.BLOCKLIST
+
 @app.route('/askllm', methods=['POST'])
 @jwt_required()
 @cross_origin()
