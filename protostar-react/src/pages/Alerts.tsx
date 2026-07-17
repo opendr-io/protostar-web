@@ -163,7 +163,7 @@ export function Alerts()
                 <div className="mb-24">
                   <label className="block text-gray-700 font-bold text-xl mb-2 my-4">Output</label>
                   <p className="overflow-visible">
-                    <textarea readOnly={true} placeholder={llmOutput} className="h-96 w-full bg-[#1B1B1B] border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" />
+                    <textarea readOnly={true} value={llmOutput} placeholder="The AI answer will appear here" className="h-96 w-full bg-[#1B1B1B] border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" />
                   </p>
                 </div>
               </div>

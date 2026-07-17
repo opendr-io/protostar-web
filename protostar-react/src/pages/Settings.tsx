@@ -4,11 +4,11 @@ import Config from '../config/config';
 
 type ConnectionState = 'checking' | 'connected' | 'disconnected';
 
-function ConnectionCard({ name, status }: { name: string; status: ConnectionState })
+function ConnectionCard({ name, status, connectedLabel = 'Connected', disconnectedLabel = 'Disconnected' }: { name: string; status: ConnectionState; connectedLabel?: string; disconnectedLabel?: string })
 {
   const connected = status === 'connected';
   const checking = status === 'checking';
-  const statusText = checking ? 'Checking...' : (connected ? 'Connected' : 'Disconnected');
+  const statusText = checking ? 'Checking...' : (connected ? connectedLabel : disconnectedLabel);
   const statusClasses = checking
     ? 'bg-yellow-950 text-yellow-300 border-yellow-700'
     : connected
@@ -27,7 +27,7 @@ function ConnectionCard({ name, status }: { name: string; status: ConnectionStat
 
 export function Settings()
 {
-  const [lineLimit, setLineLimit] = useState(100);
+  const [lineLimit, setLineLimit] = useState(40);
   const [logText, setLogText] = useState('');
   const [lineCount, setLineCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,16 +36,34 @@ export function Settings()
   const [connections, setConnections] = useState<Record<string, ConnectionState>>({
     flask: 'checking',
     neo4j: 'checking',
-    postgresql: 'checking'
+    postgresql: 'checking',
+    llm: 'checking'
   });
 
   const loadConnectionStatus = useCallback(async () =>
   {
-    setConnections({ flask: 'checking', neo4j: 'checking', postgresql: 'checking' });
+    setConnections({ flask: 'checking', neo4j: 'checking', postgresql: 'checking', llm: 'checking' });
+    const config = new Config();
+    const token = localStorage.getItem('token');
+    // the LLM status is inferred from the log tail rather than making a (paid) LLM call:
+    // green means no "ERROR llm" lines within the last 100 log lines
+    let llmStatus: ConnectionState = 'disconnected';
     try
     {
-      const config = new Config();
-      const token = localStorage.getItem('token');
+      const logResponse = await axios.get(config.ApiLogURL(),
+      {
+        params: { lines: 100 },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const logLines = Array.isArray(logResponse.data.lines) ? logResponse.data.lines : [];
+      llmStatus = logLines.some((line: string) => String(line).includes('ERROR llm')) ? 'disconnected' : 'connected';
+    }
+    catch
+    {
+      llmStatus = 'disconnected';
+    }
+    try
+    {
       const response = await axios.get(config.ConnectionStatusURL(),
       {
         headers: { Authorization: `Bearer ${token}` }
@@ -53,12 +71,13 @@ export function Settings()
       setConnections({
         flask: response.data.flask ? 'connected' : 'disconnected',
         neo4j: response.data.neo4j ? 'connected' : 'disconnected',
-        postgresql: response.data.postgresql ? 'connected' : 'disconnected'
+        postgresql: response.data.postgresql ? 'connected' : 'disconnected',
+        llm: llmStatus
       });
     }
     catch
     {
-      setConnections({ flask: 'disconnected', neo4j: 'disconnected', postgresql: 'disconnected' });
+      setConnections({ flask: 'disconnected', neo4j: 'disconnected', postgresql: 'disconnected', llm: llmStatus });
     }
   }, []);
 
@@ -106,10 +125,11 @@ export function Settings()
     <main className="mx-10 py-4 min-h-screen mt-20 text-white">
       <section className="mb-8" aria-labelledby="connectionStatusHeading">
         <h1 id="connectionStatusHeading" className="text-3xl font-bold mb-4">Connection Status</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <ConnectionCard name="Flask API" status={connections.flask} />
           <ConnectionCard name="Neo4j" status={connections.neo4j} />
           <ConnectionCard name="PostgreSQL" status={connections.postgresql} />
+          <ConnectionCard name="LLM" status={connections.llm} connectedLabel="No recent errors" disconnectedLabel="Errors in log" />
         </div>
       </section>
 
@@ -128,6 +148,7 @@ export function Settings()
             value={lineLimit}
             onChange={(event) => setLineLimit(Number(event.target.value))}
             className="bg-[#1B1B1B] border border-gray-500 rounded px-3 py-2">
+            <option value={40}>40</option>
             <option value={100}>100</option>
             <option value={500}>500</option>
             <option value={1000}>1,000</option>

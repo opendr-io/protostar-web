@@ -201,33 +201,39 @@ export default class AppService
 
   async PostComment(user: string, userComment: string, selectedCase: number)
   {
-    try
+    selectedCase = Number(DOMPurify.sanitize(String(selectedCase)));
+    userComment = DOMPurify.sanitize(userComment);
+    user = DOMPurify.sanitize(user);
+    let token = localStorage.getItem('token');
+    // no logout on failure: the caller keeps the draft and shows the error instead
+    for(let attempt = 0; attempt < 3; attempt++)
     {
-      selectedCase = Number(DOMPurify.sanitize(String(selectedCase)));
-      userComment = DOMPurify.sanitize(userComment);
-      user = DOMPurify.sanitize(user);
-      let token = localStorage.getItem('token');
-      const response = await axios.post(this.config.PostCaseCommentURL(),
+      try
       {
-        'case': selectedCase,
-        'user': user,
-        'comment': userComment
-      },
-      {
-        headers:
+        const response = await axios.post(this.config.PostCaseCommentURL(),
         {
-          'Authorization': `Bearer ${token}`
+          'case': selectedCase,
+          'user': user,
+          'comment': userComment
+        },
+        {
+          headers:
+          {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        return response.data;
+      }
+      catch(error)
+      {
+        console.log(error);
+        if(attempt < 2)
+        {
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
-      });
-      return response.data;
+      }
     }
-    catch(error)
-    {
-      console.log('An error has been thrown');
-      new SessionManagementService().Logout();
-      window.location.href = '/login';
-      console.log(error);
-    }
+    return null;
   }
 
   async LoadCaseComments(selectedCase: number)

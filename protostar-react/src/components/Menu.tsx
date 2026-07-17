@@ -100,6 +100,7 @@ export function Menu()
           <Route path="/summary" element={<Summary />} />
           <Route path="/details" element={<Details />} />
           <Route path="/cases" element={<Cases />} />
+          <Route path="/cases/:caseId" element={<Cases />} />
           <Route path="/summary" element={<Summary />} />
           <Route path="/settings" element={<Settings />} />
           {subMenuItems.map(item => (

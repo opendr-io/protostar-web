@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useState, useEffect, useCallback, type Dispatch, type FormEvent, type SetStateAction } from 'react';
 import { useDispatch } from "react-redux";
 import { setData } from "../other/DataManagement.ts";
@@ -48,6 +48,40 @@ export function Cases()
   const navigatedEntity = useLocation().state as string | null;
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { caseId } = useParams();
+
+  // the open case is driven by the URL (/cases/:caseId) so refresh, back/forward and shared links work
+  useEffect(() =>
+  {
+    if(!caseId)
+    {
+      setSelected(null);
+      return;
+    }
+    if(caseList.length === 0) return;
+    const match = caseList.find(c => String(c.case_id) === caseId);
+    if(match)
+    {
+      setSelected(match);
+    }
+    else
+    {
+      // unknown or stale case id: fall back to the list
+      navigate('/cases', { replace: true });
+    }
+  }, [caseId, caseList, navigate]);
+
+  function SelectCase(caseRecord: CaseRecord | null)
+  {
+    if(caseRecord)
+    {
+      navigate(`/cases/${caseRecord.case_id}`);
+    }
+    else
+    {
+      navigate('/cases');
+    }
+  }
 
   function NavigateToCaseAlertsPage()
   {
@@ -211,7 +245,7 @@ export function Cases()
           {/* Left Portion */}
           <main className="w-5/6 p-6">
             {(selected != null) ? <CaseDetails selected={selected} setSelected={setSelected} appService={appService} telemetryService={telemetryService} entityTypes={entityTypes} /> : <CasesOverview users={userList} contentSections={caseList} ToggleWindow={ToggleWindow} isUserListOpen={isUserListOpen} setIsUserListOpen={setIsUserListOpen}
-            isEntitySelected={isEntitySelected} setIsEntitySelected={setIsEntitySelected} setSelected={setSelected} entityTypes={entityTypes} />}
+            isEntitySelected={isEntitySelected} setIsEntitySelected={setIsEntitySelected} setSelected={SelectCase} entityTypes={entityTypes} />}
           </main>
           {/* Right Portion */}
           <aside className="w-1/6 p-6 mt-10">
@@ -227,7 +261,7 @@ export function Cases()
                 <button onClick={CloseCase} title="Closes this case; the entity keeps its case history and will not be re-cased" className="bg-black text-white border border-gray-300 w-full py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Close Case</button>
               )}
               {selected != null && (
-                <button onClick={() => setSelected(null)} className="bg-black text-white border border-gray-300 w-full py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Back</button>
+                <button onClick={() => SelectCase(null)} className="bg-black text-white border border-gray-300 w-full py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Back</button>
               )}
               {selected != null && (
                 <div className="text-base break-words">

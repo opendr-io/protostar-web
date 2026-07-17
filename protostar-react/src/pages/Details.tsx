@@ -7,6 +7,9 @@ import TelemetryService from "../services/TelemetryService.ts";
 import { X, Plus, ChevronDown } from 'lucide-react';
 import HelpTextService from "../services/HelpTextService.ts";
 
+// the backend returns an empty answer when the LLM call fails (see api.log for the cause)
+const LLM_ERROR_MESSAGE = 'No answer was returned — the AI service may be overloaded or unreachable. Please try again. Details are in the API Log page.';
+
 export function Details()
 {
   const navigate = useNavigate();
@@ -121,7 +124,7 @@ export function Details()
                     let jsonEntityDetails = JSON.stringify(entityDetails);
                     let summaryPrompt = ps.DetailsSummaryPrompt(jsonEntityDetails);
                     let answer = await llm.AskLLM(summaryPrompt);
-                    setLLMOutput(answer);
+                    setLLMOutput(answer || LLM_ERROR_MESSAGE);
                   }
                 } className="bg-black text-white border border-gray-300 mt-4 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">AI Explaination</button>
             </div>
@@ -294,7 +297,7 @@ export function Details()
                     let jsonEntityDetails = JSON.stringify(entityDetails);
                     let finalPrompt = ps.DetailsPrompt(llmQuestion, jsonEntityDetails);
                     let answer = await llm.AskLLM(finalPrompt);
-                    setLLMOutput(answer);
+                    setLLMOutput(answer || LLM_ERROR_MESSAGE);
                   }
                 } className="bg-black text-white border border-gray-300 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Ask AI</button>
               </div>
@@ -302,7 +305,7 @@ export function Details()
             <div className="mb-24">
               <label className="block text-gray-400 font-bold text-xl mb-2 my-4">Output</label>
               <p className="overflow-visible">
-                <textarea readOnly={true} placeholder={llmOutput} style={{
+                <textarea readOnly={true} value={llmOutput} placeholder="The AI answer will appear here" style={{
                     '--base-size': `${llmOutput.length/80}rem`
                   } as React.CSSProperties} className="bg-[#1B1B1B] calculated-textarea-height text-gray-200 border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline h-150" />
               </p>

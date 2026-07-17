@@ -4,3 +4,79 @@
 {
   height: calc(((var(--base-size)) * (0.1 + 1.5)));
 }
+
+/* markdown rendering (case comments, Home situation report): restore the structure Tailwind's reset strips */
+.markdown-content p
+{
+  margin: 0.4rem 0;
+}
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4
+{
+  font-weight: 600;
+  margin: 0.6rem 0 0.3rem 0;
+}
+.markdown-content h1 { font-size: 1.15rem; }
+.markdown-content h2 { font-size: 1.05rem; }
+.markdown-content h3 { font-size: 1rem; }
+.markdown-content ul
+{
+  list-style: disc;
+  margin: 0.4rem 0;
+  padding-left: 1.4rem;
+}
+.markdown-content ol
+{
+  list-style: decimal;
+  margin: 0.4rem 0;
+  padding-left: 1.4rem;
+}
+.markdown-content li
+{
+  margin: 0.15rem 0;
+}
+.markdown-content code
+{
+  background: #2a2a2a;
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.85em;
+}
+.markdown-content pre
+{
+  background: #2a2a2a;
+  border-radius: 0.4rem;
+  padding: 0.6rem;
+  margin: 0.4rem 0;
+  overflow-x: auto;
+}
+.markdown-content pre code
+{
+  background: none;
+  padding: 0;
+}
+.markdown-content table
+{
+  border-collapse: collapse;
+  margin: 0.4rem 0;
+}
+.markdown-content th,
+.markdown-content td
+{
+  border: 1px solid #4a4a4a;
+  padding: 0.25rem 0.5rem;
+}
+.markdown-content blockquote
+{
+  border-left: 3px solid #4a4a4a;
+  padding-left: 0.7rem;
+  margin: 0.4rem 0;
+  color: #b0b0b0;
+}
+.markdown-content a
+{
+  color: #7dd3fc;
+  text-decoration: underline;
+}
