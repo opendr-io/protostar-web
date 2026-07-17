@@ -417,6 +417,44 @@ def get_ai_commenting():
     response = make_response(jsonify({"error": "Something went wrong"}), 401)
     return response
 
+@app.route('/searchalerts', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def search_alerts():
+  data = request.get_json() or {}
+  term = data.get('term')
+  return telemetryservice.search_alerts_neo(term)
+
+@app.route('/savealertexplanation', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def save_alert_explanation():
+  try:
+    data = request.get_json()
+    guid = data.get('guid')
+    entity = data.get('entity')
+    explanation = data.get('explanation')
+    if not guid or not explanation:
+      return make_response(jsonify({"error": "guid and explanation are required"}), 400)
+    saved = appservice.save_alert_explanation(guid, entity, explanation)
+    return make_response(jsonify({"Success": saved}), 200)
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
+@app.route('/getalertexplanations', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def get_alert_explanations():
+  try:
+    data = request.get_json()
+    guids = data.get('guids')
+    explanations = appservice.get_alert_explanations(guids)
+    return make_response(explanations, 200)
+  except Exception as e:
+    response = make_response(jsonify({"error": "Something went wrong"}), 401)
+    return response
+
 @app.route('/getallcases', methods=['POST'])
 @jwt_required()
 @cross_origin()

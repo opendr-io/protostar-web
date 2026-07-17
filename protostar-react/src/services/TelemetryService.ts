@@ -115,6 +115,33 @@ export default class TelemetryService
     }
   }
 
+  // no logout-on-error here: a failed search must not end the session, the page
+  // shows an error state and the user keeps working
+  async SearchAlerts(term: any)
+  {
+    let config = new Config();
+    try
+    {
+      let token = localStorage.getItem('token');
+      const response = await axios.post(config.SearchAlertsURL(),
+      {
+        'term': term
+      },
+      {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    }
+    catch(error)
+    {
+      console.error('Alert search failed', error);
+      return null;
+    }
+  }
+
   async GetEntityTypes()
   {
     let config = new Config();

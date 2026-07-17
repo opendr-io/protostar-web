@@ -198,6 +198,31 @@ class AppService:
       logger.error(exc)
       return False
 
+  def save_alert_explanation(self, guid, entity, explanation):
+    try:
+      with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),
+      user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
+        with connection.cursor() as cursor:
+          cursor.execute("""insert into alert_explanations (guid, entity, explanation) values (%s, %s, %s)
+            on conflict (guid) do update set explanation = excluded.explanation, created_at = CURRENT_TIMESTAMP""", (guid, entity, explanation))
+          return True
+    except Exception as exc:
+      logger.error(exc)
+      return False
+
+  def get_alert_explanations(self, guids):
+    if not guids:
+      return json.dumps({})
+    try:
+      with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),
+      user=self.config.get('Database', 'RootDatabaseUserName', fallback='postgres'), password=self.config.get('Database', 'RootDatabasePassword')) as connection:
+        with connection.cursor() as cursor:
+          cursor.execute('select guid, explanation from alert_explanations where guid = ANY(%s)', (list(guids),))
+          return json.dumps({row[0]: row[1] for row in cursor.fetchall()})
+    except Exception as exc:
+      logger.error(exc)
+      return json.dumps({})
+
   def load_case_comments(self, case):
     try:
       with psycopg.connect(host=self.config.get('Database', 'HostName'), port=self.config.get('Database', 'PortNumber', fallback='4000'), dbname=self.config.get('Database', 'DatabaseName', fallback='protostar'),

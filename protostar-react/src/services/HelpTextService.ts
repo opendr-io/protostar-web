@@ -43,4 +43,16 @@ export default class HelpTextService
     let helpText = `Select to expand and see other selectable entities.`;
     return helpText;
   }
+
+  public AlertSearchHelpText()
+  {
+    let helpText = `Search alerts across all entities by entity, entity type, name, or severity. Leave empty to see the 100 most recent.`;
+    return helpText;
+  }
+
+  public ExplainAllHelpText()
+  {
+    let helpText = `Search to narrow the list first, then explain every alert on screen.`;
+    return helpText;
+  }
 }
