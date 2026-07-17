@@ -28,12 +28,11 @@ def setup_and_start_server(command, directory, server_name):
 def run():
   # Dev mode: no installs, no builds. Run startup.py once first to set up the
   # venv, node_modules, and databases.
-  # - Flask runs with --debug: backend edits auto-reload (each reload rotates the
-  #   JWT secret, so open sessions get logged out — same as a manual restart)
+  # - Flask runs without --debug
   # - React/Neo run under the Vite dev server: frontend edits hot-reload in the
   #   browser, no rebuild or hard refresh needed
   servers = [
-    ('python -m flask --app protostar-ai-dev-flask-api run --debug --host 0.0.0.0 --port 5002', 'protostar-ai-dev-flask-api', 'Flask (dev, auto-reload)'),
+    ('python -m flask --app protostar-ai-dev-flask-api run --host 0.0.0.0 --port 5002', 'protostar-ai-dev-flask-api', 'Flask (dev)'),
     ('npm run dev -- --host --port 3000', 'protostar-neo', 'Neo (vite dev)'),
     ('npm run dev -- --host --port 5173', 'protostar-react', 'React (vite dev)')
   ]
