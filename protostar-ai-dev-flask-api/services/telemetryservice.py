@@ -160,6 +160,9 @@ class TelemetryService:
               m.host_ip as host_ip,
               m.source_ip as source_ip,
               m.executable AS executable,
+              m.syscall_name as syscall_name,
+              m.process as process,
+              m.proctitle as proctitle,
               m.dest_ip as dest_ip,
               m.dest_port as dest_port
           ORDER BY n.entity ASC
@@ -169,7 +172,52 @@ class TelemetryService:
     except Exception as e:
       print(e)
     return data
-  
+
+  def search_alerts_neo(self, term):
+    try:
+      neo4j = self.neo4j_driver
+      safe = (term or '').lower().replace("'", "''")
+      # empty box returns the 100 most recent alerts; a search term widens the window to 500
+      limit = 500 if safe.strip() else 100
+      query = f"""
+        MATCH (n:ENTITY)
+          WHERE n.view = 2
+          MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
+          WHERE toLower(n.entity) CONTAINS '{safe}'
+             OR toLower(m.entity_type) CONTAINS '{safe}'
+             OR toLower(m.name) CONTAINS '{safe}'
+             OR toLower(toString(m.severity)) CONTAINS '{safe}'
+          WITH m, head(collect(DISTINCT n)) AS n
+          RETURN
+              substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity,
+              m.detection_type AS detection_type,
+              m.mitre_tactic AS mitre_tactic,
+              m.name as name,
+              m.timestamp as timestamp,
+              m.severity as severity,
+              m.entity_type AS entity_type,
+              m.guid as guid,
+              m.category AS category,
+              m.username AS username,
+              m.host_ip as host_ip,
+              m.source_ip as source_ip,
+              m.executable AS executable,
+              m.syscall_name as syscall_name,
+              m.process as process,
+              m.proctitle as proctitle,
+              m.message as message,
+              m.dest_ip as dest_ip,
+              m.dest_port as dest_port,
+              m.dst_geo as dst_geo
+          ORDER BY m.timestamp DESC
+          LIMIT {limit}
+        """
+      result_df = neo4j.query(query).to_data_frame()
+      return result_df.to_json()
+    except Exception:
+      logger.exception('Neo4j alert search failed')
+      raise
+
   def raw_atomic_weight(self, atomic_number, atomic_mass, signal_unique, signal_mass):
     non_signal_mass = max(atomic_mass - signal_mass, 0)
     return (((float(atomic_number) ** atomic_number) ** (1 + min(signal_unique, 3)))

@@ -91,27 +91,41 @@ test('Summary links an entity to its Details data', async ({ page }) => {
   console.log(`Details rendered data for ${selectedEntity}`);
 });
 
-test('Alerts renders entity alert data', async ({ page }) => {
-  const entitiesResponse = page.waitForResponse(
-    response => response.url().endsWith('/getentitiesneo') && response.request().method() === 'GET',
+test('Alerts renders recent alerts and supports search', async ({ page }) => {
+  // default view: empty search returns the 100 most recent alerts across all entities
+  const defaultResponse = page.waitForResponse(
+    response => response.url().endsWith('/searchalerts') && response.request().method() === 'POST',
   );
-  const detailsResponse = page.waitForResponse(
-    response => response.url().endsWith('/rawentitydetailsneo') && response.request().method() === 'POST',
-  );
-
   await page.goto('/alerts');
-  const entitiesPayload = await (await entitiesResponse).json();
-  const details = await detailsResponse;
+  const defaultResult = await defaultResponse;
+  expect(defaultResult.ok(), `/searchalerts returned ${defaultResult.status()}`).toBeTruthy();
+  const defaultPayload = await defaultResult.json();
+  const defaultCount = Object.values(defaultPayload.name ?? {}).length;
+  const defaultGuids = Object.values(defaultPayload.guid ?? {});
+  expect(defaultCount).toBeGreaterThan(0);
+  expect(defaultCount).toBeLessThanOrEqual(100);
+  expect(new Set(defaultGuids).size).toBe(defaultGuids.length);
+  await expect(page.getByTestId('alert-row')).toHaveCount(Math.min(defaultCount, 25));
+  if (defaultCount > 25) {
+    await expect(page.getByText(`Page 1 of ${Math.ceil(defaultCount / 25)}`)).toBeVisible();
+  }
+  console.log(`Alerts rendered ${defaultCount} recent alert row(s)`);
 
-  expect(entitiesPayload).toHaveProperty('entity');
-  expect(Object.values(entitiesPayload.entity)).not.toHaveLength(0);
-  expect(details.ok(), `/rawentitydetailsneo returned ${details.status()}`).toBeTruthy();
-  const detailsPayload = await details.json();
-  const alertCount = Object.values(detailsPayload.name).length;
-  expect(alertCount).toBeGreaterThan(0);
-  await expect(page.getByText(/^Entity: /).first()).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Alert Details' })).toHaveCount(alertCount);
-  console.log(`Alerts rendered ${alertCount} alert card(s)`);
+  // cross-entity search: typing a term hits /searchalerts and renders matching rows
+  const searchTerm = String(Object.values(defaultPayload.entity)[0]);
+  const searchResponse = page.waitForResponse(
+    response => response.url().endsWith('/searchalerts') && response.request().method() === 'POST',
+  );
+  await page.getByPlaceholder('Search alerts by entity, entity type, name, or severity...').fill(searchTerm);
+  const searchResult = await searchResponse;
+  expect(searchResult.ok(), `/searchalerts returned ${searchResult.status()}`).toBeTruthy();
+  const searchPayload = await searchResult.json();
+  const searchCount = Object.values(searchPayload.name ?? {}).length;
+  const searchGuids = Object.values(searchPayload.guid ?? {});
+  expect(searchCount).toBeGreaterThan(0);
+  expect(new Set(searchGuids).size).toBe(searchGuids.length);
+  await expect(page.getByTestId('alert-row')).toHaveCount(Math.min(searchCount, 25));
+  console.log(`Search "${searchTerm}" returned ${searchCount} alert row(s)`);
 });
 
 test('Cases loads its supporting API data', async ({ page }) => {
