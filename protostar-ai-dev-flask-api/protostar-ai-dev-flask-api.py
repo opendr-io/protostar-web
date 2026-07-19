@@ -1,4 +1,5 @@
 import sys
+import socket
 import logging
 from logging.handlers import RotatingFileHandler
 from collections import deque
@@ -252,6 +253,33 @@ def get_api_log():
     logging.getLogger(__name__).exception('Unable to read API log')
     return make_response(jsonify({'error': 'Unable to read API log'}), 500)
 
+@app.route('/corazalog', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_coraza_log():
+  # the Coraza WAF audit log lives in the proxy folder; only populated when the
+  # app is run behind the reverse proxy. Returns empty if absent (e.g. direct dev).
+  try:
+    requested_lines = request.args.get('lines', default=500, type=int)
+    line_limit = min(max(requested_lines or 500, 1), 2000)
+    log_file = Path(__file__).parent.parent.absolute() / 'protostar-proxy' / 'coraza-audit.log'
+    if not log_file.exists():
+      return jsonify({'lines': [], 'line_count': 0})
+    with log_file.open('r', encoding='utf-8', errors='replace') as stream:
+      lines = [line.rstrip('\r\n') for line in deque(stream, maxlen=line_limit)]
+    return jsonify({'lines': lines, 'line_count': len(lines)})
+  except Exception:
+    logging.getLogger(__name__).exception('Unable to read Coraza audit log')
+    return make_response(jsonify({'error': 'Unable to read WAF audit log'}), 500)
+
+def check_proxy():
+  # the reverse proxy (Caddy) listens on :8443; a TCP connect confirms it's up.
+  try:
+    with socket.create_connection(('127.0.0.1', 8443), timeout=1):
+      return True
+  except OSError:
+    return False
+
 @app.route('/connectionstatus', methods=['GET'])
 @jwt_required()
 @cross_origin()
@@ -259,7 +287,8 @@ def get_connection_status():
   return jsonify({
     'flask': True,
     'neo4j': telemetryservice.check_connection(),
-    'postgresql': appservice.check_connection()
+    'postgresql': appservice.check_connection(),
+    'proxy': check_proxy()
   })
 
 @app.route('/getusers', methods=['POST'])

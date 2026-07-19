@@ -59,6 +59,11 @@ export default class Config
     return this.baseUrl + '/apilog';
   }
 
+  public CorazaLogURL()
+  {
+    return this.baseUrl + '/corazalog';
+  }
+
   public ConnectionStatusURL()
   {
     return this.baseUrl + '/connectionstatus';

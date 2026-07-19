@@ -5,7 +5,10 @@
 #   CORAZA_MODE       On | DetectionOnly | Off
 #   RATELIMIT_EVENTS  events per window (large number ~= disabled)
 #   RATELIMIT_WINDOW  e.g. 60s
-#   GATE_USER/GATE_HASH  basic_auth perimeter gate (app shell only)
+#   Gate credential (app shell only): the two basic_auth blocks hold a placeholder
+#   by default (no password committed). start-proxy.ps1 prompts for a username/
+#   password on first run and writes the hashed credential in; it skips the prompt
+#   if a real credential is already present.
 #
 # NOTE: the gate covers the app shell (/, /graph static) but NOT /api or /neo4j.
 # Those carry their own Authorization header (JWT Bearer / Neo4j Basic); a Basic
@@ -34,7 +37,7 @@
 	# Audit log (coraza-audit.log) records every rule that fires: id, msg, match.
 	coraza_waf {
 		directives `
-			SecRuleEngine DetectionOnly
+			SecRuleEngine On
 			SecRequestBodyAccess On
 			SecRequestBodyLimit 13107200
 			SecResponseBodyAccess Off
@@ -81,7 +84,7 @@
 	# --- protostar-neo static SPA under /graph (behind gate) ---
 	handle_path /graph/* {
 		basic_auth {
-			protostar $2a$14$HEakXFynKsS8DkOEkw27LOzCkUTRmt2eECt0uKkrBpmLL8X1qU/Ti
+			tesla $2a$14$WdUCAcTikFa/Aq98KxNB.eIkCP5c/n6DUI.Y1.ofSBARbWKIfwQye
 		}
 		root * ../protostar-neo/dist
 		try_files {path} /index.html
@@ -91,11 +94,13 @@
 	# --- React SPA at root (behind gate) ---
 	handle {
 		basic_auth {
-			protostar $2a$14$HEakXFynKsS8DkOEkw27LOzCkUTRmt2eECt0uKkrBpmLL8X1qU/Ti
+			tesla $2a$14$WdUCAcTikFa/Aq98KxNB.eIkCP5c/n6DUI.Y1.ofSBARbWKIfwQye
 		}
 		root * ../protostar-react/dist
 		try_files {path} /index.html
 		file_server
 	}
 }
+
+
 
