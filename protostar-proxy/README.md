@@ -5,6 +5,27 @@ Protostar services behind one origin. See `docs/reverse-proxy-design.md` for the
 full design. The proxy is **optional** — local dev runs exactly as before without
 it (the app config falls back to direct absolute URLs).
 
+```
+client ── HTTPS ──► :8443 Caddy
+                     │  Coraza WAF (OWASP CRS 4.28.0 + Neo4j hard-blocks)
+                     │  rate_limit (per client IP)
+                     │
+                     ├─ /api/*   ── [allowlist] ──────► Flask        127.0.0.1:5002
+                     ├─ /neo4j/* ─ rewrite /db/neo4j ─► Neo4j HTTP   127.0.0.1:7474
+                     ├─ /graph/* ─ [basic_auth gate] ──► protostar-neo/dist   (static)
+                     └─ /*       ─ [basic_auth gate] ──► protostar-react/dist (static)
+```
+
+`/api` and `/neo4j` are gate-exempt — they carry their own `Authorization` header
+(JWT Bearer / Neo4j Basic). Backends bind loopback; only the proxy is reachable
+from the network.
+
+```
+.\protostar-proxy\start-proxy.ps1 -CorazaMode Off -Reload            # WAF off
+.\protostar-proxy\start-proxy.ps1 -CorazaMode DetectionOnly -Reload  # log, don't block
+.\protostar-proxy\start-proxy.ps1 -CorazaMode On -Reload             # enforcing
+```
+
 ## What it does
 
 One origin (`https://<host>:8443`, listens on all interfaces), four routes:
@@ -18,6 +39,11 @@ One origin (`https://<host>:8443`, listens on all interfaces), four routes:
 
 Plus: a `basic_auth` perimeter gate on the app shell, a Coraza WAF (blocks Cypher
 writes/DDL and unbounded `[*]` traversals on `/neo4j`), and rate limiting.
+
+`/api` is an allowlist of known Flask endpoints — anything unlisted 403s at the
+proxy. `/renew` and `/register` are deliberately not exposed (unused by the app;
+`/renew` would let a stolen refresh token mint access tokens). New Flask endpoints
+must be added to the `@app` matcher in the `Caddyfile`.
 
 ## Prerequisites
 

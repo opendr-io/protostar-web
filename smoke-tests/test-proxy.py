@@ -16,7 +16,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 os.environ.setdefault("SMOKE_BASE_URL", "https://localhost:8443")
 os.environ.setdefault("SMOKE_GATE_USER", "tesla")
-os.environ.setdefault("SMOKE_GATE_PASS", "thewaysitis2025")
+os.environ.setdefault("SMOKE_GATE_PASS", "thewayitis2026")
 
 print(f"Smoke: {os.environ['SMOKE_BASE_URL']} (gate user: {os.environ['SMOKE_GATE_USER']})")
 

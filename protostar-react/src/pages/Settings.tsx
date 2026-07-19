@@ -147,7 +147,7 @@ export function Settings()
             </button>
             <button type="button" onClick={() => setLogSource('coraza')}
               className={`px-3 py-1 rounded-md border text-sm cursor-pointer ${logSource === 'coraza' ? 'bg-white text-black border-white' : 'bg-black text-white border-gray-500 hover:bg-gray-700'}`}>
-              WAF Audit
+              WAF Log
             </button>
           </div>
           <h2 className="text-3xl font-bold">{logSource === 'coraza' ? 'WAF Audit Log' : 'API Log'}</h2>

@@ -33,7 +33,7 @@ app = Flask(__name__)
 app.config["JWT_ALGORITHM"] = "HS512"
 app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
-app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=2)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(hours=2)
 app.config['JWT_ERROR_MESSAGE_KEY'] = 'message'
 
 csp = {

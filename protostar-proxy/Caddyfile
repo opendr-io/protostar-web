@@ -71,8 +71,16 @@
 	}
 
 	# --- Flask API (gate-exempt: carries its own JWT Bearer) ---
+	# Allowlisted: only the endpoints below are proxied; anything else 403s at the
+	# proxy (notably /renew and /register). New Flask endpoints must be added here.
 	handle_path /api/* {
-		reverse_proxy 127.0.0.1:5002
+		@app path /login /logout /askllm /asklocalllm /setlocallmuse /caniuselocalllm /retrievesummary /getrawalerts /getentities /getentitiesneo /entitydetails /entitydetailsv2 /rawentitydetails /entitydetailsneo /rawentitydetailsneo /retrievecolumnnames /showgraph /apilog /corazalog /connectionstatus /getusers /getallentities /createcase /postcasecomment /loadcasecomments /closecase /getentitytypes /createcasesforallentities /setaicommenting /getaicommenting /searchalerts /savealertexplanation /getalertexplanations /getallcases
+		handle @app {
+			reverse_proxy 127.0.0.1:5002
+		}
+		handle {
+			respond 403
+		}
 	}
 
 	# --- Neo4j (gate-exempt: carries its own Basic auth) ---
