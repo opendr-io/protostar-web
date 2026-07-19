@@ -49,6 +49,8 @@ const detailKeysToShow: (keyof AlertRow)[] = [
   "guid",
 ];
 
+const alertsPerPage = 25;
+
 // backend sends pandas to_json: { column: { rowIndex: value } }
 function ToAlertRows(payload: any): AlertRow[]
 {
@@ -77,6 +79,7 @@ export function Alerts()
 {
   const [search, setSearch] = useState('');
   const [alerts, setAlerts] = useState<AlertRow[] | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
   const [loadFailed, setLoadFailed] = useState(false);
   const [explanations, setExplanations] = useState<Record<string, string>>({});
   const [visibleExplanations, setVisibleExplanations] = useState<Record<string, boolean>>({});
@@ -109,6 +112,7 @@ export function Alerts()
       setExplanations({});
       setVisibleExplanations({});
       setExplainingIndex(null);
+      setCurrentPage(0);
       const payload = await ts.SearchAlerts(term);
       if(cancelled)
       {
@@ -123,15 +127,33 @@ export function Alerts()
       setLoadFailed(false);
       const rows = ToAlertRows(payload);
       setAlerts(rows);
-      const guids = rows.map((row) => row.guid).filter(Boolean);
-      const stored = guids.length ? await as.GetAlertExplanations(guids) : {};
-      if(!cancelled && stored && typeof stored === 'object')
-      {
-        setExplanations(stored);
-      }
     }, term ? 350 : 0);
     return () => { cancelled = true; clearTimeout(handle); };
   }, [search]);
+
+  const pageCount = Math.max(1, Math.ceil((alerts?.length ?? 0) / alertsPerPage));
+  const pageStart = currentPage * alertsPerPage;
+  const visibleAlerts = (alerts ?? []).slice(pageStart, pageStart + alertsPerPage);
+
+  useEffect(() =>
+  {
+    let cancelled = false;
+    const loadVisibleExplanations = async () =>
+    {
+      const guids = visibleAlerts.map((row) => row.guid).filter(Boolean);
+      if(!guids.length)
+      {
+        return;
+      }
+      const stored = await as.GetAlertExplanations(guids);
+      if(!cancelled && stored && typeof stored === 'object')
+      {
+        setExplanations((current) => ({ ...current, ...stored }));
+      }
+    };
+    loadVisibleExplanations();
+    return () => { cancelled = true; };
+  }, [alerts, currentPage]);
 
   const alertKey = (alert: AlertRow, index: number) => alert.guid ?? String(index);
 
@@ -139,7 +161,7 @@ export function Alerts()
   {
     const key = alertKey(alert, index);
     setExplainingIndex(index);
-    const finalPrompt = ps.AlertSummaryPrompt(alerts, alert);
+    const finalPrompt = ps.AlertSummaryPrompt(visibleAlerts, alert);
     const output = await llm.AskLLM(finalPrompt);
     setExplanations((current) => ({ ...current, [key]: output || 'The AI request failed. Please try again.' }));
     setVisibleExplanations((current) => ({ ...current, [key]: true }));
@@ -157,19 +179,20 @@ export function Alerts()
 
   const ExplainAll = async () =>
   {
-    if(!alerts)
+    if(!visibleAlerts.length)
     {
       return;
     }
     setExplainingAll(true);
     // explanations is the closure snapshot from click time; only pre-existing keys are skipped
-    for(let index = 0; index < alerts.length; index++)
+    for(let index = 0; index < visibleAlerts.length; index++)
     {
-      if(explanations[alertKey(alerts[index], index)])
+      const absoluteIndex = pageStart + index;
+      if(explanations[alertKey(visibleAlerts[index], absoluteIndex)])
       {
         continue;
       }
-      await GenerateExplanation(alerts[index], index);
+      await GenerateExplanation(visibleAlerts[index], absoluteIndex);
     }
     setExplainingIndex(null);
     setExplainingAll(false);
@@ -180,10 +203,10 @@ export function Alerts()
     setVisibleExplanations((current) => ({ ...current, [key]: !current[key] }));
   };
 
-  const explainedKeys = (alerts ?? []).map(alertKey).filter((key) => explanations[key]);
+  const explainedKeys = visibleAlerts.map((alert, index) => alertKey(alert, pageStart + index)).filter((key) => explanations[key]);
   const anyExplanations = explainedKeys.length > 0;
   const allVisible = anyExplanations && explainedKeys.every((key) => visibleExplanations[key]);
-  const allExplained = !!alerts && alerts.length > 0 && alerts.every((alert, index) => explanations[alertKey(alert, index)]);
+  const allExplained = visibleAlerts.length > 0 && visibleAlerts.every((alert, index) => explanations[alertKey(alert, pageStart + index)]);
   const busy = explainingAll || explainingIndex !== null;
 
   const ToggleShowAll = () =>
@@ -230,7 +253,7 @@ export function Alerts()
           <>
             <button onClick={ExplainAll} disabled={busy || allExplained || !term} title={`${hts.ExplainAllHelpText()}`}
               className="bg-[#080808] text-white text-sm font-normal border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-600 disabled:opacity-50 cursor-pointer">
-              {explainingAll ? 'Explaining All...' : 'Explain All'}
+              {explainingAll ? 'Explaining Alerts In The Set Currently Shown...' : 'Explain Displayed Alerts'}
             </button>
             <button onClick={ToggleShowAll} disabled={!anyExplanations || explainingAll}
               className="bg-[#080808] text-white text-sm font-normal border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-600 disabled:opacity-50 cursor-pointer">
@@ -248,10 +271,11 @@ export function Alerts()
       {statusMessage && <p className="px-10 py-8 text-gray-400">{statusMessage}</p>}
 
       <div className="flex flex-col gap-2 px-10 py-6 pb-40">
-        {alerts && alerts.map((alert, index) => {
-          const key = alertKey(alert, index);
+        {visibleAlerts.map((alert, index) => {
+          const absoluteIndex = pageStart + index;
+          const key = alertKey(alert, absoluteIndex);
           const hasExplanation = !!explanations[key];
-          const isThisExplaining = explainingIndex === index;
+          const isThisExplaining = explainingIndex === absoluteIndex;
           const isVisible = !!visibleExplanations[key];
           let buttonLabel = 'Explain';
           if(isThisExplaining) { buttonLabel = 'Explaining...'; }
@@ -265,7 +289,7 @@ export function Alerts()
               <span>detection_type: "{alert.detection_type}"</span>
               <span>severity: "{alert.severity}"</span>
               <button title={`${hts.AIDetailsHelpText()}`}
-                onClick={() => hasExplanation ? ToggleVisible(key) : ExplainAlert(alert, index)}
+                onClick={() => hasExplanation ? ToggleVisible(key) : ExplainAlert(alert, absoluteIndex)}
                 disabled={busy && !isThisExplaining}
                 className="ml-auto bg-[#080808] text-white text-sm font-normal border border-gray-300 px-4 py-1 rounded-md hover:bg-gray-600 disabled:opacity-50 cursor-pointer">
                 {buttonLabel}
@@ -287,6 +311,19 @@ export function Alerts()
           </div>
           );
         })}
+        {alerts && alerts.length > alertsPerPage && (
+          <div className="flex items-center justify-center gap-4 pt-4">
+            <button onClick={() => setCurrentPage((page) => Math.max(0, page - 1))} disabled={currentPage === 0 || busy}
+              className="bg-[#080808] text-white text-sm border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-600 disabled:opacity-50">
+              Previous
+            </button>
+            <span className="text-sm text-gray-300">Page {currentPage + 1} of {pageCount}</span>
+            <button onClick={() => setCurrentPage((page) => Math.min(pageCount - 1, page + 1))} disabled={currentPage >= pageCount - 1 || busy}
+              className="bg-[#080808] text-white text-sm border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-600 disabled:opacity-50">
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

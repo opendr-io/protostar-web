@@ -101,9 +101,14 @@ test('Alerts renders recent alerts and supports search', async ({ page }) => {
   expect(defaultResult.ok(), `/searchalerts returned ${defaultResult.status()}`).toBeTruthy();
   const defaultPayload = await defaultResult.json();
   const defaultCount = Object.values(defaultPayload.name ?? {}).length;
+  const defaultGuids = Object.values(defaultPayload.guid ?? {});
   expect(defaultCount).toBeGreaterThan(0);
   expect(defaultCount).toBeLessThanOrEqual(100);
-  await expect(page.getByTestId('alert-row')).toHaveCount(defaultCount);
+  expect(new Set(defaultGuids).size).toBe(defaultGuids.length);
+  await expect(page.getByTestId('alert-row')).toHaveCount(Math.min(defaultCount, 25));
+  if (defaultCount > 25) {
+    await expect(page.getByText(`Page 1 of ${Math.ceil(defaultCount / 25)}`)).toBeVisible();
+  }
   console.log(`Alerts rendered ${defaultCount} recent alert row(s)`);
 
   // cross-entity search: typing a term hits /searchalerts and renders matching rows
@@ -116,8 +121,10 @@ test('Alerts renders recent alerts and supports search', async ({ page }) => {
   expect(searchResult.ok(), `/searchalerts returned ${searchResult.status()}`).toBeTruthy();
   const searchPayload = await searchResult.json();
   const searchCount = Object.values(searchPayload.name ?? {}).length;
+  const searchGuids = Object.values(searchPayload.guid ?? {});
   expect(searchCount).toBeGreaterThan(0);
-  await expect(page.getByTestId('alert-row')).toHaveCount(searchCount);
+  expect(new Set(searchGuids).size).toBe(searchGuids.length);
+  await expect(page.getByTestId('alert-row')).toHaveCount(Math.min(searchCount, 25));
   console.log(`Search "${searchTerm}" returned ${searchCount} alert row(s)`);
 });
 

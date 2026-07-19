@@ -174,7 +174,6 @@ class TelemetryService:
     return data
 
   def search_alerts_neo(self, term):
-    data = []
     try:
       neo4j = self.neo4j_driver
       safe = (term or '').lower().replace("'", "''")
@@ -188,6 +187,7 @@ class TelemetryService:
              OR toLower(m.entity_type) CONTAINS '{safe}'
              OR toLower(m.name) CONTAINS '{safe}'
              OR toLower(toString(m.severity)) CONTAINS '{safe}'
+          WITH m, head(collect(DISTINCT n)) AS n
           RETURN
               substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity,
               m.detection_type AS detection_type,
@@ -213,10 +213,10 @@ class TelemetryService:
           LIMIT {limit}
         """
       result_df = neo4j.query(query).to_data_frame()
-      data = result_df.to_json()
-    except Exception as e:
-      print(e)
-    return data
+      return result_df.to_json()
+    except Exception:
+      logger.exception('Neo4j alert search failed')
+      raise
 
   def raw_atomic_weight(self, atomic_number, atomic_mass, signal_unique, signal_mass):
     non_signal_mass = max(atomic_mass - signal_mass, 0)

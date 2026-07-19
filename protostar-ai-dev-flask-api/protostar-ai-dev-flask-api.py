@@ -421,9 +421,13 @@ def get_ai_commenting():
 @jwt_required()
 @cross_origin()
 def search_alerts():
-  data = request.get_json() or {}
-  term = data.get('term')
-  return telemetryservice.search_alerts_neo(term)
+  try:
+    data = request.get_json() or {}
+    term = data.get('term')
+    return telemetryservice.search_alerts_neo(term)
+  except Exception:
+    logging.getLogger(__name__).exception('Unable to search alerts')
+    return make_response(jsonify({"error": "Unable to search alerts"}), 500)
 
 @app.route('/savealertexplanation', methods=['POST'])
 @jwt_required()
@@ -437,6 +441,8 @@ def save_alert_explanation():
     if not guid or not explanation:
       return make_response(jsonify({"error": "guid and explanation are required"}), 400)
     saved = appservice.save_alert_explanation(guid, entity, explanation)
+    if not saved:
+      return make_response(jsonify({"error": "Unable to save alert explanation"}), 500)
     return make_response(jsonify({"Success": saved}), 200)
   except Exception as e:
     response = make_response(jsonify({"error": "Something went wrong"}), 401)
