@@ -92,6 +92,15 @@ export function Alerts()
   let hts = new HelpTextService();
   const navigatedEntity = useLocation().state;
 
+  const alertKey = (alert: AlertRow, index: number) =>
+  {
+    if(alert.guid && alert.name && alert.entity)
+    {
+      return JSON.stringify([alert.guid, alert.name, alert.entity]);
+    }
+    return `alert-row-${index}`;
+  };
+
   useEffect(() =>
   {
     if(navigatedEntity)
@@ -148,14 +157,20 @@ export function Alerts()
       const stored = await as.GetAlertExplanations(guids);
       if(!cancelled && stored && typeof stored === 'object')
       {
-        setExplanations((current) => ({ ...current, ...stored }));
+        const keyedStored: Record<string, string> = {};
+        visibleAlerts.forEach((alert, index) =>
+        {
+          if(alert.guid && stored[alert.guid])
+          {
+            keyedStored[alertKey(alert, pageStart + index)] = stored[alert.guid];
+          }
+        });
+        setExplanations((current) => ({ ...current, ...keyedStored }));
       }
     };
     loadVisibleExplanations();
     return () => { cancelled = true; };
   }, [alerts, currentPage]);
-
-  const alertKey = (alert: AlertRow, index: number) => alert.guid ?? String(index);
 
   const GenerateExplanation = async (alert: AlertRow, index: number) =>
   {

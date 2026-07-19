@@ -187,7 +187,15 @@ class TelemetryService:
              OR toLower(m.entity_type) CONTAINS '{safe}'
              OR toLower(m.name) CONTAINS '{safe}'
              OR toLower(toString(m.severity)) CONTAINS '{safe}'
-          WITH m, head(collect(DISTINCT n)) AS n
+          WITH n, m, substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity_name
+          WITH CASE
+            WHEN m.guid IS NOT NULL AND m.name IS NOT NULL AND entity_name IS NOT NULL
+              THEN [m.guid, m.name, entity_name]
+            ELSE [elementId(m), elementId(n)]
+          END AS alert_key, n, m
+          ORDER BY m.timestamp DESC
+          WITH alert_key, head(collect({{entity_node: n, alert_node: m}})) AS matched
+          WITH matched.entity_node AS n, matched.alert_node AS m
           RETURN
               substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity,
               m.detection_type AS detection_type,

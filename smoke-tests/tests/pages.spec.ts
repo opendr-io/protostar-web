@@ -102,9 +102,12 @@ test('Alerts renders recent alerts and supports search', async ({ page }) => {
   const defaultPayload = await defaultResult.json();
   const defaultCount = Object.values(defaultPayload.name ?? {}).length;
   const defaultGuids = Object.values(defaultPayload.guid ?? {});
+  const defaultNames = Object.values(defaultPayload.name ?? {});
+  const defaultEntities = Object.values(defaultPayload.entity ?? {});
+  const defaultAlertKeys = defaultGuids.map((guid, index) => JSON.stringify([guid, defaultNames[index], defaultEntities[index]]));
   expect(defaultCount).toBeGreaterThan(0);
   expect(defaultCount).toBeLessThanOrEqual(100);
-  expect(new Set(defaultGuids).size).toBe(defaultGuids.length);
+  expect(new Set(defaultAlertKeys).size).toBe(defaultAlertKeys.length);
   await expect(page.getByTestId('alert-row')).toHaveCount(Math.min(defaultCount, 25));
   if (defaultCount > 25) {
     await expect(page.getByText(`Page 1 of ${Math.ceil(defaultCount / 25)}`)).toBeVisible();
@@ -122,8 +125,11 @@ test('Alerts renders recent alerts and supports search', async ({ page }) => {
   const searchPayload = await searchResult.json();
   const searchCount = Object.values(searchPayload.name ?? {}).length;
   const searchGuids = Object.values(searchPayload.guid ?? {});
+  const searchNames = Object.values(searchPayload.name ?? {});
+  const searchEntities = Object.values(searchPayload.entity ?? {});
+  const searchAlertKeys = searchGuids.map((guid, index) => JSON.stringify([guid, searchNames[index], searchEntities[index]]));
   expect(searchCount).toBeGreaterThan(0);
-  expect(new Set(searchGuids).size).toBe(searchGuids.length);
+  expect(new Set(searchAlertKeys).size).toBe(searchAlertKeys.length);
   await expect(page.getByTestId('alert-row')).toHaveCount(Math.min(searchCount, 25));
   console.log(`Search "${searchTerm}" returned ${searchCount} alert row(s)`);
 });
