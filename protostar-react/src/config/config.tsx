@@ -70,6 +70,11 @@ export default class Config
     return this.baseUrl + '/rawentitydetailsneo';
   }
 
+  public SearchAlertsURL()
+  {
+    return this.baseUrl + '/searchalerts';
+  }
+
   public GetUsersURL()
   {
     return this.baseUrl + '/getusers';
@@ -123,6 +128,16 @@ export default class Config
   public GetAICommentingURL()
   {
     return this.baseUrl + '/getaicommenting';
+  }
+
+  public SaveAlertExplanationURL()
+  {
+    return this.baseUrl + '/savealertexplanation';
+  }
+
+  public GetAlertExplanationsURL()
+  {
+    return this.baseUrl + '/getalertexplanations';
   }
 
   public ServerURL()

@@ -1,188 +1,345 @@
-import { createBrowserRouter, data, RouterProvider, useLocation } from "react-router-dom";
-import React, { useState, useEffect, useRef } from 'react';
-// import Papa, { parse } from 'papaparse';
+import { useLocation } from "react-router-dom";
+import { useState, useEffect } from 'react';
 import LLMService from '../services/LLMService.ts';
 import TelemetryService from "../services/TelemetryService.ts";
+import AppService from "../services/AppService.ts";
 import PromptService from "../services/PromptService.ts";
 import HelpTextService from "../services/HelpTextService.ts";
 
-function MergeData(entityDetails: any, index: any)
+interface AlertRow
 {
-  let mergedData = []
-  for(let i = 0; i < entityDetails.length; i++)
+  entity: string;
+  detection_type: string;
+  mitre_tactic: string;
+  name: string;
+  timestamp: string;
+  severity: string;
+  entity_type: string;
+  guid: string;
+  category: string;
+  username: string;
+  host_ip: string;
+  source_ip: string;
+  executable: string;
+  syscall_name: string;
+  process: string;
+  proctitle: string;
+  message: string;
+  dest_ip: string;
+  dest_port: string;
+  dst_geo: string;
+}
+
+// always-present fields live in the row header; the rest render here, skipping empty values
+const detailKeysToShow: (keyof AlertRow)[] = [
+  "timestamp",
+  "category",
+  "mitre_tactic",
+  "host_ip",
+  "source_ip",
+  "dest_ip",
+  "dest_port",
+  "dst_geo",
+  "username",
+  "syscall_name",
+  "executable",
+  "process",
+  "proctitle",
+  "message",
+  "guid",
+];
+
+const alertsPerPage = 25;
+
+// backend sends pandas to_json: { column: { rowIndex: value } }
+function ToAlertRows(payload: any): AlertRow[]
+{
+  if(!payload || typeof payload !== 'object')
   {
-    mergedData.push(entityDetails[i][index]);
+    return [];
   }
-  return mergedData;
+  const columns = Object.keys(payload);
+  if(columns.length === 0)
+  {
+    return [];
+  }
+  const rowKeys = Object.keys(payload[columns[0]] ?? {});
+  const rows = rowKeys.map((row) => Object.fromEntries(columns.map((column) => [column, payload[column]?.[row]])) as AlertRow);
+  const toMillis = (value: any) => { const parsed = new Date(value).getTime(); return isNaN(parsed) ? 0 : parsed; };
+  return rows.sort((a, b) => toMillis(b.timestamp) - toMillis(a.timestamp));
+}
+
+function FormatTimestamp(value: any)
+{
+  const parsed = new Date(value);
+  return isNaN(parsed.getTime()) ? String(value ?? '') : parsed.toUTCString();
 }
 
 export function Alerts()
 {
-  const [llmQuestion, setLLMQuestion] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  const [expandedCardIndex, setExpandedCardIndex] = useState(null);
-  const [entities, setEntities] = useState<any>(null);
-  const [entityCounter, setEntityCounter] = useState<number>(0)
-  const [entityDetails, setEntityDetails] = useState<any>(null);
-  const [llmOutput, setLLMOutput] = useState('');
+  const [search, setSearch] = useState('');
+  const [alerts, setAlerts] = useState<AlertRow[] | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [explanations, setExplanations] = useState<Record<string, string>>({});
+  const [visibleExplanations, setVisibleExplanations] = useState<Record<string, boolean>>({});
+  const [explainingIndex, setExplainingIndex] = useState<number | null>(null);
+  const [explainingAll, setExplainingAll] = useState(false);
   const llm = new LLMService();
   const ts = new TelemetryService();
+  const as = new AppService();
   const ps = new PromptService();
   let hts = new HelpTextService();
   const navigatedEntity = useLocation().state;
-  useEffect(() =>
+
+  const alertKey = (alert: AlertRow, index: number) =>
   {
-    async function FetchEntities()
+    if(alert.guid && alert.name && alert.entity)
     {
-      let neoEntities = await ts.GetEntitiesNeo();
-      let neoEArr = Object.values(neoEntities['entity']);
-      let neoDetails = (navigatedEntity) ? await ts.RetrieveRawEntityDetailsNeo(navigatedEntity) : await ts.RetrieveRawEntityDetailsNeo(neoEArr[0]);
-      let neoDArr = Object.values(neoDetails);
-      setEntityCounter(Object.values(neoDetails['name']).length)
-      setEntities(neoEArr);
-      setEntityDetails(neoDArr);
+      return JSON.stringify([alert.guid, alert.name, alert.entity]);
     }
-    FetchEntities();
-  }, []);
-  
-  const handleChange = (event: any) =>
-  {
-    setLLMQuestion(event.target.value);
+    return `alert-row-${index}`;
   };
 
-  const handleEntityDataStorage = async (event: any) =>
+  useEffect(() =>
   {
-    setIsOpen(!isOpen);
-    setEntityDetails(null);
-    let option = event.currentTarget.dataset.value;
-    let neoDetails = await ts.RetrieveRawEntityDetailsNeo(option);
-    let neoDArr = Object.values(neoDetails);
-    let l = Object.values(neoDetails['name']);
-    setEntityCounter(l.length);
-    setEntityDetails(neoDArr);
+    if(navigatedEntity)
+    {
+      setSearch(navigatedEntity);
+    }
+  }, [navigatedEntity]);
+
+  // debounced load: an empty box returns the 100 most recent alerts across all entities, a term filters them
+  useEffect(() =>
+  {
+    const term = search.trim();
+    let cancelled = false;
+    const handle = setTimeout(async () =>
+    {
+      setAlerts(null);
+      setLoadFailed(false);
+      setExplanations({});
+      setVisibleExplanations({});
+      setExplainingIndex(null);
+      setCurrentPage(0);
+      const payload = await ts.SearchAlerts(term);
+      if(cancelled)
+      {
+        return;
+      }
+      if(!payload || typeof payload !== 'object')
+      {
+        setAlerts([]);
+        setLoadFailed(true);
+        return;
+      }
+      setLoadFailed(false);
+      const rows = ToAlertRows(payload);
+      setAlerts(rows);
+    }, term ? 350 : 0);
+    return () => { cancelled = true; clearTimeout(handle); };
+  }, [search]);
+
+  const pageCount = Math.max(1, Math.ceil((alerts?.length ?? 0) / alertsPerPage));
+  const pageStart = currentPage * alertsPerPage;
+  const visibleAlerts = (alerts ?? []).slice(pageStart, pageStart + alertsPerPage);
+
+  useEffect(() =>
+  {
+    let cancelled = false;
+    const loadVisibleExplanations = async () =>
+    {
+      const guids = visibleAlerts.map((row) => row.guid).filter(Boolean);
+      if(!guids.length)
+      {
+        return;
+      }
+      const stored = await as.GetAlertExplanations(guids);
+      if(!cancelled && stored && typeof stored === 'object')
+      {
+        const keyedStored: Record<string, string> = {};
+        visibleAlerts.forEach((alert, index) =>
+        {
+          if(alert.guid && stored[alert.guid])
+          {
+            keyedStored[alertKey(alert, pageStart + index)] = stored[alert.guid];
+          }
+        });
+        setExplanations((current) => ({ ...current, ...keyedStored }));
+      }
+    };
+    loadVisibleExplanations();
+    return () => { cancelled = true; };
+  }, [alerts, currentPage]);
+
+  const GenerateExplanation = async (alert: AlertRow, index: number) =>
+  {
+    const key = alertKey(alert, index);
+    setExplainingIndex(index);
+    const finalPrompt = ps.AlertSummaryPrompt(visibleAlerts, alert);
+    const output = await llm.AskLLM(finalPrompt);
+    setExplanations((current) => ({ ...current, [key]: output || 'The AI request failed. Please try again.' }));
+    setVisibleExplanations((current) => ({ ...current, [key]: true }));
+    if(output && alert.guid)
+    {
+      await as.SaveAlertExplanation(alert.guid, alert.entity, output);
+    }
+  };
+
+  const ExplainAlert = async (alert: AlertRow, index: number) =>
+  {
+    await GenerateExplanation(alert, index);
+    setExplainingIndex(null);
+  };
+
+  const ExplainAll = async () =>
+  {
+    if(!visibleAlerts.length)
+    {
+      return;
+    }
+    setExplainingAll(true);
+    // explanations is the closure snapshot from click time; only pre-existing keys are skipped
+    for(let index = 0; index < visibleAlerts.length; index++)
+    {
+      const absoluteIndex = pageStart + index;
+      if(explanations[alertKey(visibleAlerts[index], absoluteIndex)])
+      {
+        continue;
+      }
+      await GenerateExplanation(visibleAlerts[index], absoluteIndex);
+    }
+    setExplainingIndex(null);
+    setExplainingAll(false);
+  };
+
+  const ToggleVisible = (key: string) =>
+  {
+    setVisibleExplanations((current) => ({ ...current, [key]: !current[key] }));
+  };
+
+  const explainedKeys = visibleAlerts.map((alert, index) => alertKey(alert, pageStart + index)).filter((key) => explanations[key]);
+  const anyExplanations = explainedKeys.length > 0;
+  const allVisible = anyExplanations && explainedKeys.every((key) => visibleExplanations[key]);
+  const allExplained = visibleAlerts.length > 0 && visibleAlerts.every((alert, index) => explanations[alertKey(alert, pageStart + index)]);
+  const busy = explainingAll || explainingIndex !== null;
+
+  const ToggleShowAll = () =>
+  {
+    const next = !allVisible;
+    setVisibleExplanations((current) =>
+    {
+      const updated = { ...current };
+      explainedKeys.forEach((key) => { updated[key] = next; });
+      return updated;
+    });
+  };
+
+  const term = search.trim();
+  let statusMessage = '';
+  if(loadFailed)
+  {
+    statusMessage = term ? `Search failed for "${term}". Try a different term.` : 'Something went wrong loading alerts. Try refreshing the page.';
   }
-  
-  if(entities)
+  else if(alerts === null)
   {
-    return (
-      <div className="relative min-h-screen mt-20">
-        {/* <h1 className="pl-10 text-3xl font-bold pt-4">Alerts</h1> */}
-        <div className="mx-10">
-          <button title={`${hts.EntityDropdownHelpText()}`}
-            onClick={() => setIsOpen(!isOpen)}
-            className="bg-black text-white border border-gray-300 mt-4 w-full py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">
-            Select an Entity
-          </button>
-          <div className={`
-              absolute mt-2 w-96 rounded-md shadow-lg bg-black 
-              transform transition-all duration-300 ease-in-out
-              ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
-            `}>
-            <div>
-              {entities.map((option: any, index: any) => (
-                <button className="block w-full text-left px-4 py-2 bg-[#080808] text-white hover:bg-gray-600"
-                  key={index} data-value={option}
-                  onClick={handleEntityDataStorage}>
-                  {option}
-                </button>
+    statusMessage = term ? `Searching for "${term}"...` : 'Loading alerts...';
+  }
+  else if(alerts.length === 0)
+  {
+    statusMessage = term ? `No alerts match "${term}".` : 'No alerts found.';
+  }
+
+  return (
+    <div className="relative min-h-screen mt-20">
+      {/* <h1 className="pl-10 text-3xl font-bold pt-4">Alerts</h1> */}
+      <div className="mx-10 mt-4 flex items-center gap-3">
+        <input type="text"
+          title={`${hts.AlertSearchHelpText()}`}
+          value={search}
+          placeholder="Search alerts by entity, entity type, name, or severity..."
+          onChange={(event) => setSearch(event.target.value)}
+          className="bg-black text-white border border-gray-300 w-1/2 py-2 px-3 rounded-md font-normal focus:outline-none focus:shadow-outline" />
+        <button onClick={() => setSearch('')} disabled={!search}
+          className="bg-[#080808] text-white text-sm font-normal border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-600 disabled:opacity-50 cursor-pointer">
+          Clear
+        </button>
+        {alerts && alerts.length > 0 && (
+          <>
+            <button onClick={ExplainAll} disabled={busy || allExplained || !term} title={`${hts.ExplainAllHelpText()}`}
+              className="bg-[#080808] text-white text-sm font-normal border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-600 disabled:opacity-50 cursor-pointer">
+              {explainingAll ? 'Explaining Alerts In The Set Currently Shown...' : 'Explain Displayed Alerts'}
+            </button>
+            <button onClick={ToggleShowAll} disabled={!anyExplanations || explainingAll}
+              className="bg-[#080808] text-white text-sm font-normal border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-600 disabled:opacity-50 cursor-pointer">
+              {allVisible ? 'Hide All' : 'Show All'}
+            </button>
+            {!term && (
+              <span className="ml-auto text-sm text-gray-400">
+                Showing the {alerts.length} most recent alerts. Search to narrow across all entities.
+              </span>
+            )}
+          </>
+        )}
+      </div>
+
+      {statusMessage && <p className="px-10 py-8 text-gray-400">{statusMessage}</p>}
+
+      <div className="flex flex-col gap-2 px-10 py-6 pb-40">
+        {visibleAlerts.map((alert, index) => {
+          const absoluteIndex = pageStart + index;
+          const key = alertKey(alert, absoluteIndex);
+          const hasExplanation = !!explanations[key];
+          const isThisExplaining = explainingIndex === absoluteIndex;
+          const isVisible = !!visibleExplanations[key];
+          let buttonLabel = 'Explain';
+          if(isThisExplaining) { buttonLabel = 'Explaining...'; }
+          else if(hasExplanation) { buttonLabel = isVisible ? 'Hide' : 'Show'; }
+          return (
+          <div key={key} data-testid="alert-row" className="bg-[#1B1B1B] text-white rounded shadow px-6 py-4">
+            <div className="flex flex-wrap items-center gap-x-6 font-bold mb-2">
+              <span>entity: "{alert.entity}"</span>
+              <span>entity_type: "{alert.entity_type}"</span>
+              <span>name: "{alert.name}"</span>
+              <span>detection_type: "{alert.detection_type}"</span>
+              <span>severity: "{alert.severity}"</span>
+              <button title={`${hts.AIDetailsHelpText()}`}
+                onClick={() => hasExplanation ? ToggleVisible(key) : ExplainAlert(alert, absoluteIndex)}
+                disabled={busy && !isThisExplaining}
+                className="ml-auto bg-[#080808] text-white text-sm font-normal border border-gray-300 px-4 py-1 rounded-md hover:bg-gray-600 disabled:opacity-50 cursor-pointer">
+                {buttonLabel}
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-300">
+              {detailKeysToShow.map((detailKey) => (
+                (alert[detailKey] && alert[detailKey] !== '-') ? <div key={detailKey}>{detailKey}: "{detailKey === 'timestamp' ? FormatTimestamp(alert[detailKey]) : alert[detailKey]}"</div> : null
               ))}
             </div>
-          </div>
-        </div>
-  
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-10 pb-24 text-wrap">
-          {entityDetails && Array.from({ length: entityCounter }, (_, index) => (
-          <div key={entityDetails[7]?.[index] ?? index} className={`transition-all duration-300 ease-in-out ${expandedCardIndex === index ? 
-            'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[81%] h-[81%] z-50 origin-top' : 'w-full'} rounded overflow-hidden shadow-lg bg-white`}>
-            <div className={`${(expandedCardIndex === index) ? 'bg-[#080808]' : 'bg-[#1B1B1B]'} flex flex-row text-white h-full`}>
-              <div className="px-10 py-6 w-fit">
-                <div className="font-bold text-xl mb-2">Entity: {entityDetails[0][index]}</div>
-                <div className="font-medium text-xl mb-2">DT: {entityDetails[1][index]}</div>
-                <div className="font-medium text-xl mb-2">Name: <span className={`${(expandedCardIndex === index) ? 'text-xl' : 'text-sm'}`}>{entityDetails[3][index]}</span></div>
-                <div className="font-medium text-xl mb-2">Mitre Tactic: {entityDetails[2][index]}</div>
-                <div>
-                  <div className="text-white text-base">
-                    {entityDetails[0][index] != '' && expandedCardIndex === index && (
-                      <div className="bg-[#242124] px-4 py-8 rounded w-fit h-fit mt-4">
-                        <p><span className="font-semibold">Severity: </span>{ entityDetails[5][index] }</p>
-                        <p><span className="font-semibold">Host IP: </span>{ entityDetails[10][index] }</p>
-                        <p><span className="font-semibold">Source IP: </span>{ entityDetails[11][index] }</p>
-                        <p><span className="font-semibold">Dest IP: </span>{ entityDetails[13][index] }</p>
-                        <p><span className="font-semibold">Dest Port: </span>{ entityDetails[14][index] }</p>
-                        <p><span className="font-semibold">GUID: </span>{ entityDetails[7][index] }</p>
-                        <p><span className="font-semibold">Timestamp: </span>{ entityDetails[4][index] }</p>
-                        <p><span className="font-semibold">Name: </span>{ entityDetails[3][index] }</p>
-                        <p><span className="font-semibold">Category: </span>{ entityDetails[8][index] }</p>
-                        <p><span className="font-semibold">Mitre Tactic: </span>{ entityDetails[2][index] }</p>
-                        <p><span className="font-semibold">Entity Type: </span>{ entityDetails[6][index] }</p>
-                        <br />
-                        {/* <p>Can include more detailed information about the alert</p> */}
-                      </div>
-                    )}
-                  </div>
-                  <button title={`${hts.AIDetailsHelpText()}`} onClick=
-                    {async() => 
-                      {
-                        let entitySpecificData = MergeData(entityDetails, index);
-                        let finalPrompt = ps.AlertSummaryPrompt(entityDetails, entitySpecificData);
-                        let lm = await llm.AskLLM(finalPrompt);
-                        setLLMOutput(lm);
-                      }
-                    } className={`${(expandedCardIndex === index) ? 'block' : 'hidden'} bg-[#080808] text-white border border-gray-300 mt-4 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer`}>Explain Alert Details</button>
-                </div>
-                <div className="pt-6 pb-2">
-                  <div className="flex justify-start">
-                  <button className={`${expandedCardIndex === index ? 'fixed bottom-0 left-0 m-4 hover:bg-red-800' : 'hover:bg-gray-400'} bg-[#BCBCBC] border-solid text-black font-bold py-2 px-4 rounded mt-4 cursor-pointer`}
-                    onClick={() =>
-                      {
-                        setExpandedCardIndex((expandedCardIndex === index) ? null : index);
-                        setLLMOutput('');
-                      }
-                    }>
-                    {expandedCardIndex === index ? 'Close Details' : 'Alert Details'}
-                  </button>
-                  </div>
-                </div>
+            {(isVisible || isThisExplaining) && (
+              <div className="mt-3 bg-[#242124] rounded p-4">
+                <span className="font-bold block mb-2">AI Explanation</span>
+                <p className="text-gray-200 text-sm whitespace-pre-wrap">
+                  {isThisExplaining ? 'Asking the AI about this alert...' : explanations[key]}
+                </p>
               </div>
-              <div className={`${expandedCardIndex === index ? 'block' : 'hidden'} w-7/12 p-6`}>
-                <div className="mb-4">
-                  <label className="block text-gray-400 font-bold text-xl mb-2 my-4">Ask Question</label>
-                  <textarea onChange={handleChange} className="my-3 w-full h-32 shadow resize-none appearance-none border bg-[#1B1B1B] rounded border-gray-300 py-2 px-3 text-gray-300 leading-tight focus:outline-none focus:shadow-outline"  placeholder="Type your question here..." />
-                  <div className="flex justify-end mb-4">
-                    <button title={`${hts.AskAIHelpText()}`} onClick=
-                    {async() => 
-                      {
-                        let entitySpecificData = MergeData(entityDetails, index);
-                        let finalPrompt = ps.AlertPrompt(llmQuestion, entityDetails, entitySpecificData);
-                        let output = await llm.AskLLM(finalPrompt);
-                        setLLMOutput(output);
-                      }
-                    } className="bg-black text-white border border-gray-300 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Ask AI</button>
-                  </div>
-                </div>
-                <div className="mb-24">
-                  <label className="block text-gray-700 font-bold text-xl mb-2 my-4">Output</label>
-                  <p className="overflow-visible">
-                    <textarea readOnly={true} value={llmOutput} placeholder="The AI answer will appear here" className="h-96 w-full bg-[#1B1B1B] border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" />
-                  </p>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
-        ))}
+          );
+        })}
+        {alerts && alerts.length > alertsPerPage && (
+          <div className="flex items-center justify-center gap-4 pt-4">
+            <button onClick={() => setCurrentPage((page) => Math.max(0, page - 1))} disabled={currentPage === 0 || busy}
+              className="bg-[#080808] text-white text-sm border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-600 disabled:opacity-50">
+              Previous
+            </button>
+            <span className="text-sm text-gray-300">Page {currentPage + 1} of {pageCount}</span>
+            <button onClick={() => setCurrentPage((page) => Math.min(pageCount - 1, page + 1))} disabled={currentPage >= pageCount - 1 || busy}
+              className="bg-[#080808] text-white text-sm border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-600 disabled:opacity-50">
+              Next
+            </button>
+          </div>
+        )}
       </div>
-  
-        {/* Overlay when any card is expanded */}
-        {expandedCardIndex !== null && (<div className="fixed inset-0 bg-black opacity-50 z-40" onClick={() => setExpandedCardIndex(null)}/>)}
-      </div>
-    );
-  }
-  else
-  {
-    return (
-      <div className="relative h-screen mt-20">
-        <h1 className="pl-10 text-3xl font-bold pt-4">Alerts</h1>
-      </div>
-    )
-  }
+    </div>
+  );
 }
