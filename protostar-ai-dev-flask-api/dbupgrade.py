@@ -47,14 +47,6 @@ def upgrade_database(dbname):
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)""")
       print('case_comments table: ok')
 
-      cursor.execute("""CREATE TABLE IF NOT EXISTS alert_explanations (
-        explanation_id SERIAL PRIMARY KEY,
-        guid TEXT NOT NULL UNIQUE,
-        entity TEXT NOT NULL,
-        explanation TEXT NOT NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)""")
-      print('alert_explanations table: ok')
-
       cursor.execute("""select 1 from information_schema.table_constraints
         where table_schema = 'public' and table_name = 'cases' and constraint_type = 'UNIQUE'""")
       if cursor.fetchone() is None:

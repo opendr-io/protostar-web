@@ -58,17 +58,6 @@ def setup_postgres_tables():
       except Exception:
         connection.rollback()
         print('Table case_comments has already been created')
-      try:
-        cursor.execute("""CREATE TABLE alert_explanations (
-          explanation_id SERIAL PRIMARY KEY,
-          guid TEXT NOT NULL UNIQUE,
-          entity TEXT NOT NULL,
-          explanation TEXT NOT NULL,
-          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);""")
-        connection.commit()
-      except Exception:
-        connection.rollback()
-        print('Table alert_explanations has already been created')
       finally:
         print('Tables Created!')
       try:

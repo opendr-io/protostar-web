@@ -39,7 +39,7 @@ function App()
     }
   );
   return (
-    <div className='bg-black min-h-screen flow-root text-white'>
+    <div className='bg-black overflow-y-scroll max-h-screen text-white'>
       <Menu />
     </div>
   )

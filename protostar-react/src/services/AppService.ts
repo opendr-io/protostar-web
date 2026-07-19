@@ -71,58 +71,6 @@ export default class AppService
     }
   }
 
-  // no logout-on-error here: explanation persistence is an enhancement, the
-  // Alerts page must keep working when these calls fail
-  async SaveAlertExplanation(guid: string, entity: string, explanation: string)
-  {
-    try
-    {
-      let token = localStorage.getItem('token');
-      const response = await axios.post(this.config.SaveAlertExplanationURL(),
-      {
-        'guid': guid,
-        'entity': entity,
-        'explanation': explanation
-      },
-      {
-        headers:
-        {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      return response.data;
-    }
-    catch(error)
-    {
-      console.log('Saving the alert explanation failed', error);
-      return null;
-    }
-  }
-
-  async GetAlertExplanations(guids: string[])
-  {
-    try
-    {
-      let token = localStorage.getItem('token');
-      const response = await axios.post(this.config.GetAlertExplanationsURL(),
-      {
-        'guids': guids
-      },
-      {
-        headers:
-        {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      return response.data;
-    }
-    catch(error)
-    {
-      console.log('Loading alert explanations failed', error);
-      return null;
-    }
-  }
-
   async GetAllCases()
   {
     try
