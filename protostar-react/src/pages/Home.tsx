@@ -1,7 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import LLMService from '../services/LLMService.ts';
 import PromptService from "../services/PromptService.ts";
 import TelemetryService from "../services/TelemetryService.ts";
+
+// the backend returns an empty answer when the LLM call fails (see api.log for the cause)
+const LLM_ERROR_MESSAGE = 'No summary was generated — the AI service may be overloaded or unreachable. Reload the page to try again. Details are in the API Log page.';
 
 export function Home()
 {
@@ -59,10 +64,19 @@ export function Home()
       setHighLevelData(highLevelDataList);
       setHighLevelDataFields(highLevelDataFieldsList);
       let firstOutput = await llm.AskLLM(ps.ThreatStatusSummaryPrompt(highLevelDataList));
+      if(!firstOutput)
+      {
+        // only cache real answers: a cached empty string would leave the summary blank forever
+        setTacticalSummary(LLM_ERROR_MESSAGE);
+        return;
+      }
       localStorage.setItem('threatstatussummary', firstOutput);
       let summaryOutput = await llm.AskLLM(ps.SummaryOfThreatStatusSummaryPrompt(firstOutput));
-      localStorage.setItem('summary', summaryOutput);
-      setTacticalSummary(summaryOutput);
+      if(summaryOutput)
+      {
+        localStorage.setItem('summary', summaryOutput);
+      }
+      setTacticalSummary(summaryOutput || LLM_ERROR_MESSAGE);
     }
     let summary = localStorage.getItem('summary');
     if(summary === null)
@@ -89,12 +103,11 @@ export function Home()
           <h1><br></br>The latest AI analysis and recomendations will appear below. The summary includes a high level overview of the
             open threat detection elemets, the type of entity in each detecton element, and overall reccomendations. </h1>
           <div className="mt-4">
-            <textarea readOnly={true} 
-                      placeholder={tacticalSummary} 
-                      style={{
-                        '--base-size': `${tacticalSummary.length/40}rem`
-                      } as React.CSSProperties} 
-                      className="bg-[#1B1B1B] calculated-textarea-height w-full h-[calc(100vh-12rem)] text-gray-200 border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" />
+            <div className="bg-[#1B1B1B] w-full text-gray-200 border border-gray-300 rounded py-2 px-3 my-3 shadow leading-tight markdown-content">
+              {tacticalSummary
+                ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{tacticalSummary}</ReactMarkdown>
+                : <p className="text-gray-500">The AI situation report will appear here</p>}
+            </div>
           </div>
         </div>
       </div>

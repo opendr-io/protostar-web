@@ -1,4 +1,4 @@
-import { createBrowserRouter, data, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, data, RouterProvider, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from "react-redux";
 import LLMService from '../services/LLMService.ts';
@@ -7,8 +7,12 @@ import TelemetryService from "../services/TelemetryService.ts";
 import { X, Plus, ChevronDown } from 'lucide-react';
 import HelpTextService from "../services/HelpTextService.ts";
 
+// the backend returns an empty answer when the LLM call fails (see api.log for the cause)
+const LLM_ERROR_MESSAGE = 'No answer was returned — the AI service may be overloaded or unreachable. Please try again. Details are in the API Log page.';
+
 export function Details()
 {
+  const navigate = useNavigate();
   const [entityDetails, setEntityDetails] = useState<any>([]);
   const [entityFields, setEntityFields] = useState<any>([]);
   const [entityFieldsVisibility, setEntityFieldsVisibility] = useState<any>([]);
@@ -69,13 +73,23 @@ export function Details()
     setOpen(false);
   }
 
+  function NavigateToAlertsPage(entity: any)
+  {
+    navigate('/alerts', { state: entity });
+  }
+
+  function NavigateToCasesPage(entity: any)
+  {
+    navigate('/cases', { state: entity });
+  }
+
   if(entityDetails)
   {
     return (
       <div className="py-4 mx-10 min-h-screen mt-20">
         <h1 className="text-3xl font-bold mb-4">Details</h1>
         <div className="mt-4">
-          <h2 className="font-semibold text-xl mb-2">Entity: <span className="">{entity[0]}</span></h2>
+          <h2 className="font-semibold text-xl mb-2">Entity: <span onClick={() => NavigateToAlertsPage(entity[0])} className="cursor-pointer text-blue-600">{entity[0]}</span></h2>
           <h2 className="font-semibold text-xl mb-2">Entity Type: <span className="">{entity[1]}</span></h2>
           <h2 className="font-semibold text-xl mb-2">IP: <span className="">{entity[2]}</span></h2>
           <h2 className="font-semibold text-xl mb-4">Atomic Weight: <span className="">{entity[3]}</span></h2>
@@ -110,9 +124,12 @@ export function Details()
                     let jsonEntityDetails = JSON.stringify(entityDetails);
                     let summaryPrompt = ps.DetailsSummaryPrompt(jsonEntityDetails);
                     let answer = await llm.AskLLM(summaryPrompt);
-                    setLLMOutput(answer);
+                    setLLMOutput(answer || LLM_ERROR_MESSAGE);
                   }
                 } className="bg-black text-white border border-gray-300 mt-4 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">AI Explaination</button>
+            </div>
+            <div className="flex-row">
+              <button onClick={() => NavigateToCasesPage(entity[0])} className="bg-black text-white border border-gray-300 mt-4 w-48 py-2 ml-4 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Create Case</button>
             </div>
           </div>
         </div>
@@ -280,7 +297,7 @@ export function Details()
                     let jsonEntityDetails = JSON.stringify(entityDetails);
                     let finalPrompt = ps.DetailsPrompt(llmQuestion, jsonEntityDetails);
                     let answer = await llm.AskLLM(finalPrompt);
-                    setLLMOutput(answer);
+                    setLLMOutput(answer || LLM_ERROR_MESSAGE);
                   }
                 } className="bg-black text-white border border-gray-300 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Ask AI</button>
               </div>
@@ -288,7 +305,7 @@ export function Details()
             <div className="mb-24">
               <label className="block text-gray-400 font-bold text-xl mb-2 my-4">Output</label>
               <p className="overflow-visible">
-                <textarea readOnly={true} placeholder={llmOutput} style={{
+                <textarea readOnly={true} value={llmOutput} placeholder="The AI answer will appear here" style={{
                     '--base-size': `${llmOutput.length/80}rem`
                   } as React.CSSProperties} className="bg-[#1B1B1B] calculated-textarea-height text-gray-200 border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline h-150" />
               </p>

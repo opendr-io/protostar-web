@@ -1,4 +1,4 @@
-import { createBrowserRouter, data, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, data, RouterProvider, useLocation } from "react-router-dom";
 import React, { useState, useEffect, useRef } from 'react';
 // import Papa, { parse } from 'papaparse';
 import LLMService from '../services/LLMService.ts';
@@ -9,7 +9,7 @@ import HelpTextService from "../services/HelpTextService.ts";
 function MergeData(entityDetails: any, index: any)
 {
   let mergedData = []
-  for(let i = 0; i < 12; i++)
+  for(let i = 0; i < entityDetails.length; i++)
   {
     mergedData.push(entityDetails[i][index]);
   }
@@ -29,15 +29,16 @@ export function Alerts()
   const ts = new TelemetryService();
   const ps = new PromptService();
   let hts = new HelpTextService();
+  const navigatedEntity = useLocation().state;
   useEffect(() =>
   {
     async function FetchEntities()
     {
       let neoEntities = await ts.GetEntitiesNeo();
       let neoEArr = Object.values(neoEntities['entity']);
-      let neoDetails = await ts.RetrieveRawEntityDetailsNeo(neoEArr[0]);
+      let neoDetails = (navigatedEntity) ? await ts.RetrieveRawEntityDetailsNeo(navigatedEntity) : await ts.RetrieveRawEntityDetailsNeo(neoEArr[0]);
       let neoDArr = Object.values(neoDetails);
-      setEntityCounter(neoEArr.length)
+      setEntityCounter(Object.values(neoDetails['name']).length)
       setEntities(neoEArr);
       setEntityDetails(neoDArr);
     }
@@ -65,7 +66,7 @@ export function Alerts()
   {
     return (
       <div className="relative min-h-screen mt-20">
-        <h1 className="pl-10 text-3xl font-bold pt-4">Alerts</h1>
+        {/* <h1 className="pl-10 text-3xl font-bold pt-4">Alerts</h1> */}
         <div className="mx-10">
           <button title={`${hts.EntityDropdownHelpText()}`}
             onClick={() => setIsOpen(!isOpen)}
@@ -90,9 +91,9 @@ export function Alerts()
         </div>
   
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-10 pb-24 text-wrap">
-          {entityDetails && entityDetails.map((card: any, index: any) => (
-          <div className={`transition-all duration-300 ease-in-out ${expandedCardIndex === index ? 
-            'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[81%] h-[81%] z-50 origin-top' : 'w-full'} ${index < entityCounter ? 'block' : 'hidden'} rounded overflow-hidden shadow-lg bg-white`}>
+          {entityDetails && Array.from({ length: entityCounter }, (_, index) => (
+          <div key={entityDetails[7]?.[index] ?? index} className={`transition-all duration-300 ease-in-out ${expandedCardIndex === index ? 
+            'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[81%] h-[81%] z-50 origin-top' : 'w-full'} rounded overflow-hidden shadow-lg bg-white`}>
             <div className={`${(expandedCardIndex === index) ? 'bg-[#080808]' : 'bg-[#1B1B1B]'} flex flex-row text-white h-full`}>
               <div className="px-10 py-6 w-fit">
                 <div className="font-bold text-xl mb-2">Entity: {entityDetails[0][index]}</div>
@@ -115,7 +116,7 @@ export function Alerts()
                         <p><span className="font-semibold">Mitre Tactic: </span>{ entityDetails[2][index] }</p>
                         <p><span className="font-semibold">Entity Type: </span>{ entityDetails[6][index] }</p>
                         <br />
-                        <p>Can include more detailed information about the alert</p>
+                        {/* <p>Can include more detailed information about the alert</p> */}
                       </div>
                     )}
                   </div>
@@ -162,7 +163,7 @@ export function Alerts()
                 <div className="mb-24">
                   <label className="block text-gray-700 font-bold text-xl mb-2 my-4">Output</label>
                   <p className="overflow-visible">
-                    <textarea readOnly={true} placeholder={llmOutput} className="h-96 w-full bg-[#1B1B1B] border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" />
+                    <textarea readOnly={true} value={llmOutput} placeholder="The AI answer will appear here" className="h-96 w-full bg-[#1B1B1B] border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" />
                   </p>
                 </div>
               </div>

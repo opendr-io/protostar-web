@@ -114,4 +114,56 @@ export default class TelemetryService
       window.location.href = '/login';
     }
   }
+
+  async GetEntityTypes()
+  {
+    let config = new Config();
+    let sms = new SessionManagementService();
+    try
+    {
+      let token = localStorage.getItem('token');
+      const response = await axios.post(config.GetEntityTypesURL(),
+      {
+      },
+      {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    }
+    catch(error)
+    {
+      console.error('Error:', error);
+      sms.Logout();
+      window.location.href = '/login';
+    }
+  }
+
+  async GetAllEntitiesNeo()
+  {
+    let config = new Config();
+    let sms = new SessionManagementService();
+    try
+    {
+      let token = localStorage.getItem('token');
+      const response = await axios.post(config.GetAllEntitiesURL(),
+      {
+      },
+      {
+        headers:
+        {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    }
+    catch(error)
+    {
+      console.error('Error:', error);
+      sms.Logout();
+      window.location.href = '/login';
+    }
+  }
 }

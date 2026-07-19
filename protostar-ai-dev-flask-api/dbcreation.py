@@ -25,13 +25,39 @@ def setup_postgres_tables():
     with connection.cursor() as cursor:
       print('Creating PostgreSQL Tables and Users')
       try:
-        cursor.execute("""CREATE TABLE appusers (id serial PRIMARY KEY, username text, hashed_password BYTEA)""")
+        cursor.execute("""CREATE TABLE appusers (id serial PRIMARY KEY, username text UNIQUE NOT NULL, hashed_password BYTEA)""")
       except Exception:
+        connection.rollback()
         print('Table appusers has already been created')
       try:
         cursor.execute("""CREATE TABLE expired_tokens (id serial PRIMARY KEY, token text)""")
       except Exception:
+        connection.rollback()
         print('Table expired_tokens has already been created')
+      try:
+        cursor.execute("""CREATE TABLE cases (
+          case_id serial PRIMARY KEY,
+          assigned_user TEXT REFERENCES appusers(username),
+          casename TEXT NOT NULL, description TEXT,
+          priority INTEGER NOT NULL DEFAULT 0,
+          investigated_entity TEXT NOT NULL UNIQUE,
+          properties JSONB, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          resolved_at TIMESTAMP)""")
+        connection.commit()
+      except Exception:
+        connection.rollback()
+        print('Table cases has already been created')
+      try:
+        cursor.execute("""CREATE TABLE case_comments (
+          comment_id SERIAL PRIMARY KEY,
+          case_id INTEGER REFERENCES cases(case_id),
+          comment_user TEXT REFERENCES appusers(username),
+          comment TEXT NOT NULL,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);""")
+        connection.commit()
+      except Exception:
+        connection.rollback()
+        print('Table case_comments has already been created')
       finally:
         print('Tables Created!')
       try:
@@ -39,12 +65,19 @@ def setup_postgres_tables():
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(password, salt)
         fillers = ("%s," * 2)[:-1]
-        sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers})"
+        sqlInsertStatement = f"insert into appusers(username, hashed_password) values({fillers}) ON CONFLICT (username) DO NOTHING"
         final_params = [config.get('Database', 'ApplicationUser', fallback='appuser'), hashed_password]
+        cursor.execute(sqlInsertStatement, final_params)
+
+        password = config.get('Database', 'AgentPassword', fallback='agent').encode('utf-8')
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password, salt)
+        final_params = [config.get('Database', 'AgentUser', fallback='agent'), hashed_password]
         cursor.execute(sqlInsertStatement, final_params)
         connection.commit()
         print('Users Created!')
       except:
+        connection.rollback()
         print('Users have already been created!')
 
 setup_postgres_tables()

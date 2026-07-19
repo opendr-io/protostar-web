@@ -14,6 +14,9 @@ function GetData(entity: string, dataSet: any[][])
   return finalList;
 }
 
+// the backend returns an empty answer when the LLM call fails (see api.log for the cause)
+const LLM_ERROR_MESSAGE = 'No answer was returned — the AI service may be overloaded or unreachable. Please try again. Details are in the API Log page.';
+
 export function Summary()
 {
   const navigate = useNavigate();
@@ -88,12 +91,20 @@ export function Summary()
       }
       else
       {
-        let finalPrompt = ps.ThreatStatusSummaryPrompt(highLevelData);
+        // use the freshly built list: the highLevelData state is still empty inside this closure
+        let finalPrompt = ps.ThreatStatusSummaryPrompt(highLevelDataList);
         let answer:string = await llm.AskLLM(finalPrompt);
-        localStorage.setItem('threatstatussummary', answer);
-        let answerSummary = await llm.AskLLM(ps.SummaryOfThreatStatusSummaryPrompt(answer));
-        localStorage.setItem('summary', answerSummary);
-        setLLMOutput(answer);
+        if(answer)
+        {
+          // only cache real answers: a cached empty string would leave the summary blank forever
+          localStorage.setItem('threatstatussummary', answer);
+          let answerSummary = await llm.AskLLM(ps.SummaryOfThreatStatusSummaryPrompt(answer));
+          if(answerSummary)
+          {
+            localStorage.setItem('summary', answerSummary);
+          }
+        }
+        setLLMOutput(answer || LLM_ERROR_MESSAGE);
       }
     }
     FetchData();
@@ -150,9 +161,9 @@ export function Summary()
   {
     return (
       <div className="relative min-h-screen mt-20">
-        <h1 className="text-3xl font-bold pt-4 mx-10">Tactical</h1>
+        {/* <h1 className="text-3xl font-bold pt-4 mx-10">Tactical</h1> */}
         <div className="text-sm text-gray-400 dark:text-gray-300 mx-12 mt-2">
-          Summary dashboard of assembled detection elements for entities (endpoints, hosts, users) scored and prioritized.
+          Tactical View: Summary of scored detection lattices for entities
         </div>
         <div className="mx-10 flex">
            <div className="flex-row mr-4 relative">
@@ -183,7 +194,7 @@ export function Summary()
                 {
                   let finalPrompt = ps.ThreatStatusSummaryPrompt(highLevelData);
                   let answer = await llm.AskLLM(finalPrompt);
-                  setLLMOutput(answer);
+                  setLLMOutput(answer || LLM_ERROR_MESSAGE);
                 }
               } className="bg-black text-white border border-gray-300 mt-4 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">AI Summary</button>
           </div>
@@ -347,7 +358,7 @@ export function Summary()
                   {
                     let finalPrompt = ps.ThreatStatusPrompt(llmQuestion, highLevelData);
                     let answer = await llm.AskLLM(finalPrompt);
-                    setLLMOutput(answer);
+                    setLLMOutput(answer || LLM_ERROR_MESSAGE);
                   }
                 } className="bg-black text-white border border-gray-300 w-48 py-2 rounded-md hover:bg-gray-600 font-normal cursor-pointer">Ask AI</button>
               </div>
@@ -356,7 +367,7 @@ export function Summary()
               <label className="block text-gray-400 font-bold text-xl mb-2 my-4">Output</label>
               <p className="overflow-visible">
                 {/* <span className="bg-[#1B1B1B] h-fit text-gray-200 border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border-x rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline">{llmOutput}</span> */}
-                <textarea readOnly={true} placeholder={llmOutput} style={{
+                <textarea readOnly={true} value={llmOutput} placeholder="The AI answer will appear here" style={{
                   '--base-size': `${llmOutput.length/70}rem`
                 } as React.CSSProperties} className={`bg-[#1B1B1B] calculated-textarea-height text-gray-200 border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline`} />
               </p>

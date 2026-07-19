@@ -1,5 +1,8 @@
+import logging
 import configparser
 from pathlib import Path
+
+logger = logging.getLogger('llm')
 from neo4j import GraphDatabase, RoutingControl
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage
@@ -19,22 +22,28 @@ class LLMService:
     self.anthropickey = config.get('Anthropic', 'AnthropicKey')
     self.sonarkey = config.get('Perplexity', 'PerplexityKey')
 
+  def content_to_text(self, content):
+    # langchain .content is str OR a list of content blocks, depending on the model response
+    if isinstance(content, list):
+      return ''.join(block.get('text', '') if isinstance(block, dict) else str(block) for block in content)
+    return content
+
   def ask_claude(self, question):
     try:
       llm = ChatAnthropic(model=config.get('Anthropic', 'ModelName'), api_key=self.anthropickey)
       result = llm.invoke([HumanMessage(content=question)]).content
-      return result
+      return self.content_to_text(result)
     except Exception as e:
-      print(e)
+      logger.error(e)
       return ''
 
   def ask_sonar(self, question):
     try:
       llm = ChatPerplexity(model=config.get("Perplexity", "ModelName"), api_key=self.sonarkey)
       result = llm.invoke([HumanMessage(content=question)]).content
-      return result
+      return self.content_to_text(result)
     except Exception as e:
-      print(e)
+      logger.error(e)
       return ''
   
   def ask_chat_gpt(self, question):
@@ -46,7 +55,7 @@ class LLMService:
     try:
       llm = ChatOpenAI(base_url="http://127.0.0.1:1234/v1", api_key="lm-studio", temperature=0.5)
       result = llm.invoke([HumanMessage(content=question)]).content
-      return result
+      return self.content_to_text(result)
     except Exception as e:
-      print(e)
+      logger.error(e)
       return ''
