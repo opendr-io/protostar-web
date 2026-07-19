@@ -21,7 +21,7 @@ export function View7()
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[*]->(a:ALERT) where (a.detection_type = "HOT_ISOTOPE" or a.detection_type = "STABLE_ISOTOPE") RETURN path`
+            statement: `MATCH (n:ENTITY) WHERE n.view = 2 WITH DISTINCT n MATCH path = (n)-[*..3]->(a:ALERT) where (a.detection_type = "HOT_ISOTOPE" or a.detection_type = "STABLE_ISOTOPE") RETURN path`
           },
         ],
       }),

@@ -54,7 +54,11 @@ const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
-]);
+], {
+  // "/graph" when proxied (Vite base "/graph/"), "/" locally — keeps the neo
+  // SPA's routes resolving under the proxy subpath (see docs/reverse-proxy-design.md).
+  basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/',
+});
 
 export function Routing() {
   return <RouterProvider router={router} />;

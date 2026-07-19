@@ -1,0 +1,77 @@
+##! Please refer to the documentation at
+##! https://coreruleset.org/docs/development/regex_assembly/.
+
+##! This dataset in an extended version of regex-assembly/include/sql-injection-function-names.ra
+##! It contains sequences with a high risk of false positives including regex-assembly/exclude/sql-injection-function-names-fps-pl1.ra
+
+##!+ i
+##!^ \b
+##!$ \W*?\(
+
+abs
+acos
+avg
+bin
+cast
+char
+charset
+chr
+convert
+count
+date
+day
+default
+degrees
+elt
+field
+floor
+format
+hour
+if
+in
+is
+last
+left
+length
+ln
+likelihood
+local
+log
+lower
+max
+min
+minute
+mod
+month
+now
+password
+pi
+position
+power
+quarter
+rawtonhex
+rawtonhextoraw
+repeat
+replace
+reverse
+right
+round
+second
+sign
+sleep
+space
+stddev
+sum
+tan
+time
+to_char
+to_days
+to_nchar
+to_seconds
+unlikely
+upper
+user
+values
+version
+week
+year

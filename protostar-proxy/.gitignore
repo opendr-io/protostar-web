@@ -1,0 +1,9 @@
+# The plugin-enabled binary is 55 MB and machine-specific — rebuild via build-proxy.ps1
+caddy.exe
+# Caddy runtime state
+*.log
+autosave.json
+# self-signed TLS cert/key (regenerate per host)
+tls-cert.pem
+tls-key.pem
+coraza-audit.log

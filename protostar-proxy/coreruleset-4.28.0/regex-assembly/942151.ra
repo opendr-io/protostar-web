@@ -1,0 +1,9 @@
+##! Please refer to the documentation at
+##! https://coreruleset.org/docs/development/regex_assembly/.
+
+##!+ i
+
+##!^ \b
+##!$ \W*\(
+
+##!> include-except sql-injection-function-names sql-injection-function-names-fps-pl1
