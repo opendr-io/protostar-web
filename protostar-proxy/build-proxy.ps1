@@ -19,6 +19,24 @@ Invoke-WebRequest -Uri $url -OutFile $out
 Write-Host "Modules present:"
 & $out list-modules | Select-String -Pattern 'http.handlers.waf|http.handlers.rate_limit'
 
+# OWASP Core Rule Set — the WAF rules the Caddyfile Includes. Downloaded and
+# gitignored (not vendored), same as caddy.exe above. Pinned to a release version.
+$crsVersion = '4.28.0'
+$crsDir = Join-Path $here "coreruleset-$crsVersion"
+if (-not (Test-Path (Join-Path $crsDir 'crs-setup.conf'))) {
+    Write-Host "Downloading OWASP CRS $crsVersion..."
+    $crsZip = Join-Path $here "crs-$crsVersion.zip"
+    $crsUrl = "https://github.com/coreruleset/coreruleset/releases/download/v$crsVersion/coreruleset-$crsVersion-minimal.zip"
+    Invoke-WebRequest -Uri $crsUrl -OutFile $crsZip
+    Expand-Archive -Path $crsZip -DestinationPath $here -Force   # zip's top dir is coreruleset-$crsVersion
+    Remove-Item $crsZip
+    # crs-setup.conf ships as .example; the Caddyfile Includes crs-setup.conf
+    Copy-Item (Join-Path $crsDir 'crs-setup.conf.example') (Join-Path $crsDir 'crs-setup.conf')
+    Write-Host "  CRS installed -> $crsDir"
+} else {
+    Write-Host "OWASP CRS $crsVersion already present."
+}
+
 # Self-signed TLS cert. A bare-port site with `tls internal` can't present a cert
 # for the client's SNI, so we pin an explicit cert with SANs. This auto-includes
 # localhost, the machine hostname, loopback, and the primary LAN IP so it works

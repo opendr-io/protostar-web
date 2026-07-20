@@ -1,5 +1,7 @@
 # The plugin-enabled binary is 55 MB and machine-specific — rebuild via build-proxy.ps1
 caddy.exe
+# OWASP CRS ruleset — fetched by build-proxy.ps1 (pinned version), not vendored
+coreruleset-4.28.0/
 # Caddy runtime state
 *.log
 autosave.json

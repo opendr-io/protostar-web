@@ -65,7 +65,7 @@ must be added to the `@app` matcher in the `Caddyfile`.
 ## Build & run
 
 ```powershell
-.\build-proxy.ps1        # downloads a plugin-enabled caddy.exe (Coraza + rate-limit)
+.\build-proxy.ps1        # fetches plugin-enabled caddy.exe (Coraza + rate-limit) + OWASP CRS rules
 .\start-proxy.ps1        # runs on :8081, WAF enforcing
 ```
 
