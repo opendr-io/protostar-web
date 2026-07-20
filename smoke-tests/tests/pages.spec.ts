@@ -171,8 +171,11 @@ test('Cases loads its supporting API data', async ({ page }) => {
 });
 
 test('Settings displays the API log', async ({ page }) => {
+  // Settings fires two /apilog requests on mount: the rendered log (lines=40) and
+  // a side fetch for LLM status (lines=100). Match only the rendered one, else
+  // payload.lines.at(-1) can be from the other fetch and never appears in the UI.
   const logResponse = page.waitForResponse(
-    response => response.url().includes('/apilog?') && response.request().method() === 'GET',
+    response => response.url().includes('/apilog?') && !response.url().includes('lines=100') && response.request().method() === 'GET',
   );
   const statusResponse = page.waitForResponse(
     response => response.url().endsWith('/connectionstatus') && response.request().method() === 'GET',
@@ -185,7 +188,9 @@ test('Settings displays the API log', async ({ page }) => {
   const connectionPayload = await connectionResponse.json();
   expect(Array.isArray(payload.lines)).toBeTruthy();
   expect(payload.line_count).toBe(payload.lines.length);
-  expect(connectionPayload).toEqual({ flask: true, neo4j: true, postgresql: true });
+  expect(connectionPayload.flask).toBe(true);
+  expect(connectionPayload.neo4j).toBe(true);
+  expect(connectionPayload.postgresql).toBe(true);
 
   await expect(page.getByRole('heading', { name: 'Connection Status' })).toBeVisible();
   await expect(page.getByText('Connected', { exact: true })).toHaveCount(3);

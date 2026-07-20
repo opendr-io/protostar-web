@@ -7,7 +7,16 @@ export default class Config
   {
     this.port = import.meta.env.VITE_REACT_APP_API_PORT || '5002';
     this.url = import.meta.env.VITE_REACT_APP_API_URL || 'http://localhost';
-    this.baseUrl = this.url + ':' + this.port;
+    // Proxied build sets VITE_REACT_APP_API_BASE (e.g. "/api") for same-origin
+    // routing through the reverse proxy. Unset = direct absolute URL, so local
+    // dev is unchanged (see docs/reverse-proxy-design.md).
+    this.baseUrl = import.meta.env.VITE_REACT_APP_API_BASE || (this.url + ':' + this.port);
+  }
+
+  // Base for the embedded protostar-neo app: "/graph" when proxied, else :3000.
+  public GraphBaseURL()
+  {
+    return import.meta.env.VITE_REACT_APP_GRAPH_BASE || (this.url + ':3000');
   }
 
   public LoginURL()
@@ -48,6 +57,11 @@ export default class Config
   public ApiLogURL()
   {
     return this.baseUrl + '/apilog';
+  }
+
+  public CorazaLogURL()
+  {
+    return this.baseUrl + '/corazalog';
   }
 
   public ConnectionStatusURL()

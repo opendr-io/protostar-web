@@ -1,0 +1,114 @@
+﻿# protostar-proxy â€” reverse proxy fronting React, Flask, protostar-neo, Neo4j.
+# See docs/reverse-proxy-design.md. Run via start-proxy.ps1 (sets the env vars below).
+#
+# Toggles (env, flipped with `caddy reload`):
+#   CORAZA_MODE       On | DetectionOnly | Off
+#   RATELIMIT_EVENTS  events per window (large number ~= disabled)
+#   RATELIMIT_WINDOW  e.g. 60s
+#   Gate credential (app shell only): the two basic_auth blocks hold a placeholder
+#   by default (no password committed). start-proxy.ps1 prompts for a username/
+#   password on first run and writes the hashed credential in; it skips the prompt
+#   if a real credential is already present.
+#
+# NOTE: the gate covers the app shell (/, /graph static) but NOT /api or /neo4j.
+# Those carry their own Authorization header (JWT Bearer / Neo4j Basic); a Basic
+# gate on them collides (the app's explicit header wins, gate rejects). Gating the
+# API routes needs a cookie/portal gate (Tier 2) â€” see design Â§5.1.
+{
+	# admin API on loopback so `caddy reload` works (needed for the toggles)
+	admin localhost:2019
+	# don't try to install the internal CA root into the OS trust store (needs
+	# admin and blocks on Windows). Clients trust the CA manually or use -k.
+	skip_install_trust
+	order coraza_waf first
+	order rate_limit before basic_auth
+}
+
+# Listens on all interfaces (:port = 0.0.0.0). TLS uses an explicit self-signed
+# cert (build-proxy.ps1 generates tls-cert.pem/tls-key.pem with SANs). A bare-port
+# site with `tls internal` can't present a cert for the client's SNI, so we pin an
+# explicit cert. For a public domain, use the domain as the site address for
+# automatic HTTPS instead.
+:8443 {
+	tls tls-cert.pem tls-key.pem
+
+	# --- WAF (Coraza). Mode set by start-proxy.ps1 (On | DetectionOnly | Off). ---
+	# Loaded in DetectionOnly first so CRS false positives are logged, not blocked.
+	# Audit log (coraza-audit.log) records every rule that fires: id, msg, match.
+	coraza_waf {
+		directives `
+			SecRuleEngine On
+			SecRequestBodyAccess On
+			SecRequestBodyLimit 13107200
+			SecResponseBodyAccess Off
+			SecAuditEngine RelevantOnly
+			SecAuditLog coraza-audit.log
+			SecAuditLogParts ABCFHZ
+			SecAction "id:990,phase:1,pass,nolog,ctl:forceRequestBodyVariable=On"
+
+			# --- OWASP Core Rule Set 4.28.0 ---
+			Include coreruleset-4.28.0/crs-setup.conf
+			Include coreruleset-4.28.0/rules/*.conf
+
+			# --- local WAF exceptions / tuning (route-scoped CRS exclusions) ---
+			Include waf-exceptions.conf
+
+			# --- custom Neo4j hard-blocks (independent of CRS anomaly scoring) ---
+			SecRule REQUEST_URI "@beginsWith /neo4j" "id:1000,phase:2,deny,status:403,msg:'Cypher write/DDL blocked at proxy',chain"
+				SecRule REQUEST_BODY "@rx (?i)\b(create|delete|detach|set|merge|remove|drop)\b"
+			SecRule REQUEST_URI "@beginsWith /neo4j" "id:1001,phase:2,deny,status:403,msg:'Unbounded Cypher traversal blocked at proxy',chain"
+				SecRule REQUEST_BODY "@rx \[\*\]"
+		`
+	}
+
+	# --- Rate limiting (events/window from env; large events ~= disabled) ---
+	rate_limit {
+		zone protostar {
+			key {remote_host}
+			events 10000
+			window 60s
+		}
+	}
+
+	# --- Flask API (gate-exempt: carries its own JWT Bearer) ---
+	# Allowlisted: only the endpoints below are proxied; anything else 403s at the
+	# proxy (notably /renew and /register). New Flask endpoints must be added here.
+	handle_path /api/* {
+		@app path /login /logout /askllm /asklocalllm /setlocallmuse /caniuselocalllm /retrievesummary /getrawalerts /getentities /getentitiesneo /entitydetails /entitydetailsv2 /rawentitydetails /entitydetailsneo /rawentitydetailsneo /retrievecolumnnames /showgraph /apilog /corazalog /connectionstatus /getusers /getallentities /createcase /postcasecomment /loadcasecomments /closecase /getentitytypes /createcasesforallentities /setaicommenting /getaicommenting /searchalerts /savealertexplanation /getalertexplanations /getallcases
+		handle @app {
+			reverse_proxy 127.0.0.1:5002
+		}
+		handle {
+			respond 403
+		}
+	}
+
+	# --- Neo4j (gate-exempt: carries its own Basic auth) ---
+	handle_path /neo4j/* {
+		rewrite * /db/neo4j{uri}
+		reverse_proxy 127.0.0.1:7474
+	}
+
+	# --- protostar-neo static SPA under /graph (behind gate) ---
+	handle_path /graph/* {
+		basic_auth {
+			tesla $2a$14$WdUCAcTikFa/Aq98KxNB.eIkCP5c/n6DUI.Y1.ofSBARbWKIfwQye
+		}
+		root * ../protostar-neo/dist
+		try_files {path} /index.html
+		file_server
+	}
+
+	# --- React SPA at root (behind gate) ---
+	handle {
+		basic_auth {
+			tesla $2a$14$WdUCAcTikFa/Aq98KxNB.eIkCP5c/n6DUI.Y1.ofSBARbWKIfwQye
+		}
+		root * ../protostar-react/dist
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+
+

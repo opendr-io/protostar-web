@@ -28,6 +28,7 @@ function ConnectionCard({ name, status, connectedLabel = 'Connected', disconnect
 export function Settings()
 {
   const [lineLimit, setLineLimit] = useState(40);
+  const [logSource, setLogSource] = useState<'api' | 'coraza'>('api');
   const [logText, setLogText] = useState('');
   const [lineCount, setLineCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,12 +38,13 @@ export function Settings()
     flask: 'checking',
     neo4j: 'checking',
     postgresql: 'checking',
+    proxy: 'checking',
     llm: 'checking'
   });
 
   const loadConnectionStatus = useCallback(async () =>
   {
-    setConnections({ flask: 'checking', neo4j: 'checking', postgresql: 'checking', llm: 'checking' });
+    setConnections({ flask: 'checking', neo4j: 'checking', postgresql: 'checking', proxy: 'checking', llm: 'checking' });
     const config = new Config();
     const token = localStorage.getItem('token');
     // the LLM status is inferred from the log tail rather than making a (paid) LLM call:
@@ -72,12 +74,13 @@ export function Settings()
         flask: response.data.flask ? 'connected' : 'disconnected',
         neo4j: response.data.neo4j ? 'connected' : 'disconnected',
         postgresql: response.data.postgresql ? 'connected' : 'disconnected',
+        proxy: response.data.proxy ? 'connected' : 'disconnected',
         llm: llmStatus
       });
     }
     catch
     {
-      setConnections({ flask: 'disconnected', neo4j: 'disconnected', postgresql: 'disconnected', llm: llmStatus });
+      setConnections({ flask: 'disconnected', neo4j: 'disconnected', postgresql: 'disconnected', proxy: 'disconnected', llm: llmStatus });
     }
   }, []);
 
@@ -89,7 +92,8 @@ export function Settings()
     {
       const config = new Config();
       const token = localStorage.getItem('token');
-      const response = await axios.get(config.ApiLogURL(),
+      const logUrl = logSource === 'coraza' ? config.CorazaLogURL() : config.ApiLogURL();
+      const response = await axios.get(logUrl,
       {
         params: { lines: lineLimit },
         headers: { Authorization: `Bearer ${token}` }
@@ -101,13 +105,13 @@ export function Settings()
     }
     catch
     {
-      setError('Unable to load the API log. Confirm that the Flask API is running and your session is valid.');
+      setError('Unable to load the log. Confirm that the Flask API is running and your session is valid.');
     }
     finally
     {
       setIsLoading(false);
     }
-  }, [lineLimit]);
+  }, [lineLimit, logSource]);
 
   useEffect(() =>
   {
@@ -125,17 +129,28 @@ export function Settings()
     <main className="mx-10 py-4 min-h-screen mt-20 text-white">
       <section className="mb-8" aria-labelledby="connectionStatusHeading">
         <h1 id="connectionStatusHeading" className="text-3xl font-bold mb-4">Connection Status</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           <ConnectionCard name="Flask API" status={connections.flask} />
           <ConnectionCard name="Neo4j" status={connections.neo4j} />
           <ConnectionCard name="PostgreSQL" status={connections.postgresql} />
+          <ConnectionCard name="Reverse Proxy" status={connections.proxy} connectedLabel="Running" disconnectedLabel="Not running" />
           <ConnectionCard name="LLM" status={connections.llm} connectedLabel="No recent errors" disconnectedLabel="Errors in log" />
         </div>
       </section>
 
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
         <div>
-          <h2 className="text-3xl font-bold">API Log</h2>
+          <div className="flex items-center gap-2 mb-2">
+            <button type="button" onClick={() => setLogSource('api')}
+              className={`px-3 py-1 rounded-md border text-sm cursor-pointer ${logSource === 'api' ? 'bg-white text-black border-white' : 'bg-black text-white border-gray-500 hover:bg-gray-700'}`}>
+              API Log
+            </button>
+            <button type="button" onClick={() => setLogSource('coraza')}
+              className={`px-3 py-1 rounded-md border text-sm cursor-pointer ${logSource === 'coraza' ? 'bg-white text-black border-white' : 'bg-black text-white border-gray-500 hover:bg-gray-700'}`}>
+              WAF Log
+            </button>
+          </div>
+          <h2 className="text-3xl font-bold">{logSource === 'coraza' ? 'WAF Audit Log' : 'API Log'}</h2>
           <p className="text-sm text-gray-400 mt-1">
             Showing {lineCount} line(s)
             {lastUpdated && ` - Updated ${lastUpdated.toLocaleTimeString()}`}
@@ -167,9 +182,13 @@ export function Settings()
       {error && <p role="alert" className="bg-red-950 text-red-200 border border-red-700 rounded p-4 mb-4">{error}</p>}
 
       <pre
-        aria-label="API log contents"
+        aria-label={logSource === 'coraza' ? 'WAF audit log contents' : 'API log contents'}
         className="bg-[#111111] border border-gray-700 rounded-lg p-4 h-[calc(100vh-12rem)] overflow-auto whitespace-pre text-xs leading-5 text-gray-200 font-mono">
-        {isLoading && !logText ? 'Loading API log...' : (logText || 'The API log is empty.')}
+        {isLoading && !logText
+          ? 'Loading log...'
+          : (logText || (logSource === 'coraza'
+            ? 'No WAF audit entries — not running behind the proxy, or no rules have fired.'
+            : 'The API log is empty.'))}
       </pre>
     </main>
   )
