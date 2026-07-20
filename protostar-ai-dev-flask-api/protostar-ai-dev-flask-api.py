@@ -342,7 +342,10 @@ def create_case():
 def post_case_comment():
   try:
     data = request.get_json()
-    user = data.get('user')
+    # author is the authenticated caller, never a client-supplied field — a client
+    # 'user' would let anyone post as another analyst or as 'agent'. Agent comments
+    # are posted server-side via appservice directly, so they bypass this route.
+    user = get_jwt_identity()
     comment = data.get('comment')
     case = data.get('case')
     status = appservice.post_case_comment(case, user, comment)
@@ -496,4 +499,4 @@ def get_all_cases():
     return response
 
 if __name__ == "__main__":
-  app.run(host='0.0.0.0', port=5002)
+  app.run(host='127.0.0.1', port=5002)

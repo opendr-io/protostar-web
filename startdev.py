@@ -32,7 +32,7 @@ def run():
   # - React/Neo run under the Vite dev server: frontend edits hot-reload in the
   #   browser, no rebuild or hard refresh needed
   servers = [
-    ('python -m flask --app protostar-ai-dev-flask-api run --host 0.0.0.0 --port 5002', 'protostar-ai-dev-flask-api', 'Flask (dev)'),
+    ('python -m flask --app protostar-ai-dev-flask-api run --host 127.0.0.1 --port 5002', 'protostar-ai-dev-flask-api', 'Flask (dev)'),
     ('npm run dev -- --host --port 3000', 'protostar-neo', 'Neo (vite dev)'),
     ('npm run dev -- --host --port 5173', 'protostar-react', 'React (vite dev)')
   ]

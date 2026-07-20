@@ -54,10 +54,18 @@
 			Include waf-exceptions.conf
 
 			# --- custom Neo4j hard-blocks (independent of CRS anomaly scoring) ---
-			SecRule REQUEST_URI "@beginsWith /neo4j" "id:1000,phase:2,deny,status:403,msg:'Cypher write/DDL blocked at proxy',chain"
-				SecRule REQUEST_BODY "@rx (?i)\b(create|delete|detach|set|merge|remove|drop)\b"
+			# Stopgap virtual patch + tripwire on the browser Cypher channel. The neo app
+			# only ever sends MATCH/RETURN/WHERE/WITH/LIMIT, so blocking writes, procedures
+			# (CALL/apoc), admin/DDL, and system-db access here is ~false-positive-free.
+			# t:jsDecode decodes \uXXXX / \xHH first, so JSON-unicode evasion (e.g. a body
+			# with "CREATE") can't smuggle a keyword past the regex. NOT a real fix:
+			# reads (exfiltration) still pass. Durable controls = a read-only Neo4j user
+			# and moving Cypher server-side (see docs/reverse-proxy-design.md §9).
+			SecRule REQUEST_URI "@beginsWith /neo4j" "id:1000,phase:2,deny,status:403,msg:'Cypher write/DDL/admin/procedure blocked at proxy',chain"
+				SecRule REQUEST_BODY "@rx (?i)\b(create|merge|set|delete|detach|remove|drop|call|foreach|load\s+csv|alter|grant|revoke|deny)\b" "t:jsDecode"
 			SecRule REQUEST_URI "@beginsWith /neo4j" "id:1001,phase:2,deny,status:403,msg:'Unbounded Cypher traversal blocked at proxy',chain"
-				SecRule REQUEST_BODY "@rx \[\*\]"
+				SecRule REQUEST_BODY "@rx \*\d*(\.\.)?\]" "t:jsDecode"
+			SecRule REQUEST_URI "@rx (?i)/neo4j.*(system|\.\.|%2e)" "id:1003,phase:1,deny,status:403,msg:'Neo4j system-db / path traversal blocked at proxy'"
 		`
 	}
 

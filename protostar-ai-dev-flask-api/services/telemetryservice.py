@@ -94,11 +94,11 @@ class TelemetryService:
     data = []
     try:
       neo4j = self.neo4j_driver
-      result_df = neo4j.query(f"""
+      result_df = neo4j.query("""
         MATCH (n:ENTITY)
           WHERE n.view = 2
           MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
-          where n.entity contains '{entity}'
+          where n.entity contains $entity
           RETURN
               m.detection_type AS detection_type,
               m.severity AS severity,
@@ -106,7 +106,7 @@ class TelemetryService:
               m.category AS category,
               m.username AS username
           ORDER BY detection_type ASC
-        """).to_data_frame()
+        """, parameters={'entity': entity}).to_data_frame()
       data = result_df.to_json()
     except Exception as e:
       print(e)
@@ -116,11 +116,11 @@ class TelemetryService:
     data = []
     try:
       neo4j = self.neo4j_driver
-      query = f"""
+      query = """
       MATCH (n:ENTITY)
         WHERE n.view = 2
         MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
-        where m.detection_type contains '{detection_type}'
+        where m.detection_type contains $detection_type
       RETURN
         m.detection_type AS detection_type,
         m.severity AS severity,
@@ -131,7 +131,7 @@ class TelemetryService:
         COUNT(*) AS count
         ORDER BY detection_type ASC, count ASC
       """
-      result_df = neo4j.query(query).to_data_frame()
+      result_df = neo4j.query(query, parameters={'detection_type': detection_type}).to_data_frame()
       data = result_df.to_json()
     except Exception as e:
       print(e)
@@ -141,11 +141,11 @@ class TelemetryService:
     data = []
     try:
       neo4j = self.neo4j_driver
-      query = f"""
+      query = """
         MATCH (n:ENTITY)
           WHERE n.view = 2
           MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
-          where n.entity contains '{entity}'
+          where n.entity contains $entity
           RETURN
               substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity,
               m.detection_type AS detection_type,
@@ -167,7 +167,7 @@ class TelemetryService:
               m.dest_port as dest_port
           ORDER BY n.entity ASC
         """
-      result_df = neo4j.query(query).to_data_frame()
+      result_df = neo4j.query(query, parameters={'entity': entity}).to_data_frame()
       data = result_df.to_json()
     except Exception as e:
       print(e)
@@ -177,17 +177,17 @@ class TelemetryService:
     data = []
     try:
       neo4j = self.neo4j_driver
-      safe = (term or '').lower().replace("'", "''")
+      safe = (term or '').lower()
       # empty box returns the 100 most recent alerts; a search term widens the window to 500
       limit = 500 if safe.strip() else 100
       query = f"""
         MATCH (n:ENTITY)
           WHERE n.view = 2
           MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
-          WHERE toLower(n.entity) CONTAINS '{safe}'
-             OR toLower(m.entity_type) CONTAINS '{safe}'
-             OR toLower(m.name) CONTAINS '{safe}'
-             OR toLower(toString(m.severity)) CONTAINS '{safe}'
+          WHERE toLower(n.entity) CONTAINS $term
+             OR toLower(m.entity_type) CONTAINS $term
+             OR toLower(m.name) CONTAINS $term
+             OR toLower(toString(m.severity)) CONTAINS $term
           RETURN
               substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity,
               m.detection_type AS detection_type,
@@ -212,7 +212,7 @@ class TelemetryService:
           ORDER BY m.timestamp DESC
           LIMIT {limit}
         """
-      result_df = neo4j.query(query).to_data_frame()
+      result_df = neo4j.query(query, parameters={'term': safe}).to_data_frame()
       data = result_df.to_json()
     except Exception as e:
       print(e)
