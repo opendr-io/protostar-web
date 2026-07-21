@@ -37,7 +37,7 @@
 	# Audit log (coraza-audit.log) records every rule that fires: id, msg, match.
 	coraza_waf {
 		directives `
-			SecRuleEngine On
+			SecRuleEngine DetectionOnly
 			SecRequestBodyAccess On
 			SecRequestBodyLimit 13107200
 			SecResponseBodyAccess Off
@@ -117,6 +117,8 @@
 		file_server
 	}
 }
+
+
 
 
 
