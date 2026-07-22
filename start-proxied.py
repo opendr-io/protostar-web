@@ -50,9 +50,8 @@ def start_flask():
 def start_proxy():
   if not os.path.exists(CADDY):
     sys.exit("caddy binary not found — run protostar-proxy/build-proxy.ps1 first.")
-  with open(os.path.join("protostar-proxy", "Caddyfile"), encoding="utf-8") as f:
-    if "__GATE__" in f.read():
-      sys.exit("Gate credential not set — run protostar-proxy/start-proxy.ps1 once to set it, then rerun.")
+  if not os.path.exists(os.path.join("protostar-proxy", "gate.conf")):
+    sys.exit("Gate credential not set — run protostar-proxy/start-proxy.ps1 once to set it, then rerun.")
   print("Starting proxy on https://localhost:8443 (all interfaces) ...")
   return subprocess.Popen([CADDY, "run", "--config", "Caddyfile"], cwd="protostar-proxy")
 

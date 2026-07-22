@@ -17,6 +17,7 @@ $ErrorActionPreference = 'Stop'
 $here  = $PSScriptRoot
 $caddy = Join-Path $here 'caddy.exe'
 $conf  = Join-Path $here 'Caddyfile'
+$gate  = Join-Path $here 'gate.conf'
 
 if (-not (Test-Path $caddy)) { Write-Error "caddy.exe not found. Run .\build-proxy.ps1 first." }
 
@@ -24,20 +25,19 @@ if (-not (Test-Path $caddy)) { Write-Error "caddy.exe not found. Run .\build-pro
 # ../protostar-react/dist etc. resolve regardless of where the script is invoked.
 Set-Location $here
 
-# Gate credential: the Caddyfile ships with a __GATE__ placeholder (no password by
-# default). Prompt for a username/password on first run and write the hashed
-# credential in. Skip entirely if a real credential is already present.
-if ((Get-Content $conf -Raw) -match '__GATE__') {
-    Write-Host "No perimeter-gate credential set. Enter one to populate the Caddyfile:"
+# Gate credential: Caddyfile imports gate.conf (gitignored, never committed).
+# Prompt for a username/password on first run and write the hashed credential
+# there. Skip entirely if gate.conf already exists.
+if (-not (Test-Path $gate)) {
+    Write-Host "No perimeter-gate credential set. Enter one to populate gate.conf:"
     $user = Read-Host "  Gate username"
     $secure = Read-Host "  Gate password" -AsSecureString
     $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
     try { $plain = [Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr) }
     finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
     $hash = (& $caddy hash-password --plaintext $plain | Out-String).Trim()
-    # .Replace (not -replace) so the '$' in the bcrypt hash isn't treated as a regex backreference
-    ((Get-Content $conf -Raw).Replace('__GATE__', "$user $hash")) | Set-Content $conf -Encoding utf8
-    Write-Host "  Gate credential written to the Caddyfile (user: $user)."
+    "$user $hash" | Set-Content $gate -Encoding utf8
+    Write-Host "  Gate credential written to gate.conf (user: $user)."
 }
 
 # Apply the Coraza mode.

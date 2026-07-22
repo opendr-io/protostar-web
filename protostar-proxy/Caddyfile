@@ -5,10 +5,11 @@
 #   CORAZA_MODE       On | DetectionOnly | Off
 #   RATELIMIT_EVENTS  events per window (large number ~= disabled)
 #   RATELIMIT_WINDOW  e.g. 60s
-#   Gate credential (app shell only): the two basic_auth blocks hold a placeholder
-#   by default (no password committed). start-proxy.ps1 prompts for a username/
-#   password on first run and writes the hashed credential in; it skips the prompt
-#   if a real credential is already present.
+#   Gate credential (app shell only): both basic_auth blocks `import gate.conf`, a
+#   gitignored file — the credential is NEVER written into this tracked Caddyfile.
+#   start-proxy.ps1 prompts for a username/password on first run and writes the
+#   hashed credential into gate.conf; it skips the prompt if gate.conf already
+#   exists (see gate.conf.example for the expected one-line format).
 #
 # NOTE: the gate covers the app shell (/, /graph static) but NOT /api or /neo4j.
 # Those carry their own Authorization header (JWT Bearer / Neo4j Basic); a Basic
@@ -73,7 +74,7 @@
 	rate_limit {
 		zone protostar {
 			key {remote_host}
-			events 10000
+			events 1000
 			window 60s
 		}
 	}
@@ -100,7 +101,7 @@
 	# --- protostar-neo static SPA under /graph (behind gate) ---
 	handle_path /graph/* {
 		basic_auth {
-			tesla $2a$14$WdUCAcTikFa/Aq98KxNB.eIkCP5c/n6DUI.Y1.ofSBARbWKIfwQye
+			import gate.conf
 		}
 		root * ../protostar-neo/dist
 		try_files {path} /index.html
@@ -110,7 +111,7 @@
 	# --- React SPA at root (behind gate) ---
 	handle {
 		basic_auth {
-			tesla $2a$14$WdUCAcTikFa/Aq98KxNB.eIkCP5c/n6DUI.Y1.ofSBARbWKIfwQye
+			import gate.conf
 		}
 		root * ../protostar-react/dist
 		try_files {path} /index.html

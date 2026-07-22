@@ -21,14 +21,19 @@ Write-Host "Modules present:"
 
 # OWASP Core Rule Set — the WAF rules the Caddyfile Includes. Downloaded and
 # gitignored (not vendored), same as caddy.exe above. Pinned to a release version.
+# NB: the "minimal" release zip omits every *.data file (used by e.g. the scanner-
+# detection and PHP-function-name rules) - Coraza fails to provision at all without
+# them. The release assets don't publish a full zip/tar.gz (only a .asc signature
+# for one), so pull the complete source instead via GitHub's tag archive.
 $crsVersion = '4.28.0'
 $crsDir = Join-Path $here "coreruleset-$crsVersion"
 if (-not (Test-Path (Join-Path $crsDir 'crs-setup.conf'))) {
-    Write-Host "Downloading OWASP CRS $crsVersion..."
+    Write-Host "Downloading OWASP CRS $crsVersion (full source, for the *.data files)..."
     $crsZip = Join-Path $here "crs-$crsVersion.zip"
-    $crsUrl = "https://github.com/coreruleset/coreruleset/releases/download/v$crsVersion/coreruleset-$crsVersion-minimal.zip"
+    $crsUrl = "https://github.com/coreruleset/coreruleset/archive/refs/tags/v$crsVersion.zip"
     Invoke-WebRequest -Uri $crsUrl -OutFile $crsZip
-    Expand-Archive -Path $crsZip -DestinationPath $here -Force   # zip's top dir is coreruleset-$crsVersion
+    if (Test-Path $crsDir) { Remove-Item $crsDir -Recurse -Force }  # clear a stale/incomplete prior fetch
+    Expand-Archive -Path $crsZip -DestinationPath $here -Force      # zip's top dir is coreruleset-$crsVersion
     Remove-Item $crsZip
     # crs-setup.conf ships as .example; the Caddyfile Includes crs-setup.conf
     Copy-Item (Join-Path $crsDir 'crs-setup.conf.example') (Join-Path $crsDir 'crs-setup.conf')
