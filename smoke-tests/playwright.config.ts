@@ -12,11 +12,13 @@ export default defineConfig({
   use: {
     baseURL: process.env.SMOKE_BASE_URL || 'http://127.0.0.1:5173',
     trace: 'retain-on-failure',
-    // Perimeter gate creds when testing through the proxy (env-gated: unset for the
-    // direct run). ignoreHTTPSErrors covers a local self-signed proxy cert.
-    ...(process.env.SMOKE_GATE_USER
-      ? { httpCredentials: { username: process.env.SMOKE_GATE_USER, password: process.env.SMOKE_GATE_PASS || '' } }
-      : {}),
+    // Perimeter gate session when testing through the proxy (env-gated: unset for
+    // the direct run). The gate is a caddy-security cookie/form portal, not HTTP
+    // Basic, so the session comes from a cookie captured by waf-audit-setup.ts's
+    // globalSetup (logs in through the portal's local-auth form once) rather than
+    // Playwright's httpCredentials. ignoreHTTPSErrors covers a local self-signed
+    // proxy cert.
+    ...(process.env.SMOKE_GATE_USER ? { storageState: '.auth-state.json' } : {}),
     ignoreHTTPSErrors: true,
   },
   projects: [

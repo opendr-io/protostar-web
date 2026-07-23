@@ -16,4 +16,7 @@ Recent serious work on the problem of false positives and their effects has meas
 ## TLS
 TLS: This guide covers setting up TLS across the plaform: [TLS Setup](https://github.com/opendr-io/protostar-web/blob/main/TLSSetup.md)
 
+## Reverse proxy (optional)
+To run the web layer behind a single hardened HTTPS origin — one gated entry point fronting React, Flask, and Neo4j, with a login portal (local or Google SSO) and a WAF — see [protostar-proxy/README.md](protostar-proxy/README.md). It covers setup, first login, and running in proxy mode (`start-proxied.py`). Local dev without the proxy is unchanged.
+
 

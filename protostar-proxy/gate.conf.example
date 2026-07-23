@@ -1,7 +1,0 @@
-# Perimeter-gate credential, imported by the two basic_auth blocks in Caddyfile.
-# Copy this to gate.conf (gitignored) and fill in a real username + bcrypt hash —
-# or just run start-proxy.ps1, which does this for you on first run (prompts for
-# a username/password and writes the hash here; skipped if gate.conf exists).
-#
-# Generate a hash: caddy hash-password --plaintext '<password>'
-<username> <bcrypt-hash>

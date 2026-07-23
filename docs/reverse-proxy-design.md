@@ -85,15 +85,21 @@ unauthenticated traffic entirely.
 
 Two tiers:
 
-- **Tier 1 — Caddy core `basic_auth`. ← DECIDED (initial).** One directive,
-  bcrypt-hashed credential(s), browser-native prompt. No app changes, no extra
-  component. Coarse but effective perimeter; browser-cached per session (§5.1
-  note). Good enough initially for a non-prod / internal tool.
-- **Tier 2 — real login portal (deferred).** A form-based login page with
-  sessions served at the edge, via the `caddy-security` plugin (`xcaddy` build) or
-  a forward-auth portal (Authelia / Authentik / oauth2-proxy) behind Caddy
-  `forward_auth`. Proper page + logout, optional SSO/MFA; one more component to
-  run. Revisit if the gate needs per-user accounts, logout, or SSO.
+- **Tier 1 — Caddy core `basic_auth`.** One directive, bcrypt-hashed
+  credential(s), browser-native prompt. No app changes, no extra component. Coarse
+  but effective perimeter; browser-cached per session. Was the initial choice;
+  **superseded by Tier 2** (below) because Basic auth structurally can't cover
+  `/api` or `/neo4j` — see the gate-collision note in §13.
+- **Tier 2 — real login portal. ← DECIDED / IMPLEMENTED (`caddy-security`).** A
+  form-based portal at `/auth/`, dual-mode: a **local** username/password identity
+  store (proxy-level, gitignored `local-users.conf`, the always-works fallback for
+  self-signed/offline) **or Google OAuth2 SSO** (per-user identity; who's allowed
+  through is an email allowlist, not per-user password provisioning — lower
+  friction as the team grows). Session lives in a cookie, so — unlike Tier 1 — the
+  gate covers **all four routes including `/api` and `/neo4j`** without colliding
+  with their own `Authorization` header. Runs in-process as one more Caddy plugin
+  (compiled into `caddy.exe` by `build-proxy.py` alongside Coraza/rate-limit), no separate service.
+  See §13 for the implementation notes and the one critical config gotcha.
 
 Design notes:
 - This is a SECOND, coarse auth layer, distinct from the app's JWT login (the
@@ -103,12 +109,14 @@ Design notes:
     gate, then logs into the app as today. With Tier 1 `basic_auth` the gate
     credential is browser-cached, so it's a single prompt at the start of a
     browser session, not a prompt per request.
-  - **Single sign-on is possible but costs integration** (against §3): make an
-    off-the-shelf portal the sole identity source and have the app trust it (a
-    proxy-injected user header, or the app speaking OIDC) — real app-side change
-    to the existing JWT/user flow.
-  - **Recommendation:** accept the two-step for an internal tool; revisit SSO only
-    if the extra prompt is a real annoyance.
+  - **Single sign-on** here means the *gate's* Google SSO (portal-level), NOT
+    fusing the gate with the app's JWT identity. The gate and the app JWT remain
+    two separate layers by design — the portal does not inject a trusted user
+    header into Flask, and the app login is unchanged. Making the portal the app's
+    sole identity source (proxy-injected user header / app speaking OIDC) is still
+    a deferred, larger app-side change.
+  - **The two-step remains** (gate login, then app login) — accepted for an
+    internal tool. The gate's own login is now local-or-Google, the user's choice.
   - **Runtime-toggleable on/off** (`{env.GATE_ENABLED}`) for troubleshooting /
     proxied dev — see the toggles note in §9.2.
 - It COMPLEMENTS, not replaces, the `/neo4j/*` JWT gate (§6.8) — clearing the
@@ -353,19 +361,26 @@ Built in `protostar-proxy/` and verified against the smoke suite through the pro
 - **Result:** 12/12 smoke pass through the proxy over HTTPS with Coraza **enforcing
   (`On`)** after the View7 fix (below). Gate, WAF, and rate-limit all confirmed
   working.
-- **Binary:** `add-package` needs admin to replace the Chocolatey binary on Windows,
-  so `build-proxy.ps1` downloads a standalone plugin binary (`caddy.exe`, gitignored)
-  from Caddy's download server. Coraza registers as `http.handlers.waf`.
+- **Binary:** `build-proxy.py` compiles a standalone plugin binary (`caddy.exe`,
+  gitignored) locally with `xcaddy` (via `go run`, so only Go is needed — xcaddy
+  isn't installed separately), versions pinned. This is a v2 change from v1's
+  prebuilt download off Caddy's build server: building locally lets the Go
+  toolchain verify every module against `sum.golang.org` (dependency-tree
+  provenance the bespoke download can't offer, having no published checksum);
+  `add-package` was avoided because it needs admin to replace the Chocolatey
+  binary on Windows. Coraza registers as `http.handlers.waf`.
 - **Toggles reality:** env placeholders are NOT honored inside Coraza's `directives`
   block, and `rate_limit events` is parsed as an int at config time — so the toggles
-  are driven by `start-proxy.ps1` (patches the `SecRuleEngine` line + `caddy reload`
+  are driven by `start-proxy.py` (patches the `SecRuleEngine` line + `caddy reload`
   via admin API on `localhost:2019`), not by `{env.*}` in the Caddyfile. `CORAZA_MODE`
   is a live toggle; gate/rate-limit are edit-the-Caddyfile-and-reload.
-- **Gate collision (important):** basic_auth can only gate the app shell (`/`,
-  `/graph` static). `/api` and `/neo4j` are exempt because they carry their own
-  `Authorization` header (JWT Bearer / Neo4j Basic) — a Basic gate on them collides
-  (the app's explicit header wins; the gate rejects). Gating those needs a
-  cookie/portal gate (Tier 2). Updates §5.1.
+- **Gate collision (RESOLVED in v2 — see below):** basic_auth could only gate the
+  app shell (`/`, `/graph` static). `/api` and `/neo4j` were exempt because they
+  carry their own `Authorization` header (JWT Bearer / Neo4j Basic) — a Basic gate
+  on them collided (the app's explicit header wins; the gate rejects). The Tier 2
+  `caddy-security` portal fixes this: its session lives in a `Cookie`, orthogonal
+  to `Authorization`, so all four routes are now gated (`authorize with gatepolicy`
+  on each).
 - **Coraza JSON bodies:** `REQUEST_BODY` is empty for JSON unless
   `ctl:forceRequestBodyVariable=On` is set — needed for the Cypher rule to inspect
   the body.
@@ -376,7 +391,7 @@ Built in `protostar-proxy/` and verified against the smoke suite through the pro
   A bare-port site with `tls internal` **fails every handshake**
   (`ERR_SSL_PROTOCOL_ERROR`) — Caddy has no hostname to issue a cert for. Fixed
   with an explicit self-signed cert (SANs localhost/127.0.0.1/::1) via
-  `tls tls-cert.pem tls-key.pem`; `build-proxy.ps1` generates it (SANs auto-include
+  `tls tls-cert.pem tls-key.pem`; `build-proxy.py` generates it (SANs auto-include
   hostname + LAN IP, `CA:TRUE`). HTTPS smoke is **12/12** with the WAF enforcing.
   Also set
   `skip_install_trust` (installing the CA root needs admin and hangs on Windows).
@@ -387,10 +402,56 @@ Built in `protostar-proxy/` and verified against the smoke suite through the pro
   (`View4-7`, `PrimaryDash`, `EverythingDash`) → `GraphBaseURL()`, neo `vite.config`
   `base` from `VITE_NEO_BASE`, neo `Routing.tsx` `basename` from `BASE_URL`.
 
+### 13.1 v2 — Tier 2 gate (`caddy-security`, local + Google SSO)
+
+Replaced the Tier 1 `basic_auth` gate with a dual-mode `caddy-security` portal,
+closing the gate-collision gap above (all four routes now gated via a cookie
+session).
+
+- **Plugin:** `github.com/greenpau/caddy-security` added to the pinned `PLUGINS`
+  list in `build-proxy.py` (same xcaddy build as Coraza/rate-limit). Registers the
+  `security` app plus `http.handlers.authentication` (the `authenticate`/portal
+  directive) and `http.handlers.authenticator` (the `authorize` directive).
+- **Caddyfile:** a `security { }` app block in global options defines a `local`
+  identity store, a Google `oauth` identity provider, an `authentication portal
+  gateportal` (enables both, so the login page renders local form + Google button),
+  and an `authorization policy gatepolicy`. The portal mounts at `handle /auth/*`
+  (`handle`, not `handle_path` — the portal needs its full internal paths, e.g. the
+  OAuth callback); every other route gets `authorize with gatepolicy` as its first
+  directive. New `order` lines: `authenticate before respond`, `authorize before
+  basic_auth`.
+- **CRITICAL config gotcha:** `gatepolicy` must NOT include `validate bearer
+  header`. That would opt the policy back into inspecting the `Authorization`
+  header and reintroduce the exact collision this migration exists to fix. It's a
+  one-line mistake that silently breaks `/api` and `/neo4j` — called out in a
+  Caddyfile comment.
+- **Secrets/config (all gitignored, per the `gate.conf` convention):**
+  `local-users.conf` (bcrypt local account), `local-users.json` (caddy-security's
+  runtime store), `google-oauth-client.conf` (client ID/secret), `google-allowlist.conf`
+  (allowed Google emails, `import`ed into the portal), `security-jwt-key.conf`
+  (session signing key). `start-proxy.py` prompts/generates each on first run
+  (skip if present) and exports the JWT key + Google creds as env vars before
+  `caddy run`/`reload` (the signing key is referenced under two different
+  directive keywords, so it can't be a single `import`ed line). `gate.conf.example`
+  replaced by `local-users.conf.example`.
+- **Google is optional:** leaving the client ID blank at the prompt skips SSO
+  entirely; local auth is the always-works fallback (accepted to not work well
+  under the self-signed cert / offline). Google Cloud Console setup (OAuth client,
+  redirect URI per host alias, consent-screen test users) is a manual external
+  step — see `protostar-proxy/README.md`.
+- **Smoke suite:** the gate is now cookie/form-based, so Playwright's
+  `httpCredentials` (Basic-only) no longer applies. `waf-audit-setup.ts`'s
+  globalSetup logs in once through the portal's **local-auth** form and saves
+  `storageState`; `playwright.config.ts` consumes it via `use.storageState`;
+  `waf.spec.ts`'s `/neo4j` calls now ride that session cookie (Coraza still runs
+  first, so block cases 403 before authorization). Smoke tests never drive Google's
+  real login UI (impractical headless) — Google SSO is verified manually.
+
 ## 14. Open Questions
 
-- ~~Perimeter gate tier?~~ **DECIDED:** Tier 1 `basic_auth` initially (§5.1);
-  Tier 2 portal deferred.
+- ~~Perimeter gate tier?~~ **DECIDED & IMPLEMENTED:** Tier 2 `caddy-security`
+  portal (local + Google SSO), covering all four routes — see §5.1 and §13.1.
+  (Tier 1 `basic_auth` was the initial v1 choice, superseded.)
 - ~~Keep vs relax the `/neo4j` JWT gate behind basic_auth?~~ **DECIDED:** no
   `/neo4j` JWT gate in v1 — it requires protostar-neo hook changes + same-origin
   token access, so it's deferred hardening (§6.8). v1 = basic_auth perimeter +

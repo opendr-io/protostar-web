@@ -1,1 +1,3 @@
 .waf-audit-offset
+.auth-state.json
+logs/
