@@ -76,22 +76,29 @@ def ensure_jwt_key():
 
 
 def ensure_google_client():
-    # Optional Google OAuth client (blank to skip -> local auth only). Exported as
-    # env for the Caddyfile's {env.PROTOSTAR_GOOGLE_CLIENT_*} references.
+    # Optional Google OAuth (blank to skip -> local auth only). Only the client ID
+    # is persisted (gitignored); the client SECRET is NEVER written to disk — it
+    # comes from the PROTOSTAR_GOOGLE_CLIENT_SECRET env var. If Google is configured
+    # but the secret isn't in the environment, prompt for it for THIS run only (held
+    # in os.environ, not stored). Exported for the Caddyfile's {env.*} references.
     path = os.path.join(HERE, "google-oauth-client.conf")
     if not os.path.exists(path):
         print("Optional: Google SSO for the perimeter gate (blank to skip -- local auth still works).")
         print("  Requires a Google Cloud OAuth client first -- see README.")
         cid = input("  Google OAuth client ID (blank to skip): ").strip()
-        csec = getpass("  Google OAuth client secret: ") if cid else ""
         with open(path, "w", encoding="utf-8") as f:
-            f.write(f"PROTOSTAR_GOOGLE_CLIENT_ID={cid}\nPROTOSTAR_GOOGLE_CLIENT_SECRET={csec}\n")
-        print("  Google OAuth client written to google-oauth-client.conf.")
+            f.write(f"PROTOSTAR_GOOGLE_CLIENT_ID={cid}\n")
+        print("  Google OAuth client ID written to google-oauth-client.conf (secret NOT stored).")
     for line in open(path, encoding="utf-8"):
         line = line.strip()
         if line and not line.startswith("#") and "=" in line:
             k, v = line.split("=", 1)
             os.environ[k.strip()] = v.strip()
+    # Secret: env-only. Prompt for this run if configured-but-missing.
+    if os.environ.get("PROTOSTAR_GOOGLE_CLIENT_ID") and not os.environ.get("PROTOSTAR_GOOGLE_CLIENT_SECRET"):
+        print("  Google client secret is not stored on disk — enter it for this run")
+        print("  (export PROTOSTAR_GOOGLE_CLIENT_SECRET to skip this prompt and for start-proxied.py):")
+        os.environ["PROTOSTAR_GOOGLE_CLIENT_SECRET"] = getpass("  Google OAuth client secret: ")
 
 
 def ensure_google_allowlist():

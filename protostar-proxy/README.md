@@ -74,8 +74,12 @@ Postgres `appusers` + JWT): the gate says "you may reach the app"; the JWT says
    `https://localhost:8443/auth/oauth2/google/authorization-code-callback`
    (plus the machine-hostname / LAN-IP variants if used). Google requires an exact
    match per alias.
-4. Copy the **Client ID / Secret** into `google-oauth-client.conf` — `start-proxy.py`
-   prompts for these on first run (leave blank to skip Google SSO). Never commit them.
+4. The **Client ID** goes in `google-oauth-client.conf` (`start-proxy.py` prompts for
+   it on first run; leave blank to skip Google SSO). The **Client Secret is never
+   stored on disk** — provide it via the `PROTOSTAR_GOOGLE_CLIENT_SECRET` environment
+   variable (export it, or use a secrets manager). `start-proxy.py` prompts for it
+   per run if it's not set; `start-proxied.py` requires it in the environment and
+   refuses to start Google SSO without it.
 5. While the consent screen is in "Testing" status, add each allowed person as a
    Google **test user** *and* add their email to `google-allowlist.conf`. The two
    are separate gates: the test-user list controls who can complete Google's own

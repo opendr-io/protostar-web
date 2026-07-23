@@ -63,8 +63,9 @@ def preflight_proxy():
   if missing:
     sys.exit(f"Perimeter gate not set up ({', '.join(missing)} missing) — "
              "run protostar-proxy/start-proxy.py once to set it, then rerun.")
-  # Pass the gate secrets to caddy via env (same values start-proxy.py exports):
-  # the signing key, and the Google client creds if configured.
+  # Pass the gate secrets to caddy via env: the signing key from its file, the
+  # Google client ID from its file, and the Google client SECRET from the
+  # environment (it is never stored on disk — see start-proxy.py).
   env = os.environ.copy()
   with open(os.path.join(proxy_dir, "security-jwt-key.conf")) as fh:
     env["PROTOSTAR_JWT_KEY"] = fh.read().strip()
@@ -75,6 +76,13 @@ def preflight_proxy():
         if "=" in line and not line.lstrip().startswith("#"):
           k, v = line.split("=", 1)
           env[k.strip()] = v.strip()
+  # If Google SSO is configured (client ID present), the secret must be supplied via
+  # the environment — bail clearly rather than starting caddy with an empty secret.
+  if env.get("PROTOSTAR_GOOGLE_CLIENT_ID") and not env.get("PROTOSTAR_GOOGLE_CLIENT_SECRET"):
+    sys.exit("Google SSO is configured (client ID present) but PROTOSTAR_GOOGLE_CLIENT_SECRET "
+             "is not set. It is intentionally not stored on disk — export it in your environment "
+             "and rerun (or blank the client ID in protostar-proxy/google-oauth-client.conf to "
+             "disable Google SSO).")
   return env
 
 

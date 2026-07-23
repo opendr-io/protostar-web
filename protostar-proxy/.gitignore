@@ -17,7 +17,8 @@ coraza-audit.log
 local-users.conf
 # caddy-security's own runtime-managed local user store (derived from local-users.conf) — never commit
 local-users.json
-# Google OAuth2 client ID/secret for the perimeter portal (from Google Cloud Console) — never commit
+# Google OAuth2 client ID for the perimeter portal (the client SECRET is env-only,
+# never written here) — never commit
 google-oauth-client.conf
 # per-deployment email allowlist for Google SSO through the perimeter gate — never commit
 google-allowlist.conf

@@ -427,12 +427,16 @@ session).
   Caddyfile comment.
 - **Secrets/config (all gitignored, per the `gate.conf` convention):**
   `local-users.conf` (bcrypt local account), `local-users.json` (caddy-security's
-  runtime store), `google-oauth-client.conf` (client ID/secret), `google-allowlist.conf`
-  (allowed Google emails, `import`ed into the portal), `security-jwt-key.conf`
-  (session signing key). `start-proxy.py` prompts/generates each on first run
-  (skip if present) and exports the JWT key + Google creds as env vars before
-  `caddy run`/`reload` (the signing key is referenced under two different
-  directive keywords, so it can't be a single `import`ed line). `gate.conf.example`
+  runtime store), `google-oauth-client.conf` (Google client **ID only**),
+  `google-allowlist.conf` (allowed Google emails, `import`ed into the portal),
+  `security-jwt-key.conf` (session signing key). The Google client **secret is never
+  written to disk** — it comes from the `PROTOSTAR_GOOGLE_CLIENT_SECRET` env var
+  (`start-proxy.py` prompts for it per run if unset and holds it in-process;
+  `start-proxied.py` requires it in the environment). `start-proxy.py`
+  prompts/generates the rest on first run (skip if present) and exports the JWT key
+  + Google client ID/secret as env vars before `caddy run`/`reload` (the signing key
+  is referenced under two different directive keywords, so it can't be a single
+  `import`ed line). `gate.conf.example`
   replaced by `local-users.conf.example`.
 - **Google is optional:** leaving the client ID blank at the prompt skips SSO
   entirely; local auth is the always-works fallback (accepted to not work well
