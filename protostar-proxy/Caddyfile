@@ -102,7 +102,15 @@
 			SecResponseBodyAccess Off
 			SecAuditEngine RelevantOnly
 			SecAuditLog coraza-audit.log
-			SecAuditLogParts ABCFHZ
+			# Audit parts are minimized to A (metadata) + H (rule-match trailer: id,
+			# msg, matched data, uri) + Z (boundary). Request headers (B), request body
+			# (C), and response headers (F) are deliberately EXCLUDED so the audit log —
+			# which the app serves to users via /corazalog — never records secrets:
+			# no Authorization header (Bearer JWT / Neo4j Basic), no /api/login body
+			# (plaintext password), no Set-Cookie. Coraza has no per-header sanitize
+			# action, hence dropping the whole header/body parts. H still carries what
+			# the log is for (which rule fired, where, on what match).
+			SecAuditLogParts AHZ
 			SecAction "id:990,phase:1,pass,nolog,ctl:forceRequestBodyVariable=On"
 
 			# --- OWASP Core Rule Set 4.28.0 ---
