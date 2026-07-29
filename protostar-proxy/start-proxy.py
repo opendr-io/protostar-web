@@ -19,6 +19,7 @@ import argparse
 import os
 import re
 import secrets
+import stat
 import subprocess
 import sys
 from getpass import getpass
@@ -63,16 +64,92 @@ def ensure_local_account():
     print(f"  Local account written to local-users.conf (user: {user}, admin).")
 
 
+def _read_private_file(path, description):
+    # Refuse links before opening and use O_NOFOLLOW where the platform provides
+    # it, closing the check/open race on POSIX. An attacker must not be able to
+    # redirect a secret read to another file.
+    if os.path.islink(path):
+        sys.exit(f"{description} must be a regular file, not a symbolic link: {path}")
+    flags = os.O_RDONLY
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        fd = os.open(path, flags)
+    except OSError as exc:
+        sys.exit(f"Unable to open {description} securely: {exc}")
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode):
+            sys.exit(f"{description} must be a regular file: {path}")
+        if os.name != "nt":
+            if info.st_uid != os.getuid():
+                sys.exit(f"{description} is not owned by the current user: {path}")
+            if stat.S_IMODE(info.st_mode) & 0o077:
+                # The file is correctly owned and already open without following
+                # links, so safely remove group/other access and verify the result.
+                os.fchmod(fd, 0o600)
+                if stat.S_IMODE(os.fstat(fd).st_mode) != 0o600:
+                    sys.exit(f"Unable to restrict {description} to mode 0600: {path}")
+                print(f"  Restricted {description} permissions to 0600.")
+        with os.fdopen(fd, "r", encoding="utf-8-sig") as stream:
+            fd = None
+            return stream.read()
+    finally:
+        if fd is not None:
+            os.close(fd)
+
+
+def _create_private_file(path, content, description):
+    # O_EXCL makes creation atomic and refuses an existing file or symlink.
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        fd = os.open(path, flags, 0o600)
+    except FileExistsError:
+        sys.exit(f"Refusing to overwrite existing {description}: {path}")
+    except OSError as exc:
+        sys.exit(f"Unable to create {description} securely: {exc}")
+    complete = False
+    try:
+        payload = content.encode("ascii")
+        written = 0
+        while written < len(payload):
+            count = os.write(fd, payload[written:])
+            if count <= 0:
+                raise OSError("short write")
+            written += count
+        os.fsync(fd)
+        if os.name != "nt" and stat.S_IMODE(os.fstat(fd).st_mode) != 0o600:
+            raise OSError("created file does not have mode 0600")
+        complete = True
+    finally:
+        os.close(fd)
+        if not complete:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+
 def ensure_jwt_key():
     # Session/JWT signing key — auto-generated, referenced by the portal + policy
     # via {env.PROTOSTAR_JWT_KEY}. Exported for the caddy child below.
     path = os.path.join(HERE, "security-jwt-key.conf")
     if not os.path.exists(path):
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(secrets.token_hex(32))
+        if os.path.lexists(path):
+            sys.exit(f"Perimeter session signing key path is not a regular file: {path}")
+        _create_private_file(
+            path, secrets.token_hex(32), "perimeter session signing key"
+        )
         print("  Generated perimeter session signing key -> security-jwt-key.conf.")
-    with open(path, encoding="utf-8") as f:
-        os.environ["PROTOSTAR_JWT_KEY"] = f.read().strip()
+    key = _read_private_file(path, "perimeter session signing key").strip()
+    if not re.fullmatch(r"[0-9a-fA-F]{64}", key):
+        sys.exit(
+            "Perimeter session signing key must contain exactly 64 hexadecimal "
+            f"characters (256 bits): {path}"
+        )
+    os.environ["PROTOSTAR_JWT_KEY"] = key
 
 
 def ensure_google_client():

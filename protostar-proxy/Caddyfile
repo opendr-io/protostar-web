@@ -105,14 +105,15 @@
 			SecAuditLog coraza-audit.log
 			# Audit parts are minimized to A (metadata) + H (rule-match trailer: id,
 			# msg, matched data, uri) + Z (boundary). Request headers (B), request body
-			# (C), and response headers (F) are deliberately EXCLUDED so the audit log —
-			# which the app serves to users via /corazalog — never records secrets:
-			# no Authorization header (Bearer JWT / Neo4j Basic), no /api/login body
-			# (plaintext password), no Set-Cookie. Coraza has no per-header sanitize
-			# action, hence dropping the whole header/body parts. H still carries what
-			# the log is for (which rule fired, where, on what match).
+			# (C), and response headers (F) are deliberately EXCLUDED, so Authorization,
+			# Set-Cookie, and raw request bodies are not persisted. H can still contain
+			# the value that matched a rule; /api/login is therefore excluded from audit
+			# logging below so a password can never be copied into that trailer.
 			SecAuditLogParts AHZ
 			SecAction "id:990,phase:1,pass,nolog,ctl:forceRequestBodyVariable=On"
+			# Keep inspecting and blocking login requests, but disable the audit record
+			# for this exact path. REQUEST_FILENAME excludes the query string.
+			SecRule REQUEST_FILENAME "@streq /api/login" "id:991,phase:1,pass,nolog,ctl:auditEngine=Off"
 
 			# --- OWASP Core Rule Set 4.28.0 ---
 			Include coreruleset-4.28.0/crs-setup.conf
