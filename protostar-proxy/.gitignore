@@ -9,7 +9,10 @@ autosave.json
 # transient stdout/stderr when caddy is launched with redirected output
 *.out
 *.err
-# self-signed TLS cert/key (regenerate per host)
+# development CA certificate + CA-signed server leaf/key (regenerate per host)
+# The CA private key is temporary and is never retained by build-proxy.py.
+tls-ca.pem
+tls-ca-key.pem
 tls-cert.pem
 tls-key.pem
 coraza-audit.log

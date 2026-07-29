@@ -390,9 +390,10 @@ Built in `protostar-proxy/` and verified against the smoke suite through the pro
 - **TLS + all interfaces (added):** listens on `:8443` (all interfaces, `::`).
   A bare-port site with `tls internal` **fails every handshake**
   (`ERR_SSL_PROTOCOL_ERROR`) — Caddy has no hostname to issue a cert for. Fixed
-  with an explicit self-signed cert (SANs localhost/127.0.0.1/::1) via
-  `tls tls-cert.pem tls-key.pem`; `build-proxy.py` generates it (SANs auto-include
-  hostname + LAN IP, `CA:TRUE`). HTTPS smoke is **12/12** with the WAF enforcing.
+  with an explicit CA-signed server leaf (SANs localhost/127.0.0.1/::1) via
+  `tls tls-cert.pem tls-key.pem`; `build-proxy.py` generates a development CA
+  certificate plus a `CA:FALSE`, server-auth-only leaf (SANs auto-include hostname
+  + LAN IP), then discards the CA private key. Clients trust only `tls-ca.pem`.
   Also set
   `skip_install_trust` (installing the CA root needs admin and hangs on Windows).
   For prod, use a real domain as the site address for automatic HTTPS.
@@ -440,7 +441,7 @@ session).
   replaced by `local-users.conf.example`.
 - **Google is optional:** leaving the client ID blank at the prompt skips SSO
   entirely; local auth is the always-works fallback (accepted to not work well
-  under the self-signed cert / offline). Google Cloud Console setup (OAuth client,
+  with the development certificate / offline). Google Cloud Console setup (OAuth client,
   redirect URI per host alias, consent-screen test users) is a manual external
   step — see `protostar-proxy/README.md`.
 - **Smoke suite:** the gate is now cookie/form-based, so Playwright's

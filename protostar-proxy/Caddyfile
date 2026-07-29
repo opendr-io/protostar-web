@@ -76,11 +76,12 @@
 	}
 }
 
-# Listens on all interfaces (:port = 0.0.0.0). TLS uses an explicit self-signed
-# cert (build-proxy.py generates tls-cert.pem/tls-key.pem with SANs). A bare-port
-# site with `tls internal` can't present a cert for the client's SNI, so we pin an
-# explicit cert. For a public domain, use the domain as the site address for
-# automatic HTTPS instead.
+# Listens on all interfaces (:port = 0.0.0.0). TLS uses an explicit CA-signed
+# server leaf (build-proxy.py generates tls-ca.pem plus tls-cert.pem/tls-key.pem
+# with SANs). Trust tls-ca.pem only, never the server leaf. A bare-port site with
+# `tls internal` can't present a cert for the client's SNI, so we pin an explicit
+# cert. For a public domain, use the domain as the site address for automatic
+# HTTPS instead.
 :8443 {
 	tls tls-cert.pem tls-key.pem
 

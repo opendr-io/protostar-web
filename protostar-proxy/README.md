@@ -54,7 +54,7 @@ The gate serves a login page at `/auth/` offering two options, the user's choice
 
 - **Local account** — a username/password stored (bcrypt-hashed) in the gitignored
   `local-users.conf`. `start-proxy.py` prompts for it on first run. This is the
-  fallback that always works, including under the self-signed cert / offline.
+  fallback that always works, including with the development certificate / offline.
 - **Google SSO** — "Sign in with Google" via a Google Cloud OAuth2 client. Optional;
   configured only if you supply a client ID/secret (see below). Which Google
   accounts are allowed through is an email allowlist (`google-allowlist.conf`), not
@@ -155,9 +155,11 @@ Two launchers, depending on what's already up:
 
 Open **`https://localhost:8443/`**:
 
-1. **Self-signed cert warning** — click through (Firefox: *Advanced → Accept the
-   Risk and Continue*), or import `protostar-proxy/tls-cert.pem` into your trust
-   store to silence it.
+1. **Development certificate warning** — click through (Firefox: *Advanced →
+   Accept the Risk and Continue*), or import `protostar-proxy/tls-ca.pem` into
+   your development client's trust store. **Never import `tls-cert.pem`**: it is
+   the server leaf, not a trust anchor. The CA private key is discarded after
+   signing, so it is not present on the running proxy host.
 2. You're redirected to **`/auth/`** — the login portal. Sign in with your **local
    account** (or **Sign in with Google** if configured).
 3. After login you land on the caddy-security **portal**. Click the **Protostar**
@@ -226,13 +228,24 @@ python test-waf.py --user <user> --password <pass>
   `basic_auth` gate couldn't cover them. This is the Tier 2 portal from design §5.1.
 - **View7 (Isotopes)** previously used an unbounded `MATCH (n)-[*]->…` query the
   WAF blocked; now bounded to `[*..3]`, so it renders with the WAF enforcing.
-- Runs HTTPS on `:8443`, all interfaces. TLS uses an explicit self-signed cert
-  (`build-proxy.py` generates `tls-cert.pem`/`tls-key.pem`, auto-including SANs for
-  localhost, the machine hostname, loopback, and the LAN IP, with `CA:TRUE` so it
-  can be imported into a trust store). **A bare-port site with `tls internal` does
-  NOT work** — Caddy has no hostname to issue a cert for, so every TLS handshake
-  fails (`ERR_SSL_PROTOCOL_ERROR`); hence the pinned explicit cert. Import
-  `tls-cert.pem` into clients' trust stores to drop the warning; for prod, use a
-  real domain as the site address (automatic, trusted HTTPS). **Regenerating the
-  cert needs a full restart of Caddy, not just `reload`.**
-- HTTP/3 (QUIC) is served but browsers fall back to HTTP/2 over the self-signed cert.
+- Runs HTTPS on `:8443`, all interfaces. `build-proxy.py` creates a development
+  CA certificate (`tls-ca.pem`) and uses its temporary private key to sign a
+  `CA:FALSE`, server-auth-only leaf (`tls-cert.pem`/`tls-key.pem`) containing SANs
+  for localhost, the machine hostname, loopback, and the LAN IP. The CA private
+  key is discarded after signing. **Import only `tls-ca.pem` into development
+  client trust stores; never import `tls-cert.pem`.** A bare-port site with
+  `tls internal` does not work because Caddy has no hostname for certificate
+  issuance, hence the pinned explicit leaf. For production, use a real domain as
+  the site address and automatic trusted HTTPS. Regenerating the certificates
+  requires a full Caddy restart, not just `reload`.
+- HTTP/3 (QUIC) is served, but clients that have not trusted `tls-ca.pem` may fall
+  back to HTTP/2 while handling the development-certificate warning.
+
+### Migrating from the legacy `CA:TRUE` server certificate
+
+Before rebuilding, remove the old `tls-cert.pem` from every client trust store.
+Then delete the old `protostar-proxy/tls-cert.pem` and `tls-key.pem`, rerun
+`python protostar-proxy/build-proxy.py`, and import only the newly generated
+`protostar-proxy/tls-ca.pem`. Leaving the legacy certificate trusted preserves
+the original certificate-forgery risk even after the proxy starts using the new
+leaf.

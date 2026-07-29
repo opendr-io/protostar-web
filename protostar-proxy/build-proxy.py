@@ -10,14 +10,16 @@ Requires the Go toolchain (https://go.dev/dl/). xcaddy itself does NOT need to b
 installed separately: it's fetched and version-pinned via `go run`.
 
 Also fetches the OWASP Core Rule Set (the WAF rules the Caddyfile Includes) and
-generates a self-signed TLS cert. Cross-platform (Windows/macOS/Linux); replaces
-the old build-proxy.ps1.
+generates a development CA plus a CA-signed server leaf certificate. The CA
+private key exists only while signing and is not retained. Cross-platform
+(Windows/macOS/Linux); replaces the old build-proxy.ps1.
 """
 import os
 import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import urllib.request
 import zipfile
 
@@ -111,36 +113,97 @@ def _lan_ip():
 
 
 def make_cert():
-    # Self-signed TLS cert. A bare-port site with `tls internal` can't present a
-    # cert for the client's SNI, so we pin an explicit cert with SANs for
-    # localhost, the machine hostname, loopback, and the primary LAN IP so it
-    # works for network access. CA:TRUE makes it importable into a trust store.
+    # A bare-port site with `tls internal` can't present a cert for the client's
+    # SNI, so we pin an explicit leaf with SANs for localhost, the machine
+    # hostname, loopback, and the primary LAN IP. Clients may trust tls-ca.pem;
+    # they must never trust the server leaf directly as a CA. The CA private key
+    # is temporary and is deleted as soon as the leaf is signed.
     cert = os.path.join(HERE, "tls-cert.pem")
     key = os.path.join(HERE, "tls-key.pem")
-    if os.path.exists(cert):
-        print("TLS cert already present.")
-        return
+    ca_cert = os.path.join(HERE, "tls-ca.pem")
     if not shutil.which("openssl"):
-        sys.exit("openssl not found — needed to generate the self-signed TLS cert.")
+        sys.exit("openssl not found — needed to generate or validate the development TLS certificates.")
+    artifacts = [cert, key, ca_cert]
+    present = [path for path in artifacts if os.path.exists(path)]
+    if len(present) == len(artifacts):
+        check = subprocess.run(
+            ["openssl", "x509", "-in", cert, "-noout", "-text"],
+            cwd=HERE, capture_output=True, text=True,
+        )
+        if check.returncode != 0 or "CA:FALSE" not in check.stdout:
+            sys.exit(
+                "Existing tls-cert.pem is not a CA:FALSE server leaf. Remove the old "
+                "tls-cert.pem/tls-key.pem after removing it from client trust stores, "
+                "then rerun this script."
+            )
+        print("TLS CA and server leaf already present.")
+        return
+    if present:
+        names = ", ".join(os.path.basename(path) for path in present)
+        sys.exit(
+            f"Incomplete or legacy TLS artifacts found ({names}). Remove the old "
+            "tls-cert.pem/tls-key.pem/tls-ca.pem after removing any old tls-cert.pem "
+            "from client trust stores, then rerun this script."
+        )
     hn = socket.gethostname()
     sans = ["DNS:localhost", f"DNS:{hn}", "IP:127.0.0.1", "IP:0:0:0:0:0:0:0:1"]
     ip = _lan_ip()
     if ip:
         sans.append(f"IP:{ip}")
     san = ",".join(sans)
-    print(f"Generating self-signed TLS cert (CN={hn}, SANs: {san})...")
+    print(f"Generating development CA and server leaf (CN={hn}, SANs: {san})...")
     env = os.environ.copy()
     if IS_WIN:
         env["MSYS_NO_PATHCONV"] = "1"  # keep mingw openssl from mangling /CN= and IP: args
-    cmd = [
-        "openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes",
-        "-keyout", key, "-out", cert, "-days", "825",
-        "-subj", f"/CN={hn}",
-        "-addext", "basicConstraints=critical,CA:TRUE",
-        "-addext", f"subjectAltName={san}",
-    ]
-    if subprocess.run(cmd, cwd=HERE, env=env).returncode != 0:
-        sys.exit("  openssl cert generation FAILED")
+    with tempfile.TemporaryDirectory(prefix="protostar-tls-") as temp_dir:
+        ca_key = os.path.join(temp_dir, "tls-ca-key.pem")
+        csr = os.path.join(temp_dir, "tls-server.csr")
+        ext = os.path.join(temp_dir, "tls-server.ext")
+        serial = os.path.join(temp_dir, "tls-ca.srl")
+        with open(ext, "w", encoding="ascii") as stream:
+            stream.write(
+                "basicConstraints=critical,CA:FALSE\n"
+                "keyUsage=critical,digitalSignature,keyEncipherment\n"
+                "extendedKeyUsage=serverAuth\n"
+                f"subjectAltName={san}\n"
+            )
+        commands = [
+            [
+                "openssl", "req", "-x509", "-newkey", "rsa:3072", "-nodes",
+                "-keyout", ca_key, "-out", ca_cert, "-days", "3650",
+                "-subj", "/CN=Protostar Development CA",
+                "-addext", "basicConstraints=critical,CA:TRUE",
+                "-addext", "keyUsage=critical,keyCertSign,cRLSign",
+            ],
+            [
+                "openssl", "req", "-new", "-newkey", "rsa:2048", "-nodes",
+                "-keyout", key, "-out", csr, "-subj", f"/CN={hn}",
+                "-addext", f"subjectAltName={san}",
+            ],
+            [
+                "openssl", "x509", "-req", "-in", csr,
+                "-CA", ca_cert, "-CAkey", ca_key, "-CAserial", serial,
+                "-CAcreateserial", "-out", cert, "-days", "825", "-sha256",
+                "-extfile", ext,
+            ],
+        ]
+        for cmd in commands:
+            if subprocess.run(cmd, cwd=HERE, env=env).returncode != 0:
+                for path in artifacts:
+                    if os.path.exists(path):
+                        os.remove(path)
+                sys.exit("  openssl certificate generation FAILED")
+
+    check = subprocess.run(
+        ["openssl", "x509", "-in", cert, "-noout", "-text"],
+        cwd=HERE, capture_output=True, text=True,
+    )
+    if check.returncode != 0 or "CA:FALSE" not in check.stdout:
+        for path in artifacts:
+            if os.path.exists(path):
+                os.remove(path)
+        sys.exit("  generated server certificate failed CA:FALSE validation")
+    print("  Import tls-ca.pem only; never import tls-cert.pem into a trust store.")
 
 
 def main():
@@ -148,7 +211,7 @@ def main():
     build_caddy()
     fetch_crs()
     make_cert()
-    print(f"Done -> {CADDY_BIN} (+ tls-cert.pem/tls-key.pem)")
+    print(f"Done -> {CADDY_BIN} (+ tls-ca.pem and tls-cert.pem/tls-key.pem)")
 
 
 if __name__ == "__main__":
