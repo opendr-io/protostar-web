@@ -6,6 +6,7 @@
 *.pfx
 *.p12
 *.pml
+*.exe
 
 # API keys and credentials
 *.env
@@ -83,7 +84,9 @@ dist/
 
 # Claude Code personal settings
 .claude/settings.local.json
+
 protostar-ai-dev-flask-api/logs/
 smoke-tests/test-results/
 smoke-tests/playwright-report/
 protostar-ai-dev-flask-api/agentconfig.ini
+

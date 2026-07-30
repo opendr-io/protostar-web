@@ -174,7 +174,6 @@ class TelemetryService:
     return data
 
   def search_alerts_neo(self, term):
-    data = []
     try:
       neo4j = self.neo4j_driver
       safe = (term or '').lower()
@@ -188,6 +187,15 @@ class TelemetryService:
              OR toLower(m.entity_type) CONTAINS $term
              OR toLower(m.name) CONTAINS $term
              OR toLower(toString(m.severity)) CONTAINS $term
+          WITH n, m, substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity_name
+          WITH CASE
+            WHEN m.guid IS NOT NULL AND m.name IS NOT NULL AND entity_name IS NOT NULL
+              THEN [m.guid, m.name, entity_name]
+            ELSE [elementId(m), elementId(n)]
+          END AS alert_key, n, m
+          ORDER BY m.timestamp DESC
+          WITH alert_key, head(collect({{entity_node: n, alert_node: m}})) AS matched
+          WITH matched.entity_node AS n, matched.alert_node AS m
           RETURN
               substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity,
               m.detection_type AS detection_type,
@@ -213,10 +221,10 @@ class TelemetryService:
           LIMIT {limit}
         """
       result_df = neo4j.query(query, parameters={'term': safe}).to_data_frame()
-      data = result_df.to_json()
-    except Exception as e:
-      print(e)
-    return data
+      return result_df.to_json()
+    except Exception:
+      logger.exception('Neo4j alert search failed')
+      raise
 
   def raw_atomic_weight(self, atomic_number, atomic_mass, signal_unique, signal_mass):
     non_signal_mass = max(atomic_mass - signal_mass, 0)
