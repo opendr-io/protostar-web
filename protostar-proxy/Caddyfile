@@ -127,6 +127,11 @@
 			# the log is for (which rule fired, where, on what match).
 			SecAuditLogParts AHZ
 			SecAction "id:990,phase:1,pass,nolog,ctl:forceRequestBodyVariable=On"
+			# Part H can still echo the substring that MATCHED a rule, so a flagged
+			# /api/login could copy a password fragment into the audit trailer. Disable
+			# the audit record for exactly this path (still inspected + blocked).
+			# REQUEST_FILENAME excludes the query string.
+			SecRule REQUEST_FILENAME "@streq /api/login" "id:991,phase:1,pass,nolog,ctl:auditEngine=Off"
 
 			# --- OWASP Core Rule Set 4.28.0 ---
 			Include coreruleset-4.28.0/crs-setup.conf
