@@ -29,7 +29,7 @@ def preflight():
   """Verify setup has been done and databases are reachable; return a list of problems"""
   problems = []
   if not (ROOT / 'protostar-ai-dev-flask-api' / '.venv').exists():
-    problems.append('protostar-ai-dev-flask-api/.venv missing - run startup.py once to set up')
+    problems.append('protostar-ai-dev-flask-api/.venv missing - run setup.py once to set up')
 
   # Local config files are gitignored; each has a committed .template to copy
   local_configs = [
@@ -54,14 +54,14 @@ def preflight():
     problems.append(f'Neo4j not reachable at {bolt.hostname}:{bolt.port} - start it (e.g. in Neo4j Desktop) first')
   if tls:
     if not (ROOT / 'protostar-ai-dev-flask-api' / 'keys').exists():
-      problems.append('protostar-ai-dev-flask-api/keys missing - run startup.py once to generate TLS certificates')
+      problems.append('protostar-ai-dev-flask-api/keys missing - run setup.py once to generate TLS certificates')
     for app in ('protostar-neo', 'protostar-react'):
       if not (ROOT / app / 'node_modules').exists():
-        problems.append(f'{app}/node_modules missing - run startup.py once to install dependencies')
+        problems.append(f'{app}/node_modules missing - run setup.py once to install dependencies')
   else:
     for app in ('protostar-neo', 'protostar-react'):
       if not (ROOT / app / 'dist').exists():
-        problems.append(f'{app}/dist missing - run startup.py once to build')
+        problems.append(f'{app}/dist missing - run setup.py once to build')
   return problems
 
 def stream_output(process, server_name):

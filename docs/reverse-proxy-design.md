@@ -348,10 +348,10 @@ existing host setup (Chocolatey). Chocolatey and the base Caddy install are NOT
 managed by the proxy setup — it assumes `caddy` is already on PATH.
   - run script — launches the built binary on the host.
   - `README.md` — prerequisites (Go, `xcaddy`) + setup/run steps.
-- **Kept OPTIONAL (per §3):** NOT wired into the default `start.py` /
+- **Kept OPTIONAL (per §3):** NOT wired into the default `start-direct.py` /
   `startdev.py`. It's a separate opt-in setup+run; normal local dev runs the
   services without it. (An opt-in launcher hook can be added later.)
-- **Leave `inittls.py` / `start.py` untouched until the standalone proxy is proven
+- **Leave `inittls.py` / `start-direct.py` untouched until the standalone proxy is proven
   working.** Only then integrate (move TLS in, add the opt-in proxied launcher).
 
 ## 13. Implementation notes (v1 built & verified)

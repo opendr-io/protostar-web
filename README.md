@@ -11,7 +11,7 @@ Recent serious work on the problem of false positives and their effects has meas
 1. If you have not yet set up the data layer, see this doc which covers setup of the data layer with sample data: [PROTOSTAR-data](https://github.com/opendr-io/protostar-data)
 2. See this doc for setup and configuration of the web layer: [Setup](https://github.com/opendr-io/protostar-web/blob/main/BaseSetup.md)
 4. Or this doc which covers Ubuntu setup: [Setup](https://github.com/opendr-io/protostar-web/blob/main/Ubuntu%20Server%20Configuration.md)
-3. Run ```python startup.py```
+3. Run ```python setup.py```
 
 ## TLS
 TLS: This guide covers setting up TLS across the plaform: [TLS Setup](https://github.com/opendr-io/protostar-web/blob/main/TLSSetup.md)

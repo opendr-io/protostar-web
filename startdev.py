@@ -26,7 +26,7 @@ def setup_and_start_server(command, directory, server_name):
     return None
 
 def run():
-  # Dev mode: no installs, no builds. Run startup.py once first to set up the
+  # Dev mode: no installs, no builds. Run setup.py once first to set up the
   # venv, node_modules, and databases.
   # - Flask runs without --debug
   # - React/Neo run under the Vite dev server: frontend edits hot-reload in the
