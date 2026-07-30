@@ -21,6 +21,20 @@
 	# don't try to install the internal CA root into the OS trust store (needs
 	# admin and blocks on Windows). Clients trust the CA manually or use -k.
 	skip_install_trust
+	# Keep the WAF's per-request rule-match warnings out of the console / start-script
+	# output — they flood it during a scan. The full record still goes to the audit
+	# log file (SecAuditLog coraza-audit.log) and the Settings "WAF Log" view; only the
+	# duplicate stderr stream from the http.handlers.waf logger is dropped.
+	log {
+		output stderr
+		format console
+		# Drop the high-volume per-request loggers from the console (they flood it
+		# during a scan): the WAF rule matches, the authorizer's "no token found" on
+		# every unauthenticated request, and rate-limit 429s. All still recorded
+		# elsewhere (coraza-audit.log for the WAF). `security` (real auth failures) is
+		# deliberately kept — it's useful signal outside a scan.
+		exclude http.handlers.waf http.handlers.authentication http.handlers.rate_limit
+	}
 	order coraza_waf first
 	order rate_limit before basic_auth
 	order authenticate before respond
@@ -47,7 +61,7 @@
 		import google-provider.conf
 
 		authentication portal gateportal {
-			crypto default token lifetime 86400
+			crypto default token lifetime 7200
 			crypto key sign-verify {env.PROTOSTAR_JWT_KEY}
 			enable identity store localdb
 			# `enable identity provider google` -- generated into google-enable.conf,
@@ -105,15 +119,14 @@
 			SecAuditLog coraza-audit.log
 			# Audit parts are minimized to A (metadata) + H (rule-match trailer: id,
 			# msg, matched data, uri) + Z (boundary). Request headers (B), request body
-			# (C), and response headers (F) are deliberately EXCLUDED, so Authorization,
-			# Set-Cookie, and raw request bodies are not persisted. H can still contain
-			# the value that matched a rule; /api/login is therefore excluded from audit
-			# logging below so a password can never be copied into that trailer.
+			# (C), and response headers (F) are deliberately EXCLUDED so the audit log —
+			# which the app serves to users via /corazalog — never records secrets:
+			# no Authorization header (Bearer JWT / Neo4j Basic), no /api/login body
+			# (plaintext password), no Set-Cookie. Coraza has no per-header sanitize
+			# action, hence dropping the whole header/body parts. H still carries what
+			# the log is for (which rule fired, where, on what match).
 			SecAuditLogParts AHZ
 			SecAction "id:990,phase:1,pass,nolog,ctl:forceRequestBodyVariable=On"
-			# Keep inspecting and blocking login requests, but disable the audit record
-			# for this exact path. REQUEST_FILENAME excludes the query string.
-			SecRule REQUEST_FILENAME "@streq /api/login" "id:991,phase:1,pass,nolog,ctl:auditEngine=Off"
 
 			# --- OWASP Core Rule Set 4.28.0 ---
 			Include coreruleset-4.28.0/crs-setup.conf

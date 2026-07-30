@@ -13,7 +13,7 @@ Usage:
 
 Requires the built binary — run build-proxy.py first. This starts the proxy ONLY
 (assumes Flask/Neo4j and the built bundles are already up). For the full app in
-proxied mode, use start-proxied.py from the repo root.
+proxied mode, use setup-proxied.py from the repo root.
 """
 import argparse
 import os
@@ -174,7 +174,7 @@ def ensure_google_client():
     # Secret: env-only. Prompt for this run if configured-but-missing.
     if os.environ.get("PROTOSTAR_GOOGLE_CLIENT_ID") and not os.environ.get("PROTOSTAR_GOOGLE_CLIENT_SECRET"):
         print("  Google client secret is not stored on disk — enter it for this run")
-        print("  (export PROTOSTAR_GOOGLE_CLIENT_SECRET to skip this prompt and for start-proxied.py):")
+        print("  (export PROTOSTAR_GOOGLE_CLIENT_SECRET to skip this prompt and for setup-proxied.py):")
         os.environ["PROTOSTAR_GOOGLE_CLIENT_SECRET"] = getpass("  Google OAuth client secret: ")
 
 

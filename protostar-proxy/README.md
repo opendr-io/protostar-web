@@ -78,7 +78,7 @@ Postgres `appusers` + JWT): the gate says "you may reach the app"; the JWT says
    it on first run; leave blank to skip Google SSO). The **Client Secret is never
    stored on disk** — provide it via the `PROTOSTAR_GOOGLE_CLIENT_SECRET` environment
    variable (export it, or use a secrets manager). `start-proxy.py` prompts for it
-   per run if it's not set; `start-proxied.py` requires it in the environment and
+   per run if it's not set; `setup-proxied.py` requires it in the environment and
    refuses to start Google SSO without it.
 5. While the consent screen is in "Testing" status, add each allowed person as a
    Google **test user** *and* add their email to `google-allowlist.conf`. The two
@@ -95,14 +95,14 @@ must be added to the `@app` matcher in the `Caddyfile`.
 - **Go toolchain** (https://go.dev/dl/) — `build-proxy.py` uses it to compile Caddy
   via `xcaddy`. (The built `caddy` binary also provides `hash-password`, which
   `start-proxy.py` uses — no separate Caddy install needed.)
-- **Python 3** — runs `build-proxy.py`, `start-proxy.py`, and `start-proxied.py`.
+- **Python 3** — runs `build-proxy.py`, `start-proxy.py`, and `setup-proxied.py`.
 - **Neo4j** (`:7474`) and **Postgres** running — external services the app needs
   (Postgres backs the app's own `/api/login`, separate from the gate).
 - **`protostar-ai-dev-flask-api/agentconfig.ini`** present (copy from
   `agentconfig.ini.template`) — Flask won't start without it. An empty `AnthropicKey`
   is fine; only the LLM features need a real key.
 
-`start-proxied.py` (below) builds the React/neo bundles for you with the proxied
+`setup-proxied.py` (below) builds the React/neo bundles for you with the proxied
 (same-origin) config, so you don't normally build them by hand. To build manually:
 
 ```powershell
@@ -137,13 +137,13 @@ On its **first run**, `start-proxy.py` prompts for:
 It auto-generates the session signing key and derives the Google config snippets.
 All of these are gitignored; subsequent runs skip whatever already exists. Since
 `start-proxy.py` also *starts* the proxy (blocking), press `Ctrl+C` after the
-credential is written if you're going to use `start-proxied.py` next.
+credential is written if you're going to use `setup-proxied.py` next.
 
 ## Running in proxy mode
 
 Two launchers, depending on what's already up:
 
-- **`python start-proxied.py`** (repo root) — the **all-in-one**: builds the
+- **`python setup-proxied.py`** (repo root) — the **all-in-one**: builds the
   React/neo bundles with the proxied config, starts Flask on loopback, and launches
   the proxy. Use this to bring up the whole app. Requires the gate already set up
   (run `start-proxy.py` once first) and Neo4j + Postgres running.

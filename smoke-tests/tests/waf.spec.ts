@@ -139,7 +139,6 @@ describe('Perimeter gate blocks unauthenticated access', () => {
 // machine (SMOKE_BASE_URL=https://<server>:8443) to actually exercise it.
 const baseHost = (() => { try { return new URL(process.env.SMOKE_BASE_URL || '').hostname; } catch { return ''; } })();
 const targetIsLocal = ['', 'localhost', '127.0.0.1', '::1', '[::1]'].includes(baseHost);
-const remoteDescribe = (proxied && !targetIsLocal) ? test.describe : test.describe.skip;
 
 // Raw TCP connect: does the port accept a connection from this (remote) client?
 // A successful connect means the port is network-exposed; a refused or timed-out
@@ -163,7 +162,11 @@ function portReachable(host: string, port: number, timeoutMs = 4000): Promise<bo
   });
 }
 
-remoteDescribe('Backend services are not directly reachable (remote only)', () => {
+test.describe('Backend services are not directly reachable (remote only)', () => {
+  // Skipped with a stated reason (surfaced by skip-reporter.ts) so it's clear WHY.
+  test.skip(!proxied || targetIsLocal, !proxied
+    ? 'proxy-only: no proxy in this run'
+    : `remote-only: target is ${baseHost || 'localhost'}; backends are loopback-reachable by design here — run against a remote SMOKE_BASE_URL to exercise this`);
   // The proxy fronts Flask/Neo4j-HTTP on 127.0.0.1 (Caddyfile reverse_proxy targets);
   // Neo4j Bolt (:7687) is loopback-bound too and never proxied at all. None should be
   // reachable from a remote client — only the proxy (:8443) is network-exposed.

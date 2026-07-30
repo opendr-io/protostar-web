@@ -183,7 +183,7 @@ export function Settings()
 
       <pre
         aria-label={logSource === 'coraza' ? 'WAF audit log contents' : 'API log contents'}
-        className="bg-[#111111] border border-gray-700 rounded-lg p-4 h-[calc(100vh-12rem)] overflow-auto whitespace-pre text-xs leading-5 text-gray-200 font-mono">
+        className={`bg-[#111111] border border-gray-700 rounded-lg p-4 h-[calc(100vh-12rem)] overflow-auto text-xs leading-5 text-gray-200 font-mono ${logSource === 'coraza' ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}`}>
         {isLoading && !logText
           ? 'Loading log...'
           : (logText || (logSource === 'coraza'
