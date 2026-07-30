@@ -41,6 +41,8 @@ export function runForceGraph(
   strength,
   labelNodeTypes, // list of nodetypes to attach a label to
   directed = false, // draw arrowheads indicating edge direction (source -> target)
+  fontSize, // label size in px; unset keeps each label group's default
+  showIp = false, // append the entity's own ip to its label
 ) {
   const nodes = nodesData;
   const hostNodes = nodesData.filter(node => node.type === 'ENTITY');
@@ -204,12 +206,12 @@ export function runForceGraph(
     .data(hostNodes.filter(d => labelNodeTypes.includes(d.type))) // hostnodes
     .enter()
     .append('text')
-    .text((d) => `[${d.entity_type}]` + ' ' + d.entity.toUpperCase())
+    .text((d) => `[${d.entity_type}] ${d.entity.toUpperCase()}${showIp && d.ip ? ` (${d.ip})` : ''}`)
     // .each(wrap) // this truncates the host label
     .attr('stroke', '#000')
     .attr('stroke-width', 1)
     .attr('fill', (d) => COLOR_MAP[d.group]) // match the node color (white, or red when entity-linked)
-    .attr('font-size', '20')
+    .attr('font-size', fontSize ?? 20)
     .attr('font-weight', '900')
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')
@@ -225,6 +227,7 @@ export function runForceGraph(
     .attr('stroke-width', 2)
     .attr('fill', '#fff')
     .attr('paint-order', 'stroke')
+    .attr('font-size', fontSize ?? null)
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')
 

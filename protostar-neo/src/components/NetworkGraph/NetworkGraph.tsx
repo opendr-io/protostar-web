@@ -45,6 +45,8 @@ type Props = {
   strength: number;
   labelNodeTypes?: NodeType[keyof NodeType][]
   directed?: boolean // draw arrowheads to indicate edge direction (source -> target)
+  fontSize?: number // label size in px; unset keeps each label group's default
+  showIp?: boolean // append the entity's own ip to its label
 };
 
 const ForceGraph: React.FC<Props> = ({
@@ -55,6 +57,8 @@ const ForceGraph: React.FC<Props> = ({
   strength,
   labelNodeTypes = ['ENTITY', 'SEVERITY_CLUSTER', 'NAME_CLUSTER'], // default nodes to be labelled, override this prop to label other node types
   directed = false,
+  fontSize,
+  showIp = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -68,12 +72,14 @@ const ForceGraph: React.FC<Props> = ({
         strength,
         labelNodeTypes,
         directed,
+        fontSize,
+        showIp,
       );
       destroyFn = destroy;
     }
 
     return destroyFn;
-  }, [nodes, links, strength]);
+  }, [nodes, links, strength, fontSize, showIp]);
 
   return <>
     <div ref={containerRef} style={{ width, height, border: '1px solid lightgrey', borderRadius: 8, overflow: 'hidden' }}></div>
