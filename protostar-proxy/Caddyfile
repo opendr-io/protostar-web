@@ -61,7 +61,7 @@
 		import google-provider.conf
 
 		authentication portal gateportal {
-			crypto default token lifetime 7200
+			crypto default token lifetime 43200
 			crypto key sign-verify {env.PROTOSTAR_JWT_KEY}
 			enable identity store localdb
 			# `enable identity provider google` -- generated into google-enable.conf,

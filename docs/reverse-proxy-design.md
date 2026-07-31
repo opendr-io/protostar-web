@@ -433,7 +433,7 @@ session).
   `security-jwt-key.conf` (session signing key). The Google client **secret is never
   written to disk** — it comes from the `PROTOSTAR_GOOGLE_CLIENT_SECRET` env var
   (`start-proxy.py` prompts for it per run if unset and holds it in-process;
-  `setup-proxied.py` requires it in the environment). `start-proxy.py`
+  `start-proxied.py` requires it in the environment). `start-proxy.py`
   prompts/generates the rest on first run (skip if present) and exports the JWT key
   + Google client ID/secret as env vars before `caddy run`/`reload` (the signing key
   is referenced under two different directive keywords, so it can't be a single

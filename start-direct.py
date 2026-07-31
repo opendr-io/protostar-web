@@ -1,12 +1,13 @@
 import os
 import sys
 import time
-import socket
 import threading
 import subprocess
 import configparser
 from pathlib import Path
-from urllib.parse import urlparse
+
+import preflight
+from preflight import port_open
 
 ROOT = Path(__file__).parent.absolute()
 
@@ -19,50 +20,6 @@ if(os.name == 'nt'):
 else:
   venv_python = '.venv/bin/python'
 
-def port_open(host, port):
-  """Check whether something is listening at host:port"""
-  with socket.socket() as s:
-    s.settimeout(2)
-    return s.connect_ex((host, int(port))) == 0
-
-def preflight():
-  """Verify setup has been done and databases are reachable; return a list of problems"""
-  problems = []
-  if not (ROOT / 'protostar-ai-dev-flask-api' / '.venv').exists():
-    problems.append('protostar-ai-dev-flask-api/.venv missing - run setup.py once to set up')
-
-  # Local config files are gitignored; each has a committed .template to copy
-  local_configs = [
-    ROOT / 'protostar-ai-dev-flask-api' / 'dbconfig.ini',
-    ROOT / 'protostar-neo' / '.env',
-    ROOT / 'protostar-react' / '.env',
-  ]
-  for cfg in local_configs:
-    if not cfg.exists():
-      problems.append(f'{cfg.relative_to(ROOT)} missing - copy {cfg.name}.template to {cfg.name} and fill in your values')
-  if problems:
-    return problems
-
-  dbconfig = configparser.ConfigParser()
-  dbconfig.read(ROOT / 'protostar-ai-dev-flask-api' / 'dbconfig.ini')
-  pghost = dbconfig.get('Database', 'HostName', fallback='localhost')
-  pgport = dbconfig.get('Database', 'PortNumber', fallback='5432')
-  if not port_open(pghost, pgport):
-    problems.append(f'PostgreSQL not reachable at {pghost}:{pgport} - start the postgresql service first')
-  bolt = urlparse(dbconfig.get('Neo4j', 'BoltURL', fallback='bolt://localhost:7687'))
-  if not port_open(bolt.hostname or 'localhost', bolt.port or 7687):
-    problems.append(f'Neo4j not reachable at {bolt.hostname}:{bolt.port} - start it (e.g. in Neo4j Desktop) first')
-  if tls:
-    if not (ROOT / 'protostar-ai-dev-flask-api' / 'keys').exists():
-      problems.append('protostar-ai-dev-flask-api/keys missing - run setup.py once to generate TLS certificates')
-    for app in ('protostar-neo', 'protostar-react'):
-      if not (ROOT / app / 'node_modules').exists():
-        problems.append(f'{app}/node_modules missing - run setup.py once to install dependencies')
-  else:
-    for app in ('protostar-neo', 'protostar-react'):
-      if not (ROOT / app / 'dist').exists():
-        problems.append(f'{app}/dist missing - run setup.py once to build')
-  return problems
 
 def stream_output(process, server_name):
   """Relay a server's output line by line with a name prefix"""
@@ -112,12 +69,8 @@ def start_server(command, directory, server_name):
     return None
 
 def run():
-  problems = preflight()
-  if problems:
-    print("Setup incomplete:")
-    for problem in problems:
-      print(f"  - {problem}")
-    sys.exit(1)
+  # TLS mode runs the frontends from source (vite), otherwise from built bundles
+  preflight.require(ROOT, need_keys=tls, need_node_modules=tls, need_dist=not tls)
 
   if tls:
     servers = [

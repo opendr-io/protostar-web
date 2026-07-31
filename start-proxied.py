@@ -8,7 +8,7 @@ Assumes:
   - protostar-proxy/build-proxy.py has been run once (caddy binary + TLS cert).
   - protostar-neo/.env holds the Neo4j creds (baked into the neo bundle for v1).
 
-For normal hot-reload dev use startdev.py instead. This is the proxied path:
+For normal hot-reload dev use start-dev.py instead. This is the proxied path:
 static bundles served by Caddy, no Vite dev servers.
 
 All paths are relative — the script cd's to its own directory (the repo root) so
@@ -18,6 +18,8 @@ import os
 import subprocess
 import sys
 import time
+
+import preflight
 
 # cd to this script's directory (repo root) so every path below stays relative.
 _here = os.path.dirname(__file__)
@@ -93,6 +95,8 @@ def start_proxy(env):
 
 def run():
   print("=== Protostar proxied startup ===\n")
+  # This builds the bundles itself, so node_modules but no dist.
+  preflight.require(".", need_node_modules=True)
   # Fail fast on binary/gate problems before starting anything downstream.
   proxy_env = preflight_proxy()
 

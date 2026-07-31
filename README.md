@@ -8,15 +8,18 @@ Recent serious work on the problem of false positives and their effects has meas
 
 ## Getting Started with the PROTOSTAR Project
 
+
 1. If you have not yet set up the data layer, see this doc which covers setup of the data layer with sample data: [PROTOSTAR-data](https://github.com/opendr-io/protostar-data)
 2. See this doc for setup and configuration of the web layer: [Setup](https://github.com/opendr-io/protostar-web/blob/main/BaseSetup.md)
 4. Or this doc which covers Ubuntu setup: [Setup](https://github.com/opendr-io/protostar-web/blob/main/Ubuntu%20Server%20Configuration.md)
-3. Run ```python setup.py```
+3. Run ```python SETUP.py``` once to install the web services and data layers
+4. Run ```python START.py``` to start the application (see next section before choosing 'P' mode)
+5. To manually run in direct, non-proxy/waf mode you run ```python start-direct.py``` - or to run in dev mode, run ```python startdev.py```
 
-## TLS
-TLS: This guide covers setting up TLS across the plaform: [TLS Setup](https://github.com/opendr-io/protostar-web/blob/main/TLSSetup.md)
+## Prod mode with Minimal Attack Surface - TLS, SSO and WAF Front End:
+To run the web layer behind a single HTTPS origin — one gated entry point fronting React, Flask, and Neo4j, with a login portal (local or Google SSO) and a WAF — see [protostar-proxy/README.md](protostar-proxy/README.md). It covers setup, first login, and running in proxy mode. Local dev without the proxy is unchanged.
+1. Run ```python build-proxied.py``` once to set up the Caddy proxy front end and Coraza WAF, then:
+2. Run ```python start-proxied.py`` to start in proxy / WAF mode.
 
-## Reverse proxy (optional)
-To run the web layer behind a single hardened HTTPS origin — one gated entry point fronting React, Flask, and Neo4j, with a login portal (local or Google SSO) and a WAF — see [protostar-proxy/README.md](protostar-proxy/README.md). It covers setup, first login, and running in proxy mode (`setup-proxied.py`). Local dev without the proxy is unchanged.
-
-
+## TLS In The Data Layer
+This doc covers setting up TLS across the plaform: [TLS Setup](https://github.com/opendr-io/protostar-web/blob/main/TLSSetup.md)

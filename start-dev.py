@@ -2,6 +2,11 @@ import subprocess
 import concurrent.futures
 import os
 import time
+from pathlib import Path
+
+import preflight
+
+ROOT = Path(__file__).parent.absolute()
 
 def setup_and_start_server(command, directory, server_name):
   """Setup environment and start server"""
@@ -26,7 +31,10 @@ def setup_and_start_server(command, directory, server_name):
     return None
 
 def run():
-  # Dev mode: no installs, no builds. Run setup.py once first to set up the
+  # Vite serves the frontends from source, so no dist needed
+  preflight.require(ROOT, need_node_modules=True)
+
+  # Dev mode: no installs, no builds. Run SETUP.py once first to set up the
   # venv, node_modules, and databases.
   # - Flask runs without --debug
   # - React/Neo run under the Vite dev server: frontend edits hot-reload in the
