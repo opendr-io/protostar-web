@@ -50,7 +50,7 @@ export function View6()
         links={network.links ?? []}
         width={"100%"}
         height={"95vh"}
-        strength={-16000}
+        strength={-3600}
         labelNodeTypes={['ENTITY', 'HOST']}
         fontSize={25}
         showIp
