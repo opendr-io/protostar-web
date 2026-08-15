@@ -112,6 +112,28 @@ def _lan_ip():
         return None
 
 
+def _openssl():
+    # Windows ships no system openssl, but Git for Windows bundles one that is
+    # not on PATH. Fall back to it rather than making the user install another.
+    found = shutil.which("openssl")
+    if found or not IS_WIN:
+        return found
+    candidates = []
+    git = shutil.which("git")
+    if git:  # <git-root>/cmd/git.exe or <git-root>/bin/git.exe
+        candidates.append(os.path.dirname(os.path.dirname(git)))
+    for env_var in ("ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"):
+        base = os.environ.get(env_var)
+        if base:
+            candidates.append(os.path.join(base, "Git"))
+    for root in candidates:
+        for sub in (("usr", "bin"), ("mingw64", "bin"), ("mingw32", "bin")):
+            path = os.path.join(root, *sub, "openssl.exe")
+            if os.path.exists(path):
+                return path
+    return None
+
+
 def make_cert():
     # A bare-port site with `tls internal` can't present a cert for the client's
     # SNI, so we pin an explicit leaf with SANs for localhost, the machine
@@ -121,13 +143,14 @@ def make_cert():
     cert = os.path.join(HERE, "tls-cert.pem")
     key = os.path.join(HERE, "tls-key.pem")
     ca_cert = os.path.join(HERE, "tls-ca.pem")
-    if not shutil.which("openssl"):
+    openssl = _openssl()
+    if not openssl:
         sys.exit("openssl not found — needed to generate or validate the development TLS certificates.")
     artifacts = [cert, key, ca_cert]
     present = [path for path in artifacts if os.path.exists(path)]
     if len(present) == len(artifacts):
         check = subprocess.run(
-            ["openssl", "x509", "-in", cert, "-noout", "-text"],
+            [openssl, "x509", "-in", cert, "-noout", "-text"],
             cwd=HERE, capture_output=True, text=True,
         )
         if check.returncode != 0 or "CA:FALSE" not in check.stdout:
@@ -169,19 +192,19 @@ def make_cert():
             )
         commands = [
             [
-                "openssl", "req", "-x509", "-newkey", "rsa:3072", "-nodes",
+                openssl, "req", "-x509", "-newkey", "rsa:3072", "-nodes",
                 "-keyout", ca_key, "-out", ca_cert, "-days", "3650",
                 "-subj", "/CN=Protostar Development CA",
                 "-addext", "basicConstraints=critical,CA:TRUE",
                 "-addext", "keyUsage=critical,keyCertSign,cRLSign",
             ],
             [
-                "openssl", "req", "-new", "-newkey", "rsa:2048", "-nodes",
+                openssl, "req", "-new", "-newkey", "rsa:2048", "-nodes",
                 "-keyout", key, "-out", csr, "-subj", f"/CN={hn}",
                 "-addext", f"subjectAltName={san}",
             ],
             [
-                "openssl", "x509", "-req", "-in", csr,
+                openssl, "x509", "-req", "-in", csr,
                 "-CA", ca_cert, "-CAkey", ca_key, "-CAserial", serial,
                 "-CAcreateserial", "-out", cert, "-days", "825", "-sha256",
                 "-extfile", ext,
@@ -195,7 +218,7 @@ def make_cert():
                 sys.exit("  openssl certificate generation FAILED")
 
     check = subprocess.run(
-        ["openssl", "x509", "-in", cert, "-noout", "-text"],
+        [openssl, "x509", "-in", cert, "-noout", "-text"],
         cwd=HERE, capture_output=True, text=True,
     )
     if check.returncode != 0 or "CA:FALSE" not in check.stdout:
