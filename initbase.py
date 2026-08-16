@@ -34,8 +34,9 @@ def run():
   # Setup environments first
   print("Setting up environments...")
   # Postgres configuration
-  postgresversion = config.get('Postgres', 'PostgresVersion')
-  shell = config.get('OSConfig', 'Shell')
+  postgresversion = config.get('Postgres', 'PostgresVersion', fallback='17')
+  # empty/absent -> None so subprocess picks COMSPEC or /bin/sh
+  shell = config.get('OSConfig', 'Shell', fallback='') or None
   
   # Flask setup
   flask_cmd = 'python -m venv .venv'

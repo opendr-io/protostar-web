@@ -21,7 +21,13 @@ export function View6()
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH path = ()-[:CONNECTS_HOST {view: 6}]->() RETURN path UNION MATCH path = (:ENTITY {view: 2})-[:CONNECTS_TO {view: 6}]->(:ENTITY {view: 2}) RETURN path`
+            statement: `MATCH path = (:ENTITY {view: 2})-[:CONNECTS_TO {view: 6}]->(:ENTITY {view: 2})
+                        RETURN path
+                        UNION
+                        MATCH path = (:ENTITY {view: 2})-[:SEEN_FROM]->(h:HOST {view: 6})
+                        WHERE NOT EXISTS { (:ENTITY {view: 2})-[:AT]->(h) }
+                          AND COUNT { (:ENTITY {view: 2})-[:SEEN_FROM]->(h) } > 1
+                        RETURN path`
           },
         ],
       }),
@@ -43,9 +49,11 @@ export function View6()
         nodes={network.nodes ?? []}
         links={network.links ?? []}
         width={"100%"}
-        height={"90vh"}
-        strength={-1300}
+        height={"95vh"}
+        strength={-3600}
         labelNodeTypes={['ENTITY', 'HOST']}
+        fontSize={25}
+        showIp
         directed
       />
     </div>

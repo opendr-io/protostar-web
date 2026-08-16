@@ -66,6 +66,7 @@ Thumbs.db           # Windows
 
 *.conf
 *.ini
+!protostar-proxy/waf-exceptions.conf
 
 protostar-ai-dev-flask-api/.DS_Store
 protostar-ai-dev-flask-api/.venv

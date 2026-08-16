@@ -119,7 +119,7 @@ export function PrimaryDash()
         <iframe 
           ref={refImage}
           className="w-full h-full rounded-md"
-          src={`${config.ServerURL()}:3000/view2`} 
+          src={`${config.GraphBaseURL()}/view2`}
           style={{
             height: `calc(100vh - ${document.querySelector('.h-12')?.offsetHeight || 48}px)`
           }}

@@ -1,0 +1,18 @@
+# Local perimeter-gate account, imported into the `local identity store localdb`
+# block in Caddyfile. Copy this to local-users.conf (gitignored) and fill in a
+# real username + bcrypt hash -- or just run start-proxy.py, which does this
+# for you on first run (prompts for a username/password and writes the block
+# below; skipped if local-users.conf already exists).
+#
+# Generate a hash: caddy hash-password --plaintext '<password>'
+# The password MUST be in caddy-security's `bcrypt:<cost>:<hash>` form -- a bare
+# $2a$... hash is treated as PLAINTEXT and re-hashed, so login never matches. The
+# cost is the number in the hash itself ($2a$<cost>$...), e.g. 14.
+user <username> {
+	name <username>
+	email <username>@protostar.local
+	password "bcrypt:14:<bcrypt-hash>" overwrite
+	# Makes this the store's admin so caddy-security doesn't auto-seed a default
+	# `webadmin` account. Roles apply only when local-users.json is first created.
+	roles authp/admin
+}

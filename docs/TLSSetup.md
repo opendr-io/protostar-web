@@ -85,7 +85,7 @@
 			- ApplicationUser=[The_first_user_of_application]
 			- ApplicationUserPassword=[Password_of_the_first_user_of_application]
 
-4. Fill out the information in secureconfig.ini located in the base directory. The other fields can be left blank. Needed to run the startup.py script.
+4. Fill out the information in secureconfig.ini located in the base directory. The other fields can be left blank. Needed to run the SETUP.py script.
 	- [General]
 		- TLS=True
 
@@ -139,4 +139,4 @@
 		- AnthropicKey=
 
 10. Once thse steps have been completed run the following command (Make sure you are running the command prompt or PowerShell in Administrator mode in Windows when running this command. If an error comes up rerun the command again):
-	- sudo python startup.py
+	- sudo python SETUP.py

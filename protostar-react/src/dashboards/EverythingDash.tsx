@@ -9,7 +9,7 @@ export function EverythingDash()
       <div className="flex-1">
         <iframe 
           className="w-full h-full rounded-md"
-          src={`${config.ServerURL()}:3000/view1`} 
+          src={`${config.GraphBaseURL()}/view1`}
           style={{
             height: `calc(100vh - ${document.querySelector('.h-12')?.offsetHeight || 48}px)`
           }}

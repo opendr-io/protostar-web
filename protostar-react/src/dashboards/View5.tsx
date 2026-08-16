@@ -8,7 +8,7 @@ export function View5()
       <div className="flex-1">
         <iframe 
           className="w-full h-full rounded-md"
-          src={`${config.ServerURL()}:3000/experiment/view5`}
+          src={`${config.GraphBaseURL()}/experiment/view5`}
           style={{
             height: `calc(100vh - ${document.querySelector('.h-12')?.offsetHeight || 48}px)`
           }}

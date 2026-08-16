@@ -1,0 +1,273 @@
+#!/usr/bin/env python3
+"""Set up the perimeter-gate credentials and run (or reload) the protostar-proxy Caddy.
+
+Cross-platform replacement for start-proxy.ps1 (matches build-proxy.py). On first
+run it prompts for the gate's local account and, optionally, a Google OAuth client
++ email allowlist, writing gitignored config files; later runs skip whatever
+already exists. Then it starts Caddy (or hot-reloads it) with the chosen Coraza mode.
+
+Usage:
+    python start-proxy.py                              # first run: prompt for gate creds, then run (WAF On)
+    python start-proxy.py --coraza DetectionOnly --reload   # hot-reload, log-not-block
+    python start-proxy.py --coraza Off --reload             # hot-reload, WAF bypassed
+
+Requires the built binary — run build-proxy.py first. This starts the proxy ONLY
+(assumes Flask/Neo4j and the built bundles are already up). For the full app in
+proxied mode, use start-proxied.py from the repo root.
+"""
+import argparse
+import os
+import re
+import secrets
+import stat
+import subprocess
+import sys
+from getpass import getpass
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+IS_WIN = os.name == "nt"
+CADDY = os.path.join(HERE, "caddy.exe" if IS_WIN else "caddy")
+CADDYFILE = os.path.join(HERE, "Caddyfile")
+
+
+def _hash_password(plain):
+    out = subprocess.run([CADDY, "hash-password", "--plaintext", plain],
+                         capture_output=True, text=True)
+    if out.returncode != 0:
+        sys.exit("  caddy hash-password failed: " + out.stderr.strip())
+    return out.stdout.strip()
+
+
+def ensure_local_account():
+    # local-users.conf: one bcrypt-hashed local account, imported by the local
+    # identity store. `roles authp/admin` makes it the store's admin so
+    # caddy-security doesn't auto-seed a default `webadmin` account (roles apply
+    # only on fresh store creation — i.e. this first run).
+    path = os.path.join(HERE, "local-users.conf")
+    if os.path.exists(path):
+        return
+    print("No local perimeter-gate account set. Enter one to populate local-users.conf:")
+    user = input("  Local username: ").strip()
+    pw = getpass("  Local password: ")
+    h = _hash_password(pw)
+    m = re.match(r"^\$2[aby]\$(\d+)\$", h)  # caddy-security wants bcrypt:<cost>:<hash>
+    cost = m.group(1) if m else "14"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(
+            f"user {user} {{\n"
+            f"\tname {user}\n"
+            f"\temail {user}@protostar.local\n"
+            f'\tpassword "bcrypt:{cost}:{h}" overwrite\n'
+            f"\troles authp/admin\n"
+            f"}}\n"
+        )
+    print(f"  Local account written to local-users.conf (user: {user}, admin).")
+
+
+def _read_private_file(path, description):
+    # Refuse links before opening and use O_NOFOLLOW where the platform provides
+    # it, closing the check/open race on POSIX. An attacker must not be able to
+    # redirect a secret read to another file.
+    if os.path.islink(path):
+        sys.exit(f"{description} must be a regular file, not a symbolic link: {path}")
+    flags = os.O_RDONLY
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        fd = os.open(path, flags)
+    except OSError as exc:
+        sys.exit(f"Unable to open {description} securely: {exc}")
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode):
+            sys.exit(f"{description} must be a regular file: {path}")
+        if os.name != "nt":
+            if info.st_uid != os.getuid():
+                sys.exit(f"{description} is not owned by the current user: {path}")
+            if stat.S_IMODE(info.st_mode) & 0o077:
+                # The file is correctly owned and already open without following
+                # links, so safely remove group/other access and verify the result.
+                os.fchmod(fd, 0o600)
+                if stat.S_IMODE(os.fstat(fd).st_mode) != 0o600:
+                    sys.exit(f"Unable to restrict {description} to mode 0600: {path}")
+                print(f"  Restricted {description} permissions to 0600.")
+        with os.fdopen(fd, "r", encoding="utf-8-sig") as stream:
+            fd = None
+            return stream.read()
+    finally:
+        if fd is not None:
+            os.close(fd)
+
+
+def _create_private_file(path, content, description):
+    # O_EXCL makes creation atomic and refuses an existing file or symlink.
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        fd = os.open(path, flags, 0o600)
+    except FileExistsError:
+        sys.exit(f"Refusing to overwrite existing {description}: {path}")
+    except OSError as exc:
+        sys.exit(f"Unable to create {description} securely: {exc}")
+    complete = False
+    try:
+        payload = content.encode("ascii")
+        written = 0
+        while written < len(payload):
+            count = os.write(fd, payload[written:])
+            if count <= 0:
+                raise OSError("short write")
+            written += count
+        os.fsync(fd)
+        if os.name != "nt" and stat.S_IMODE(os.fstat(fd).st_mode) != 0o600:
+            raise OSError("created file does not have mode 0600")
+        complete = True
+    finally:
+        os.close(fd)
+        if not complete:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+
+def ensure_jwt_key():
+    # Session/JWT signing key — auto-generated, referenced by the portal + policy
+    # via {env.PROTOSTAR_JWT_KEY}. Exported for the caddy child below.
+    path = os.path.join(HERE, "security-jwt-key.conf")
+    if not os.path.exists(path):
+        if os.path.lexists(path):
+            sys.exit(f"Perimeter session signing key path is not a regular file: {path}")
+        _create_private_file(
+            path, secrets.token_hex(32), "perimeter session signing key"
+        )
+        print("  Generated perimeter session signing key -> security-jwt-key.conf.")
+    key = _read_private_file(path, "perimeter session signing key").strip()
+    if not re.fullmatch(r"[0-9a-fA-F]{64}", key):
+        sys.exit(
+            "Perimeter session signing key must contain exactly 64 hexadecimal "
+            f"characters (256 bits): {path}"
+        )
+    os.environ["PROTOSTAR_JWT_KEY"] = key
+
+
+def ensure_google_client():
+    # Optional Google OAuth (blank to skip -> local auth only). Only the client ID
+    # is persisted (gitignored); the client SECRET is NEVER written to disk — it
+    # comes from the PROTOSTAR_GOOGLE_CLIENT_SECRET env var. If Google is configured
+    # but the secret isn't in the environment, prompt for it for THIS run only (held
+    # in os.environ, not stored). Exported for the Caddyfile's {env.*} references.
+    path = os.path.join(HERE, "google-oauth-client.conf")
+    if not os.path.exists(path):
+        print("Optional: Google SSO for the perimeter gate (blank to skip -- local auth still works).")
+        print("  Requires a Google Cloud OAuth client first -- see README.")
+        cid = input("  Google OAuth client ID (blank to skip): ").strip()
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(f"PROTOSTAR_GOOGLE_CLIENT_ID={cid}\n")
+        print("  Google OAuth client ID written to google-oauth-client.conf (secret NOT stored).")
+    for line in open(path, encoding="utf-8"):
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            k, v = line.split("=", 1)
+            os.environ[k.strip()] = v.strip()
+    # Secret: env-only. Prompt for this run if configured-but-missing.
+    if os.environ.get("PROTOSTAR_GOOGLE_CLIENT_ID") and not os.environ.get("PROTOSTAR_GOOGLE_CLIENT_SECRET"):
+        print("  Google client secret is not stored on disk — enter it for this run")
+        print("  (export PROTOSTAR_GOOGLE_CLIENT_SECRET to skip this prompt and for start-proxied.py):")
+        os.environ["PROTOSTAR_GOOGLE_CLIENT_SECRET"] = getpass("  Google OAuth client secret: ")
+
+
+def ensure_google_allowlist():
+    # Per-deployment email allowlist for Google logins (imported into the portal).
+    path = os.path.join(HERE, "google-allowlist.conf")
+    if os.path.exists(path):
+        return
+    print("Google SSO email allowlist (who's let through after signing in with Google).")
+    email = input("  Allowed Google email (blank to skip for now): ").strip()
+    with open(path, "w", encoding="utf-8") as f:
+        if email:
+            f.write(
+                "transform user {\n"
+                "\tmatch realm google\n"
+                f"\tmatch email {email}\n"
+                "\taction add role authp/user\n"
+                "}\n"
+            )
+        else:
+            f.write(
+                "# No allowed emails yet. Add a block per address and restart:\n"
+                "# transform user {\n#\tmatch realm google\n#\tmatch email someone@example.com\n"
+                "#\taction add role authp/user\n# }\n"
+            )
+    print("  Google allowlist written to google-allowlist.conf.")
+
+
+def write_google_snippets():
+    # Derived each run from whether a client ID is set. caddy-security rejects an
+    # empty client_id, so the oauth block must be omitted entirely when Google
+    # isn't configured -- otherwise the whole gate (local auth too) fails to load.
+    provider = os.path.join(HERE, "google-provider.conf")
+    enable = os.path.join(HERE, "google-enable.conf")
+    if os.environ.get("PROTOSTAR_GOOGLE_CLIENT_ID"):
+        with open(provider, "w", encoding="utf-8") as f:
+            f.write(
+                "oauth identity provider google {\n"
+                "\trealm google\n\tdriver google\n"
+                "\tclient_id {env.PROTOSTAR_GOOGLE_CLIENT_ID}\n"
+                "\tclient_secret {env.PROTOSTAR_GOOGLE_CLIENT_SECRET}\n"
+                "\tscopes openid email profile\n}\n"
+            )
+        with open(enable, "w", encoding="utf-8") as f:
+            f.write("enable identity provider google\n")
+        print("  Google SSO enabled (client ID set).")
+    else:
+        with open(provider, "w", encoding="utf-8") as f:
+            f.write("# Google SSO not configured (no client ID in google-oauth-client.conf).\n")
+        with open(enable, "w", encoding="utf-8") as f:
+            f.write("# Google SSO not configured.\n")
+        print("  Google SSO disabled (no client ID) -- local auth only.")
+
+
+def apply_coraza_mode(mode):
+    # Env placeholders aren't honored inside Coraza's `directives` block, so the
+    # mode is applied by patching the SecRuleEngine line (same as the old ps1).
+    with open(CADDYFILE, encoding="utf-8") as f:
+        content = f.read()
+    patched = re.sub(r"SecRuleEngine (On|DetectionOnly|Off)", f"SecRuleEngine {mode}", content)
+    if patched != content:
+        with open(CADDYFILE, "w", encoding="utf-8") as f:
+            f.write(patched)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Set up + run (or reload) the protostar-proxy Caddy.")
+    parser.add_argument("--coraza", choices=["On", "DetectionOnly", "Off"], default="On",
+                        help="Coraza WAF mode (default On = enforcing).")
+    parser.add_argument("--reload", action="store_true",
+                        help="Hot-reload the running proxy via the admin API instead of starting it.")
+    args = parser.parse_args()
+
+    if not os.path.exists(CADDY):
+        sys.exit("caddy binary not found. Run python build-proxy.py first.")
+
+    ensure_local_account()
+    ensure_jwt_key()
+    ensure_google_client()
+    ensure_google_allowlist()
+    write_google_snippets()
+    apply_coraza_mode(args.coraza)
+
+    if args.reload:
+        subprocess.run([CADDY, "reload", "--config", CADDYFILE, "--address", "localhost:2019"], cwd=HERE)
+        print(f"Reloaded proxy (Coraza={args.coraza}).")
+    else:
+        print(f"Starting proxy (Coraza={args.coraza}) on https://localhost:8443 (all interfaces). Ctrl+C to stop.")
+        try:
+            subprocess.run([CADDY, "run", "--config", CADDYFILE], cwd=HERE)
+        except KeyboardInterrupt:
+            print("\nStopped.")
+
+
+if __name__ == "__main__":
+    main()
