@@ -1,0 +1,54 @@
+{
+ "DetailsPrompt": {
+  "args": "question: string, details: any",
+  "placeholders": [
+   "details",
+   "question"
+  ],
+  "len": 269
+ },
+ "DetailsSummaryPrompt": {
+  "args": "details: any",
+  "placeholders": [
+   "details"
+  ],
+  "len": 305
+ },
+ "ThreatStatusSummaryPrompt": {
+  "args": "details: any",
+  "placeholders": [
+   "details"
+  ],
+  "len": 478
+ },
+ "ThreatStatusPrompt": {
+  "args": "question: string, details: any",
+  "placeholders": [
+   "details",
+   "question"
+  ],
+  "len": 476
+ },
+ "AlertSummaryPrompt": {
+  "args": "specificDetails: any",
+  "placeholders": [
+   "JSON.stringify(specificDetails)"
+  ],
+  "len": 224
+ },
+ "AlertPrompt": {
+  "args": "question: string, details: any, specificDetails: any",
+  "placeholders": [
+   "question",
+   "JSON.stringify(details)"
+  ],
+  "len": 551
+ },
+ "SummaryOfThreatStatusSummaryPrompt": {
+  "args": "details: any",
+  "placeholders": [
+   "details"
+  ],
+  "len": 163
+ }
+}

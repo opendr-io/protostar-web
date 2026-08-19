@@ -64,6 +64,11 @@ export default class Config
     return this.baseUrl + '/corazalog';
   }
 
+  public PromptLogURL()
+  {
+    return this.baseUrl + '/promptlog';
+  }
+
   public ConnectionStatusURL()
   {
     return this.baseUrl + '/connectionstatus';

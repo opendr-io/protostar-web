@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import LLMService from '../services/LLMService.ts';
-import PromptService from "../services/PromptService.ts";
+import PromptService, { FormatEntityTable, HIGH_LEVEL_FIELD_NAMES } from "../services/PromptService.ts";
 import TelemetryService from "../services/TelemetryService.ts";
 
 // the backend returns an empty answer when the LLM call fails (see api.log for the cause)
@@ -31,7 +31,7 @@ export function Home()
       let entityType = String(node.entity_type).trim();
       let ip = (String(node.ip).trim() == "" ? "-" : String(node.ip).trim());
       let atomicWeight = (node.atomic_weight === null || node.atomic_weight === undefined ? "-" : String(node.atomic_weight));
-      let atomicMass = (node.count === null || node.count === undefined ? "-" : String(node.count));
+      let atomicMass = (node.atomic_mass === null || node.atomic_mass === undefined ? "-" : String(node.atomic_mass));
       let updatedEntry = [entity, entityType, ip, atomicWeight, atomicMass];
       return updatedEntry;
     }
@@ -47,7 +47,7 @@ export function Home()
         highLevel.add(updatedEntry.toString());
         midLevelData.push(updatedEntry);
       });
-      let highLevelDataFieldsList = ['Entity', 'Entity Type', 'Ip', 'Atomic Weight', 'Atomic Mass'];
+      let highLevelDataFieldsList = [...HIGH_LEVEL_FIELD_NAMES];
       let highLevelDataList = Array.from(highLevel, h => h.split(','));
       let visibility = [];
 
@@ -60,10 +60,9 @@ export function Home()
         }
       }
       setHighLevelDataFieldVisibility(visibility);
-      highLevelDataList.concat(highLevelDataFieldsList);
       setHighLevelData(highLevelDataList);
       setHighLevelDataFields(highLevelDataFieldsList);
-      let firstOutput = await llm.AskLLM(ps.ThreatStatusSummaryPrompt(highLevelDataList));
+      let firstOutput = await llm.AskLLM(ps.ThreatStatusSummaryPrompt(FormatEntityTable(highLevelDataList)));
       if(!firstOutput)
       {
         // only cache real answers: a cached empty string would leave the summary blank forever
@@ -100,8 +99,8 @@ export function Home()
          </h1>
         <div className='mt-4 flex-1'>
         <h1 className="text-2xl font-bold mt-4">Situation Report:</h1>
-          <h1><br></br>The latest AI analysis and recomendations will appear below. The summary includes a high level overview of the
-            open threat detection elemets, the type of entity in each detecton element, and overall reccomendations. </h1>
+          <h1><br></br>The latest AI analysis and recommendations will appear below. The summary includes a high level overview of the
+            open threat detection elements, the type of entity in each detection element, and overall recommendations. </h1>
           <div className="mt-4">
             <div className="bg-[#1B1B1B] w-full text-gray-200 border border-gray-300 rounded py-2 px-3 my-3 shadow leading-tight markdown-content">
               {tacticalSummary
