@@ -118,7 +118,7 @@ export function CaseDetails({ selected, setSelected, appService, telemetryServic
                     <div className="bg-[#1B1B1B] mt-4">
                       <div className="border border-gray-600 rounded-lg p-2 space-y-1">
                         {comments.map((item, index) => (
-                          <li key={index} className="text-white cursor-pointer px-4 py-2 hover:bg-gray-700 list-none">
+                          <li key={index} className="text-white px-4 py-2 list-none">
                             <span className={`mx-1 font-semibold ${item.f1 == 'agent' ? 'text-purple-400' : 'text-teal-400'} `}>{item.f1}</span>
                             <span className="mx-1 text-xs">{item.f3}</span>
                             <div className="mx-1 mt-1 markdown-content">
