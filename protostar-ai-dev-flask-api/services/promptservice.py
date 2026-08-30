@@ -1,4 +1,17 @@
+from pathlib import Path
 from flask import jsonify
+
+PROMPT_DIR = Path(__file__).parent.parent.absolute() / 'prompts'
+
+def render(template_name, values):
+  # Read on every call rather than caching: Flask runs without the reloader, so this
+  # is what lets a prompt edit take effect without restarting the API. An unknown
+  # placeholder is left in place so a typo shows up in the prompt rather than
+  # silently emptying it.
+  text = (PROMPT_DIR / template_name).read_text(encoding='utf-8').strip()
+  for key, value in values.items():
+    text = text.replace('{{%s}}' % key, str(value))
+  return text
 class PromptService:
   def details_prompt(self, question, details):
     finalPrompt = f"""Can you explain the security risks and steps for mitigation using the following data:" "${details}", answer the 
@@ -62,23 +75,9 @@ class PromptService:
     return finalPrompt
   
   def agent_case_question_prompt(self, question, case_details, comments, telemetry):
-    finalPrompt = f"""You are the investigation agent assigned to a security case. Here is the case information: {case_details}.
-    Here is the comment thread on the case so far, newest first (comments from 'agent' are your own earlier comments): {comments}.
-    Here is the raw alert telemetry for the investigated entity: {telemetry}.
-    A user on the case has directed the following question to you: "{question}". Answer the question using the case information, the comment
-    thread, and the telemetry. Be clear, concise, and brief: keep the answer to a single paragraph unless the question specifically asks for
-    a list of steps. Do not repeat the question back and do not include any preamble, just answer it."""
-    return finalPrompt
+    return render('agent-case-question.txt', {
+      'question': question, 'case_details': case_details,
+      'comments': comments, 'telemetry': telemetry })
 
-  def agent_case_comment_prompt(self, details):
-    finalPrompt = f"""Here are some key terms to note for it's importance when making the summary:
-      1. detection_type: is the process of analyzing a security ecosystem at the holistic level to find malicious users, abnormal activity and anything that could compromise a network. Detection Type is built on threat
-        intelligence, which involves tools that are strategic, tactical and operational. Highly evasive cyber threats are the main focus of threat detection and response tools.
-      2. mitre_tactic: Represent the "why" of an ATT&CK technique or sub-technique. It is the adversary's tactical goal: the reason for performing an action. For example, an adversary may want to achieve credential access. Each representing a
-        stage in an adversary's objective, such as Initial Access, Privilege Escalation, or Exfiltration. Each technique is mapped to procedures, detection opportunities, and mitigations.
-      3. entity: An individual person, organization, device, or process that's being investigated.
-      4. timestamp: When the action took place.
-      5. entity_type: Is a grouping of the entities that match a set of filter conditions.
-      6. severity: Is a categorization of the risk and urgency of a vulnerability and the classification of alarm criticality within a monitoring system.
-    Based on the terms above write the summary and make it clear, concise, and brief. Make sure the summary is no longer than four sentences to a paragraph long. Here's the entity to be investigated: ${details}"""
-    return finalPrompt
+  def agent_case_comment_prompt(self, details, case_details):
+    return render('agent-case-comment.txt', { 'details': details, 'case_details': case_details })

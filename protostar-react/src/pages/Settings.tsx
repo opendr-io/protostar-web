@@ -28,7 +28,7 @@ function ConnectionCard({ name, status, connectedLabel = 'Connected', disconnect
 export function Settings()
 {
   const [lineLimit, setLineLimit] = useState(40);
-  const [logSource, setLogSource] = useState<'api' | 'coraza'>('api');
+  const [logSource, setLogSource] = useState<'api' | 'coraza' | 'prompts'>('api');
   const [logText, setLogText] = useState('');
   const [lineCount, setLineCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,7 +92,9 @@ export function Settings()
     {
       const config = new Config();
       const token = localStorage.getItem('token');
-      const logUrl = logSource === 'coraza' ? config.CorazaLogURL() : config.ApiLogURL();
+      const logUrl = logSource === 'coraza' ? config.CorazaLogURL()
+        : logSource === 'prompts' ? config.PromptLogURL()
+        : config.ApiLogURL();
       const response = await axios.get(logUrl,
       {
         params: { lines: lineLimit },
@@ -149,8 +151,12 @@ export function Settings()
               className={`px-3 py-1 rounded-md border text-sm cursor-pointer ${logSource === 'coraza' ? 'bg-white text-black border-white' : 'bg-black text-white border-gray-500 hover:bg-gray-700'}`}>
               WAF Log
             </button>
+            <button type="button" onClick={() => setLogSource('prompts')}
+              className={`px-3 py-1 rounded-md border text-sm cursor-pointer ${logSource === 'prompts' ? 'bg-white text-black border-white' : 'bg-black text-white border-gray-500 hover:bg-gray-700'}`}>
+              Prompt Log
+            </button>
           </div>
-          <h2 className="text-3xl font-bold">{logSource === 'coraza' ? 'WAF Audit Log' : 'API Log'}</h2>
+          <h2 className="text-3xl font-bold">{logSource === 'coraza' ? 'WAF Audit Log' : logSource === 'prompts' ? 'Prompt Log' : 'API Log'}</h2>
           <p className="text-sm text-gray-400 mt-1">
             Showing {lineCount} line(s)
             {lastUpdated && ` - Updated ${lastUpdated.toLocaleTimeString()}`}
@@ -183,7 +189,7 @@ export function Settings()
 
       <pre
         aria-label={logSource === 'coraza' ? 'WAF audit log contents' : 'API log contents'}
-        className={`bg-[#111111] border border-gray-700 rounded-lg p-4 h-[calc(100vh-12rem)] overflow-auto text-xs leading-5 text-gray-200 font-mono ${logSource === 'coraza' ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}`}>
+        className={`bg-[#111111] border border-gray-700 rounded-lg p-4 h-[calc(100vh-12rem)] overflow-auto text-xs leading-5 text-gray-200 font-mono ${logSource === 'api' ? 'whitespace-pre' : 'whitespace-pre-wrap break-words'}`}>
         {isLoading && !logText
           ? 'Loading log...'
           : (logText || (logSource === 'coraza'

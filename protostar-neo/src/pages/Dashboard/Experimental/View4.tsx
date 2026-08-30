@@ -21,11 +21,7 @@ export function View4()
       body: JSON.stringify({
         statements: [
           {
-            statement: `MATCH (n:ENTITY {view: 1})-[r]->(m {view: 1})
-                        WITH n, count(r) AS count_of_first_layer_nodes
-                        WHERE count_of_first_layer_nodes = 2
-                        MATCH p=(n)-[r*..2]->(m)
-                        RETURN p`,
+            statement: `MATCH (h:ENTITY)-[r]->() WHERE NOT type(r) IN ['AS_SOURCE', 'AS_DEST'] WITH h, collect(DISTINCT type(r)) AS relationshipTypes WHERE size(relationshipTypes) = 2 and h.view = 1 MATCH p=(h)-[r*..2]->() RETURN p`,
           },
         ],
       }),
@@ -48,7 +44,7 @@ export function View4()
         links={network.links ?? []}
         width={"100%"}
         height={"90vh"}
-        strength={-500}
+        strength={-1000}
       />
     </div>
   );

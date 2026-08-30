@@ -117,8 +117,8 @@ class AppService:
         logger.info(f'backfill case {case_id}: skipped, AI commenting was turned off mid-backfill')
         continue
       try:
-        details = telemetryservice.get_raw_entity_details_neo(entity)
-        prompt = promptservice.agent_case_comment_prompt(details)
+        details = telemetryservice.get_entity_alerts_csv(entity)
+        prompt = promptservice.agent_case_comment_prompt(details, self.get_case(case_id))
         llmcomment = llmservice.ask_claude(prompt)
         if llmcomment and self.post_case_comment(case_id, 'agent', llmcomment):
           self.set_agent_status(case_id, 'processed')

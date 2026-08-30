@@ -1,63 +1,96 @@
+import detailsPromptTpl from '../prompts/details-prompt.txt?raw';
+import detailsSummaryPromptTpl from '../prompts/details-summary-prompt.txt?raw';
+import threatStatusSummaryPromptTpl from '../prompts/threat-status-summary-prompt.txt?raw';
+import threatStatusPromptTpl from '../prompts/threat-status-prompt.txt?raw';
+import alertSummaryPromptTpl from '../prompts/alert-summary-prompt.txt?raw';
+import alertPromptTpl from '../prompts/alert-prompt.txt?raw';
+import summaryOfThreatStatusSummaryPromptTpl from '../prompts/summary-of-threat-status-summary-prompt.txt?raw';
+
+// Replaces {{name}} with the supplied value. An unknown placeholder is left in
+// place so a typo shows up in the prompt rather than silently emptying it.
+function render(template: string, values: Record<string, any>)
+{
+  // trim so a trailing newline in the file never reaches the model
+  return template.trim().replace(/\{\{(\w+)\}\}/g, (match, key) => key in values ? String(values[key]) : match);
+}
+// Column order of the high-level entity rows built by Home and Summary.
+export const HIGH_LEVEL_FIELD_NAMES = ['Entity', 'Entity Type', 'Ip', 'Atomic Weight', 'Atomic Mass'];
+
+// Renders entity rows as a labelled table. Interpolating the raw array flattens it
+// to one undelimited comma run, which strips the field names and the record
+// boundaries the prompts ask the model to reason about.
+export function FormatEntityTable(rows: any[][], fieldNames: string[] = HIGH_LEVEL_FIELD_NAMES)
+{
+  if(!Array.isArray(rows) || !rows.length)
+  {
+    return '';
+  }
+  let lines = [fieldNames.join(',')];
+  for(const row of rows)
+  {
+    lines.push((Array.isArray(row) ? row : [row]).map(cell => String(cell ?? '-')).join(','));
+  }
+  return lines.join('\n');
+}
+
+// Transposes column-major data into labelled CSV rows. The entity details endpoint
+// returns a dataframe serialised as {column: {rowIndex: value}}; interpolating its
+// values directly strips the column names the prompts ask the model to reason about.
+export function FormatColumnTable(fieldNames: string[], columns: any[])
+{
+  if(!Array.isArray(columns) || !columns.length)
+  {
+    return '';
+  }
+  const rowKeys = Object.keys(columns[0] ?? {});
+  const rows = rowKeys.map(key => columns.map(column => column?.[key] ?? ''));
+  return FormatEntityTable(rows, fieldNames);
+}
+
 export default class PromptService
 {
   constructor() {}
 
+// Details.tsx page question
   public DetailsPrompt(question: string, details: any)
   {
-    let finalPrompt = `Can you explain the security risks and steps for mitigation using the following data:" "${details}", answer the 
-    following question: "${question}. Answer it as detailed as you can.       . As mentioned be detailed with the response but also concise and 
-    to the point.`;
+    let finalPrompt = render(detailsPromptTpl, { details, question });
     return finalPrompt; 
   }
-
+// Details.tsx page entity summary
   public DetailsSummaryPrompt(details: any)
   {
-    let finalPrompt = `Can you explain the security risks and steps for mitigation using the following data:" "${details}", can you give me a summary of 
-    what I need to priortize for this particular entity. Answer it as detailed as you can.       . As mentioned be detailed with the response but also concise and 
-    to the point.`;
+    let finalPrompt = render(detailsSummaryPromptTpl, { details });
     return finalPrompt; 
   }
-
+// Summary generator for Summary.tsx page
   public ThreatStatusSummaryPrompt(details: any)
   {
-    let finalPrompt = `Can you explain the security risks and steps for mitigation using a summary explanation of the data and what the scores mean. Give a 
-    summary report on the data and explain what the nature of the activity is. Be verbose and identify fields you recognize. Explain each 
-    field that you recognize and what kind of data it contains. Suggest possible investigative directions. ${details}.       . As mentioned be detailed with the response but also concise and 
-    to the point.`;
+    let finalPrompt = render(threatStatusSummaryPromptTpl, { details });
     return finalPrompt;
   }
-
+// Summary.tsx page question 
   public ThreatStatusPrompt(question: string, details: any)
   {
-    let finalPrompt = `Can you explain the security risks and steps for mitigation using this information and based on this data: "${details}" Next, answer 
-    the following specific question: "${question}"  and repeat my question to me. When answering explain each field that
-    you recognize and what kind of data it contains and suggest possible investigative directions. Answer it as best as you can.       . As mentioned be detailed with the response but also concise and 
-    to the point.`;
+    let finalPrompt = render(threatStatusPromptTpl, { details, question });
     return finalPrompt;
   }
-
-  public AlertSummaryPrompt(details: any, specificDetails: any)
+// Alerts.tsx explainer 
+  public AlertSummaryPrompt(specificDetails: any)
   {
-    let finalPrompt = `Can you explain the security risks and steps for mitigation using the data specific to this alert: ${JSON.stringify(specificDetails)} and here's the data for 
-    the overall entity: ${JSON.stringify(details)}. As previously mentioned give a summary but coorelate the importance between the alert and the overall entity.       . As mentioned be detailed with the response but also concise and 
-    to the point.`;
+    let finalPrompt = render(alertSummaryPromptTpl, { specificDetails: JSON.stringify(specificDetails) });
     return finalPrompt;
   }
-
-  public AlertPrompt(question: string, details: any, specificDetails: any)
+// Alert question prompt (not currently wired)
+  public AlertPrompt(question: string, details: any)
   {
-    let finalPrompt = `Answer the following question in quotes "${question}" on the data and based on what the nature of the activity is. Explain the cybersecurity risks.
-    Be verbose and identify fields you recognize. Answer every part of the question that you recognize and which data relates best to it. Suggest possible investigative directions listed in steps. Here
-    are the details for the specific alert: "${JSON.stringify(details)}" and here's the information for the overall entity: "${specificDetails}. Make correlations between 
-    the two when answering the question. Answer it as best as you can.       . As mentioned be detailed with the response but also concise and 
-    to the point.`;
+    let finalPrompt = render(alertPromptTpl, { question, details: JSON.stringify(details) });
     return finalPrompt;
   }
-
+//  Home.tsx summary generator
   public SummaryOfThreatStatusSummaryPrompt(details: any)
   {
-    let finalPrompt = `Can you give me a further summary and explain the security risks and mitigation steps based on this output: ${details}. Answer it as best as you can. At the beginning 
-    of the response place the following message: `;
+    let finalPrompt = render(summaryOfThreatStatusSummaryPromptTpl, { details });
     return finalPrompt;
   }
 }

@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import LLMService from '../services/LLMService.ts';
 import { useDispatch } from 'react-redux';
 import { setData } from "../other/DataManagement.ts";
 import { X, Plus, ChevronDown } from 'lucide-react';
-import PromptService from "../services/PromptService.ts";
+import PromptService, { FormatEntityTable, HIGH_LEVEL_FIELD_NAMES } from "../services/PromptService.ts";
 import TelemetryService from "../services/TelemetryService.ts";
 import HelpTextService from "../services/HelpTextService.ts";
 
@@ -43,7 +45,7 @@ export function Summary()
       let entityType = String(node.entity_type).trim();
       let ip = (String(node.ip).trim() == "" ? "-" : String(node.ip).trim());
       let atomicWeight = (node.atomic_weight === null || node.atomic_weight === undefined ? "-" : String(node.atomic_weight));
-      let atomicMass = (node.count === null || node.count === undefined ? "-" : String(node.count));
+      let atomicMass = (node.atomic_mass === null || node.atomic_mass === undefined ? "-" : String(node.atomic_mass));
       let updatedEntry = [entity, entityType, ip, atomicWeight, atomicMass];
       return updatedEntry;
     }
@@ -60,7 +62,7 @@ export function Summary()
         highLevel.add(updatedEntry.toString());
         midLevelData.push(updatedEntry);
       });
-      let highLevelDataFieldsList = ['Entity', 'Entity Type', 'Ip', 'Atomic Weight', 'Atomic Mass'];
+      let highLevelDataFieldsList = [...HIGH_LEVEL_FIELD_NAMES];
       let highLevelDataList = Array.from(highLevel, h => h.split(','));
       // Sort by score: atomic weight (element number) descending, atomic mass as tiebreaker
       highLevelDataList.sort((a, b) =>
@@ -81,7 +83,6 @@ export function Summary()
         visibility.push(true);
       }
       setHighLevelDataFieldVisibility(visibility);
-      highLevelDataList.concat(highLevelDataFieldsList);
       setHighLevelData(highLevelDataList);
       setHighLevelDataFields(highLevelDataFieldsList);
       let output = localStorage.getItem('threatstatussummary');
@@ -92,7 +93,7 @@ export function Summary()
       else
       {
         // use the freshly built list: the highLevelData state is still empty inside this closure
-        let finalPrompt = ps.ThreatStatusSummaryPrompt(highLevelDataList);
+        let finalPrompt = ps.ThreatStatusSummaryPrompt(FormatEntityTable(highLevelDataList));
         let answer:string = await llm.AskLLM(finalPrompt);
         if(answer)
         {
@@ -192,7 +193,7 @@ export function Summary()
             <button title={`${hts.AISummaryHelpText()}`} onClick=
               {async () =>
                 {
-                  let finalPrompt = ps.ThreatStatusSummaryPrompt(highLevelData);
+                  let finalPrompt = ps.ThreatStatusSummaryPrompt(FormatEntityTable(highLevelData));
                   let answer = await llm.AskLLM(finalPrompt);
                   setLLMOutput(answer || LLM_ERROR_MESSAGE);
                 }
@@ -223,10 +224,17 @@ export function Summary()
                           textColor = 'text-blue-400';
                         }
                         
-                        // Check for red coloring logic: atomic weight cells look like "Helium (2)", extract the number
+                        // Atomic weight cells look like "Helium (2)": extract the number and band it.
+                        // Above 100 is red, 50-99 is yellow, anything else keeps the default.
                         for(let i = 0; i <= 4; i++) {
-                          if((originalIndex - i > 4) && ((originalIndex - i) % 5 === 0) && (parseInt(String(highLevelDataFields[originalIndex - i + 3]).replace(/[^0-9]/g, ''), 10) > 100)) {
-                            textColor = 'text-red-400';
+                          if((originalIndex - i > 4) && ((originalIndex - i) % 5 === 0)) {
+                            const atomicWeight = parseInt(String(highLevelDataFields[originalIndex - i + 3]).replace(/[^0-9]/g, ''), 10);
+                            if(atomicWeight > 100) {
+                              textColor = 'text-red-400';
+                            }
+                            else if(atomicWeight >= 50 && atomicWeight <= 99) {
+                              textColor = 'text-yellow-400';
+                            }
                           }
                         }
                         
@@ -356,7 +364,7 @@ export function Summary()
                 <button title={`${hts.AskAIHelpText()}`} onClick=
                 {async() => 
                   {
-                    let finalPrompt = ps.ThreatStatusPrompt(llmQuestion, highLevelData);
+                    let finalPrompt = ps.ThreatStatusPrompt(llmQuestion, FormatEntityTable(highLevelData));
                     let answer = await llm.AskLLM(finalPrompt);
                     setLLMOutput(answer || LLM_ERROR_MESSAGE);
                   }
@@ -365,12 +373,11 @@ export function Summary()
             </div>
             <div className="mb-24">
               <label className="block text-gray-400 font-bold text-xl mb-2 my-4">Output</label>
-              <p className="overflow-visible">
-                {/* <span className="bg-[#1B1B1B] h-fit text-gray-200 border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border-x rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline">{llmOutput}</span> */}
-                <textarea readOnly={true} value={llmOutput} placeholder="The AI answer will appear here" style={{
-                  '--base-size': `${llmOutput.length/70}rem`
-                } as React.CSSProperties} className={`bg-[#1B1B1B] calculated-textarea-height text-gray-200 border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline`} />
-              </p>
+              <div className="bg-[#1B1B1B] text-gray-200 border border-gray-300 rounded w-full py-2 px-3 my-3 shadow leading-tight markdown-content">
+                {llmOutput
+                  ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{llmOutput}</ReactMarkdown>
+                  : <p className="text-gray-500">The AI answer will appear here</p>}
+              </div>
             </div>
           </div>
         </div>

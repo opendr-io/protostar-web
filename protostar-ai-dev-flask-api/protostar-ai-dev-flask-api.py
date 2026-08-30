@@ -1,4 +1,5 @@
 import sys
+import re
 import socket
 import logging
 from logging.handlers import RotatingFileHandler
@@ -253,6 +254,37 @@ def get_api_log():
     logging.getLogger(__name__).exception('Unable to read API log')
     return make_response(jsonify({'error': 'Unable to read API log'}), 500)
 
+@app.route('/promptlog', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_prompt_log():
+  # assembled LLM prompts, written by llmservice at each model entry point
+  try:
+    requested_lines = request.args.get('lines', default=500, type=int)
+    line_limit = min(max(requested_lines or 500, 1), 2000)
+    log_file = logdir / 'prompts.log'
+    if not log_file.exists():
+      return jsonify({'lines': [], 'line_count': 0})
+    with log_file.open('r', encoding='utf-8', errors='replace') as stream:
+      lines = [line.rstrip('\r\n') for line in deque(stream, maxlen=line_limit)]
+    # newest first. Entries span many lines, so group on the timestamp header before
+    # reversing -- reversing raw lines would scramble each prompt's own line order.
+    entry_start = re.compile(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}')
+    entries, current = [], []
+    for line in lines:
+      if entry_start.match(line) and current:
+        entries.append(current)
+        current = []
+      current.append(line)
+    if current:
+      entries.append(current)
+    entries.reverse()
+    lines = [line for entry in entries for line in entry]
+    return jsonify({'lines': lines, 'line_count': len(lines)})
+  except Exception:
+    logging.getLogger(__name__).exception('Unable to read prompt log')
+    return make_response(jsonify({'error': 'Unable to read prompt log'}), 500)
+
 @app.route('/corazalog', methods=['GET'])
 @jwt_required()
 @cross_origin()
@@ -328,8 +360,8 @@ def create_case():
       return make_response(jsonify({"Exists": investigated_entity}), 200)
     created_case = appservice.create_case(investigated_entity, assigned_user, case_name, case_description, case_priority)
     if appservice.aicommenting:
-      details = telemetryservice.get_raw_entity_details_neo(investigated_entity)
-      prompt = promptservice.agent_case_comment_prompt(details)
+      details = telemetryservice.get_entity_alerts_csv(investigated_entity)
+      prompt = promptservice.agent_case_comment_prompt(details, appservice.get_case(created_case))
       appservice.add_to_case_queue(created_case, prompt, llmservice)
     return make_response(jsonify({"Success": created_case}), 200)
   except Exception as e:
@@ -355,7 +387,7 @@ def post_case_comment():
         question = 'Provide your current assessment of this case.'
       case_details = appservice.get_case(case)
       if case_details:
-        telemetry = telemetryservice.get_raw_entity_details_neo(case_details.get('investigated_entity'))
+        telemetry = telemetryservice.get_entity_alerts_csv(case_details.get('investigated_entity'))
         thread = appservice.load_case_comments(case)
         prompt = promptservice.agent_case_question_prompt(question, case_details, thread, telemetry)
         appservice.add_to_case_queue(case, prompt, llmservice)

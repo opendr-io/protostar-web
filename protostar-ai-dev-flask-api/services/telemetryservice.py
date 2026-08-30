@@ -81,7 +81,7 @@ class TelemetryService:
           WHERE n.view = 2
           MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
         RETURN DISTINCT
-          substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity
+          CASE WHEN n.entity CONTAINS '- ' THEN substring(n.entity, apoc.text.indexOf(n.entity, '- ') + 2) ELSE n.entity END AS entity
         ORDER BY entity ASC
         """).to_data_frame()
       data = result_df.to_json()
@@ -137,17 +137,17 @@ class TelemetryService:
       print(e)
     return data
   
-  def get_raw_entity_details_neo(self, entity):
-    data = []
-    try:
-      neo4j = self.neo4j_driver
-      query = """
+  def get_raw_entity_details_frame(self, entity):
+    # shared by get_raw_entity_details_neo (JSON, for Cases.tsx) and
+    # get_entity_alerts_csv (CSV, for the case agent prompts)
+    neo4j = self.neo4j_driver
+    query = """
         MATCH (n:ENTITY)
           WHERE n.view = 2
           MATCH (n)-[:HAS_SEVERITY|NAME_CLUSTER|INCLUDES*..3]->(m:ALERT)
           where n.entity contains $entity
           RETURN
-              substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity,
+              CASE WHEN n.entity CONTAINS '- ' THEN substring(n.entity, apoc.text.indexOf(n.entity, '- ') + 2) ELSE n.entity END AS entity,
               m.detection_type AS detection_type,
               m.mitre_tactic AS mitre_tactic,
               m.name as name,
@@ -167,10 +167,30 @@ class TelemetryService:
               m.dest_port as dest_port
           ORDER BY n.entity ASC
         """
-      result_df = neo4j.query(query, parameters={'entity': entity}).to_data_frame()
-      data = result_df.to_json()
+    return neo4j.query(query, parameters={'entity': entity}).to_data_frame()
+
+  def get_raw_entity_details_neo(self, entity):
+    data = []
+    try:
+      data = self.get_raw_entity_details_frame(entity).to_json()
     except Exception as e:
-      print(e)
+      logger.exception('Unable to read raw entity details')
+    return data
+
+  def get_entity_alerts_csv(self, entity):
+    # Same alerts as get_raw_entity_details_neo, rendered as CSV rather than column-major
+    # JSON: one line per alert, so nothing has to be reconstructed by row index. Columns
+    # that are empty for every alert are dropped. Used by the case agent prompts;
+    # /rawentitydetailsneo still returns JSON because Cases.tsx indexes it by column.
+    data = ''
+    try:
+      result_df = self.get_raw_entity_details_frame(entity)
+      if result_df is None or result_df.empty:
+        return ''
+      populated = [c for c in result_df.columns if not result_df[c].astype(str).str.strip().eq('').all()]
+      data = result_df[populated].to_csv(index=False).strip()
+    except Exception as e:
+      logger.exception('Unable to build entity alert CSV')
     return data
 
   def search_alerts_neo(self, term):
@@ -187,7 +207,7 @@ class TelemetryService:
              OR toLower(m.entity_type) CONTAINS $term
              OR toLower(m.name) CONTAINS $term
              OR toLower(toString(m.severity)) CONTAINS $term
-          WITH n, m, substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity_name
+          WITH n, m, CASE WHEN n.entity CONTAINS '- ' THEN substring(n.entity, apoc.text.indexOf(n.entity, '- ') + 2) ELSE n.entity END AS entity_name
           WITH CASE
             WHEN m.guid IS NOT NULL AND m.name IS NOT NULL AND entity_name IS NOT NULL
               THEN [m.guid, m.name, entity_name]
@@ -197,7 +217,7 @@ class TelemetryService:
           WITH alert_key, head(collect({{entity_node: n, alert_node: m}})) AS matched
           WITH matched.entity_node AS n, matched.alert_node AS m
           RETURN
-              substring(n.entity, apoc.text.indexOf(n.entity, '-') + 1) AS entity,
+              CASE WHEN n.entity CONTAINS '- ' THEN substring(n.entity, apoc.text.indexOf(n.entity, '- ') + 2) ELSE n.entity END AS entity,
               m.detection_type AS detection_type,
               m.mitre_tactic AS mitre_tactic,
               m.name as name,

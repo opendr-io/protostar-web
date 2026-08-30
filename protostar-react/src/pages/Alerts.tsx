@@ -176,7 +176,7 @@ export function Alerts()
   {
     const key = alertKey(alert, index);
     setExplainingIndex(index);
-    const finalPrompt = ps.AlertSummaryPrompt(visibleAlerts, alert);
+    const finalPrompt = ps.AlertSummaryPrompt(alert);
     const output = await llm.AskLLM(finalPrompt);
     setExplanations((current) => ({ ...current, [key]: output || 'The AI request failed. Please try again.' }));
     setVisibleExplanations((current) => ({ ...current, [key]: true }));

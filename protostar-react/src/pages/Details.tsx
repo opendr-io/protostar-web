@@ -1,8 +1,10 @@
 import { createBrowserRouter, data, RouterProvider, useNavigate } from "react-router-dom";
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSelector } from "react-redux";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import LLMService from '../services/LLMService.ts';
-import PromptService from "../services/PromptService.ts";
+import PromptService, { FormatColumnTable } from "../services/PromptService.ts";
 import TelemetryService from "../services/TelemetryService.ts";
 import { X, Plus, ChevronDown } from 'lucide-react';
 import HelpTextService from "../services/HelpTextService.ts";
@@ -121,7 +123,7 @@ export function Details()
             <div className="flex-row">
               <button title={`${hts.AISummaryHelpText()}`} onClick={async () => 
                   {
-                    let jsonEntityDetails = JSON.stringify(entityDetails);
+                    let jsonEntityDetails = FormatColumnTable(entityFields, entityDetails);
                     let summaryPrompt = ps.DetailsSummaryPrompt(jsonEntityDetails);
                     let answer = await llm.AskLLM(summaryPrompt);
                     setLLMOutput(answer || LLM_ERROR_MESSAGE);
@@ -294,7 +296,7 @@ export function Details()
                 <button title={`${hts.AskAIHelpText()}`} onClick=
                 {async () => 
                   {
-                    let jsonEntityDetails = JSON.stringify(entityDetails);
+                    let jsonEntityDetails = FormatColumnTable(entityFields, entityDetails);
                     let finalPrompt = ps.DetailsPrompt(llmQuestion, jsonEntityDetails);
                     let answer = await llm.AskLLM(finalPrompt);
                     setLLMOutput(answer || LLM_ERROR_MESSAGE);
@@ -304,11 +306,11 @@ export function Details()
             </div>
             <div className="mb-24">
               <label className="block text-gray-400 font-bold text-xl mb-2 my-4">Output</label>
-              <p className="overflow-visible">
-                <textarea readOnly={true} value={llmOutput} placeholder="The AI answer will appear here" style={{
-                    '--base-size': `${llmOutput.length/80}rem`
-                  } as React.CSSProperties} className="bg-[#1B1B1B] calculated-textarea-height text-gray-200 border-gray-300 overflow-y-auto cursor-default my-3 shadow resize-none appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline h-150" />
-              </p>
+              <div className="bg-[#1B1B1B] text-gray-200 border border-gray-300 rounded w-full py-2 px-3 my-3 shadow leading-tight markdown-content">
+                {llmOutput
+                  ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{llmOutput}</ReactMarkdown>
+                  : <p className="text-gray-500">The AI answer will appear here</p>}
+              </div>
             </div>
           </div>
         </div>

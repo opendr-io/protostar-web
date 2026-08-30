@@ -15,3 +15,9 @@ LMStudio=NotRequired
 [Perplexity]
 ModelName=
 PerplexityKey=
+
+[Logging]
+; Write every assembled LLM prompt to logs/prompts.log. Off by default; the
+; prompts embed whole entity tables. Flask does not reload, so restart it
+; after changing this.
+LogPrompts=false
